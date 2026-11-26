@@ -272,6 +272,18 @@ test('writes a link with its text, its title, or as its href alone', () => {
   assert.equal(wiki(paragraph(text('https://example.com', { attrs: { href: 'https://example.com' }, type: 'link' }))), '[https://example.com]')
 })
 
+test('carries a link whose href holds a character Jira stores as a percent escape, and writes the escape', () => {
+  const carried = (href: string): boolean => marked({ attrs: { href }, type: 'link' }).includes('{adf:display=inline}')
+  assert.equal(carried('/a"b'), true)
+  assert.equal(carried('/a<b'), true)
+  assert.equal(carried('/a>b'), true)
+  assert.equal(carried('/a`b'), true)
+  assert.equal(carried('/a^'), true)
+  assert.equal(carried('/a^:b'), true)
+  assert.equal(carried('#a^b:c'), true)
+  assert.equal(marked({ attrs: { href: '/a%22b%5E' }, type: 'link' }), 'a [b|/a%22b%5E] c')
+})
+
 test('nests marks in the order the array holds, outermost first', () => {
   assert.equal(marked({ type: 'strong' }, { type: 'em' }), 'a *_b_* c')
   assert.equal(marked({ type: 'em' }, { type: 'strong' }), 'a _*b*_ c')

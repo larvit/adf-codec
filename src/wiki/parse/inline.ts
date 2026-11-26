@@ -3,7 +3,7 @@ import type { ConvertFault } from '../../result.ts'
 import { colourNames } from './colour-names.ts'
 import { identicalMarks } from '../../adf/document.ts'
 import { readAdfMacro } from './adf-macro.ts'
-import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl, wellFormedAddress } from '../spellings.ts'
+import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl, storedHref, wellFormedAddress } from '../spellings.ts'
 
 // `end`: where the reading stopped, a cell's closing `|` or the line's end.
 export type InlineRead = { end: number; fault?: undefined; nodes: AdfNode[] } | { fault: ConvertFault }
@@ -25,7 +25,7 @@ type TextPiece = { marks: AdfMark[]; text: string }
 // `run`: the piece the next plain character joins.
 type Scan = { end: number; inCell: boolean; link: Link | undefined; opened: Opened[]; pieces: Piece[]; run: TextPiece | undefined; start: number; wiki: string }
 
-const address = /https?:\/\/[^\s)'"<>!|[\]{}\\]*/y
+const address = /https?:\/\/[^\s)'"`>!|[\]{}\\]*/y
 const anchorMacro = /\{anchor(?::[^{}\n]*)?\}/y
 const characterMarks: ReadonlyMap<string, AdfMark> = new Map([
   ['*', { type: 'strong' }],
@@ -231,12 +231,13 @@ function bracket(scan: Scan, at: number): number {
   if (close >= end) return plainCharacter(scan, at)
   const [first, second] = bars
   if (first === undefined) return bracketed(scan, at, wiki.slice(at + 1, close))
-  const href = wiki.slice(first + 1, second ?? close)
+  const target = wiki.slice(first + 1, second ?? close)
   const title = second === undefined ? undefined : wiki.slice(second + 1, close)
-  if (!linkedAddress(href) || (title !== undefined && !spellableTitle.test(title))) return plainCharacter(scan, at)
+  if (!linkedAddress(target) || (title !== undefined && !spellableTitle.test(title))) return plainCharacter(scan, at)
+  const href = storedHref(target)
   const mark: AdfMark = { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
   if (first === at + 1) {
-    push(scan, { marks: [mark], text: href })
+    push(scan, { marks: [mark], text: target })
     return close + 1
   }
   scan.opened.push({ at: at + 1, key: 'link', mark, piece: push(scan, { marks: [], text: '' }) })
@@ -248,7 +249,7 @@ function bracket(scan: Scan, at: number): number {
 function bracketed(scan: Scan, at: number, held: string): number {
   const id = held.startsWith('~accountid:') ? held.slice('~accountid:'.length) : undefined
   if (id !== undefined && spellableUrl.test(id)) push(scan, { node: { attrs: { accessLevel: '', id }, type: 'mention' } })
-  else if (linkedAddress(held)) push(scan, { marks: [{ attrs: { href: held }, type: 'link' }], text: held })
+  else if (linkedAddress(held)) push(scan, { marks: [{ attrs: { href: storedHref(held) }, type: 'link' }], text: held })
   else return plainCharacter(scan, at)
   return at + held.length + 2
 }
@@ -260,10 +261,10 @@ function bareAddress(scan: Scan, at: number): number {
   if (found === undefined) return plainCharacter(scan, at)
   let end = found.length
   while ('.,;?'.includes(found.charAt(end - 1))) end -= 1
-  const href = found.slice(0, end)
-  if (href.endsWith('://') || !wellFormedAddress(href)) return plainCharacter(scan, at)
-  push(scan, { marks: [{ attrs: { href }, type: 'link' }], text: href })
-  return at + href.length
+  const spelled = found.slice(0, end)
+  if (spelled.endsWith('://') || !wellFormedAddress(spelled)) return plainCharacter(scan, at)
+  push(scan, { marks: [{ attrs: { href: storedHref(spelled) }, type: 'link' }], text: spelled })
+  return at + spelled.length
 }
 
 function nodesOf(pieces: readonly Piece[]): AdfNode[] {

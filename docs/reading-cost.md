@@ -1456,3 +1456,34 @@ Read most (opens and searches):
 - `src/markdown/emit/adf-to-markdown.ts` 3
 
 ## Reading cost reset, 2026-11-26T00:46:42Z
+
+## Reading cost, chunk a8555ebfbc46, finished 2026-11-26T01:21:35Z
+
+77275 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `ci.sh` 8
+- `AGENTS.md` 4
+- `spec/flavour.md` 4
+- `docker-runner.sh` 3
+- `docs/decisions.md` 3
+- `README.md` 2
+- `package.json` 2
+- `docs/reading-cost.md` 1
+
+## Reading cost, chunk 8f8ccfab2d30, finished 2026-11-26T01:25:04Z
+
+83789 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 5
+- `spec/wiki.md` 4
+- `CHANGELOG.md` 3
+- `src/wiki/emit/inline-line.ts` 3
+- `src/wiki/emit/text-escaping.ts` 3
+- `ci.sh` 2
+- `docker-runner.sh` 1
+- `package.json` 1
+- `src/wiki/spellings.ts` 1
