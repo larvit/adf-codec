@@ -9,39 +9,39 @@ const outputFolder = resolve(import.meta.dirname, 'bundles')
 const bundler = createRequire(resolve(import.meta.dirname, '../bundle-size/package.json'))
 
 const bundlers = {
-  async bun(outfile) {
-    const built = await Bun.build({ entrypoints: [entry], naming: basename(outfile), outdir: dirname(outfile) })
-    assert.ok(built.success)
-    return built.logs.map((log) => log.message)
-  },
-  async esbuild(outfile) {
-    const built = await bundler('esbuild').build({ bundle: true, entryPoints: [entry], format: 'esm', logLevel: 'silent', outfile })
-    return built.warnings.map((warning) => warning.text)
-  },
-  async rollup(outfile) {
-    const warnings = []
-    const bundle = await bundler('rollup').rollup({ input: entry, onwarn: (warning) => warnings.push(warning.message), plugins: [bundler('@rollup/plugin-node-resolve')()] })
-    await bundle.write({ file: outfile, format: 'es' })
-    return warnings
-  },
-  async webpack(outfile) {
-    const stats = await new Promise((settle, fail) => {
-      bundler('webpack')({ entry, mode: 'production', output: { filename: basename(outfile), path: dirname(outfile) } }, (error, built) => (error ? fail(error) : settle(built)))
-    })
-    const { errors, warnings } = stats.toJson({ all: false, errors: true, warnings: true })
-    assert.deepEqual(errors, [])
-    return warnings.map((warning) => warning.message)
-  },
+	async bun(outfile) {
+		const built = await Bun.build({ entrypoints: [entry], naming: basename(outfile), outdir: dirname(outfile) })
+		assert.ok(built.success)
+		return built.logs.map((log) => log.message)
+	},
+	async esbuild(outfile) {
+		const built = await bundler('esbuild').build({ bundle: true, entryPoints: [entry], format: 'esm', logLevel: 'silent', outfile })
+		return built.warnings.map((warning) => warning.text)
+	},
+	async rollup(outfile) {
+		const warnings = []
+		const bundle = await bundler('rollup').rollup({ input: entry, onwarn: (warning) => warnings.push(warning.message), plugins: [bundler('@rollup/plugin-node-resolve')()] })
+		await bundle.write({ file: outfile, format: 'es' })
+		return warnings
+	},
+	async webpack(outfile) {
+		const stats = await new Promise((settle, fail) => {
+			bundler('webpack')({ entry, mode: 'production', output: { filename: basename(outfile), path: dirname(outfile) } }, (error, built) => (error ? fail(error) : settle(built)))
+		})
+		const { errors, warnings } = stats.toJson({ all: false, errors: true, warnings: true })
+		assert.deepEqual(errors, [])
+		return warnings.map((warning) => warning.message)
+	},
 }
 
 // Bun builds its bundle under its own image; Node builds the other three and runs all four.
 const builtHere = 'Bun' in globalThis ? ['bun'] : ['esbuild', 'rollup', 'webpack']
 for (const name of builtHere) {
-  assert.deepEqual(await bundlers[name](resolve(outputFolder, `${name}.js`)), [], `${name} warned`)
+	assert.deepEqual(await bundlers[name](resolve(outputFolder, `${name}.js`)), [], `${name} warned`)
 }
 if (!('Bun' in globalThis)) {
-  for (const name of Object.keys(bundlers)) {
-    const { document, read } = JSON.parse(execFileSync(process.execPath, [resolve(outputFolder, `${name}.js`)], { encoding: 'utf8' }))
-    assert.deepEqual(read, { ok: true, value: document }, `${name}'s bundle`)
-  }
+	for (const name of Object.keys(bundlers)) {
+		const { document, read } = JSON.parse(execFileSync(process.execPath, [resolve(outputFolder, `${name}.js`)], { encoding: 'utf8' }))
+		assert.deepEqual(read, { ok: true, value: document }, `${name}'s bundle`)
+	}
 }

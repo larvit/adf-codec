@@ -11,7 +11,7 @@ const surrogates = { first: 0xd800, last: 0xdfff }
 // HTML5's named character references (https://html.spec.whatwg.org/entities.json), the semicolon-terminated half
 // CommonMark decodes. Name and characters part on a tilde, references on a space, neither of which any value holds.
 const packedReferences =
-  'AElig~Æ AMP~& Aacute~Á Abreve~Ă Acirc~Â Acy~А Afr~𝔄 Agrave~À Alpha~Α Amacr~Ā And~⩓ Aogon~Ą Aopf~𝔸\
+	'AElig~Æ AMP~& Aacute~Á Abreve~Ă Acirc~Â Acy~А Afr~𝔄 Agrave~À Alpha~Α Amacr~Ā And~⩓ Aogon~Ą Aopf~𝔸\
   ApplyFunction~⁡ Aring~Å Ascr~𝒜 Assign~≔ Atilde~Ã Auml~Ä Backslash~∖ Barv~⫧ Barwed~⌆ Bcy~Б Because~∵ Bernoullis~ℬ\
   Beta~Β Bfr~𝔅 Bopf~𝔹 Breve~˘ Bscr~ℬ Bumpeq~≎ CHcy~Ч COPY~© Cacute~Ć Cap~⋒ CapitalDifferentialD~ⅅ Cayleys~ℭ\
   Ccaron~Č Ccedil~Ç Ccirc~Ĉ Cconint~∰ Cdot~Ċ Cedilla~¸ CenterDot~· Cfr~ℭ Chi~Χ CircleDot~⊙ CircleMinus~⊖\
@@ -203,36 +203,36 @@ const packedReferences =
 export const namedReferences: ReadonlyMap<string, string> = new Map(packedReferences.split(/ +/).map(namedReference))
 
 export function holdsEntityReference(text: string): boolean {
-  for (let index = text.indexOf('&'); index !== -1; index = text.indexOf('&', index + 1)) {
-    if (readEntityReference(text, index) !== undefined) return true
-  }
-  return false
+	for (let index = text.indexOf('&'); index !== -1; index = text.indexOf('&', index + 1)) {
+		if (readEntityReference(text, index) !== undefined) return true
+	}
+	return false
 }
 
 // The reference standing at `index`, `undefined` where none does.
 export function readEntityReference(text: string, index: number): EntityReference | undefined {
-  anchoredEntityReference.lastIndex = index
-  const reference = anchoredEntityReference.exec(text)?.[0]
-  if (reference === undefined) return undefined
-  const decoded = decodeReference(reference)
-  return decoded === undefined ? undefined : { length: reference.length, text: decoded }
+	anchoredEntityReference.lastIndex = index
+	const reference = anchoredEntityReference.exec(text)?.[0]
+	if (reference === undefined) return undefined
+	const decoded = decodeReference(reference)
+	return decoded === undefined ? undefined : { length: reference.length, text: decoded }
 }
 
 function decodeReference(reference: string): string | undefined {
-  const decimal = decimalReference.exec(reference)?.[1]
-  if (decimal !== undefined) return characterOf(Number.parseInt(decimal, 10))
-  const hexadecimal = hexadecimalReference.exec(reference)?.[1]
-  if (hexadecimal !== undefined) return characterOf(Number.parseInt(hexadecimal, 16))
-  return namedReferences.get(reference.slice(1, -1))
+	const decimal = decimalReference.exec(reference)?.[1]
+	if (decimal !== undefined) return characterOf(Number.parseInt(decimal, 10))
+	const hexadecimal = hexadecimalReference.exec(reference)?.[1]
+	if (hexadecimal !== undefined) return characterOf(Number.parseInt(hexadecimal, 16))
+	return namedReferences.get(reference.slice(1, -1))
 }
 
 function characterOf(codePoint: number): string {
-  if (codePoint === 0 || codePoint > largestCodePoint) return replacementCharacter
-  if (codePoint >= surrogates.first && codePoint <= surrogates.last) return replacementCharacter
-  return String.fromCodePoint(codePoint)
+	if (codePoint === 0 || codePoint > largestCodePoint) return replacementCharacter
+	if (codePoint >= surrogates.first && codePoint <= surrogates.last) return replacementCharacter
+	return String.fromCodePoint(codePoint)
 }
 
 function namedReference(entry: string): [string, string] {
-  const separator = entry.indexOf('~')
-  return [entry.slice(0, separator), entry.slice(separator + 1)]
+	const separator = entry.indexOf('~')
+	return [entry.slice(0, separator), entry.slice(separator + 1)]
 }

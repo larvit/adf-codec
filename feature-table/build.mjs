@@ -11,6 +11,6 @@ const page = renderFeatureTable(examples, library)
 
 if (!process.argv.includes('--check')) writeFileSync(pagePath, page)
 else if (readFileSync(pagePath, 'utf8') !== page) {
-  console.error('docs/feature-table.md differs from what the examples and the build give: run ./feature-table/write.sh')
-  process.exitCode = 1
+	console.error('docs/feature-table.md differs from what the examples and the build give: run ./feature-table/write.sh')
+	process.exitCode = 1
 }

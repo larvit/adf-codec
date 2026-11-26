@@ -15,15 +15,15 @@ import { blockNodes } from '../adf/block-nodes.ts'
 import { carryFencePrefix, carryName } from '../markdown/opaque-carry.ts'
 import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import {
-  directivePrefix,
-  spellAttributes,
-  spellDirectiveCloser,
-  spellDirectiveOpener,
-  spellInlineDirectiveOpener,
-  spellInlineLeafDirective,
-  spellJsonAttribute,
-  spellStringAttribute,
-  spellVocabulary,
+	directivePrefix,
+	spellAttributes,
+	spellDirectiveCloser,
+	spellDirectiveOpener,
+	spellInlineDirectiveOpener,
+	spellInlineLeafDirective,
+	spellJsonAttribute,
+	spellStringAttribute,
+	spellVocabulary,
 } from '../markdown/directive/syntax.ts'
 import { fencedCodeBlock } from '../markdown/commonmark/backtick-runs.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
@@ -51,68 +51,68 @@ const markdownMarkTypes = new Set(Object.keys(markAttributes).filter((type) => m
 
 const vocabularies = [...Object.values(blockNodes).map((model) => model.attributes), ...Object.values(inlineNodes).map((model) => model.attributes), ...Object.values(markAttributes)]
 const attributeKeys = [
-  ...new Set([...vocabularies.flatMap((vocabulary) => Object.keys(vocabulary)), ...Object.keys(blockNodes).flatMap((type) => blockArgument(type) ?? []), marksAttribute, 'json', textDirectiveName]),
+	...new Set([...vocabularies.flatMap((vocabulary) => Object.keys(vocabulary)), ...Object.keys(blockNodes).flatMap((type) => blockArgument(type) ?? []), marksAttribute, 'json', textDirectiveName]),
 ]
 const directiveNames = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes), carryName, textDirectiveName]
 
 // Hostile generation reaches refusals; clean generation holds none a single piece would trip, so a whole document reaches the emitter.
 function choose(hostile: boolean, choices: readonly Choice[], depth?: { depthIdentifier: DepthIdentifier; maxDepth: number }): Arbitrary<string> {
-  const held = choices.filter((choice) => hostile || choice.hostile !== true).map(({ arbitrary, weight }) => ({ arbitrary, weight }))
-  return depth === undefined ? fc.oneof(...held) : fc.oneof({ ...depth, depthSize: 'small' }, ...held)
+	const held = choices.filter((choice) => hostile || choice.hostile !== true).map(({ arbitrary, weight }) => ({ arbitrary, weight }))
+	return depth === undefined ? fc.oneof(...held) : fc.oneof({ ...depth, depthSize: 'small' }, ...held)
 }
 
 const bareToken = fc.stringMatching(/^[A-Za-z0-9_-]{1,8}$/)
 const prose = fc.stringMatching(/^[A-Za-z][a-z]{0,6}(?: [a-z]{1,6}){0,3}$/)
 const cleanText = fc.string({ maxLength: 12, unit: fc.constantFrom(...'aZ09 \t!"#$%&\'()*+,-./;=?@[\\]^_`{}~é\xa0🎉') })
 const syntaxTokens = fc.constantFrom(
-  ...[...String.fromCodePoint(0x0, 0xb, 0xc, 0x85, 0xa0, 0x200b, 0x2028, 0x3000, 0xfeff)],
-  '\n',
-  '\r\n',
-  '\r',
-  '\t',
-  '    ',
-  '  \n',
-  '\\\n',
-  '**',
-  '__',
-  '~~',
-  '***',
-  '```',
-  '~~~',
-  '![',
-  '](',
-  '{}',
-  `${directivePrefix}/`,
-  `${directivePrefix}panel `,
-  '> ',
-  '- ',
-  '* ',
-  '1. ',
-  '2) ',
-  '# ',
-  '---',
-  '===',
-  '| ',
-  ' |',
-  '<!--',
-  '-->',
-  '&amp;',
-  '&#',
+	...[...String.fromCodePoint(0x0, 0xb, 0xc, 0x85, 0xa0, 0x200b, 0x2028, 0x3000, 0xfeff)],
+	'\n',
+	'\r\n',
+	'\r',
+	'\t',
+	'    ',
+	'  \n',
+	'\\\n',
+	'**',
+	'__',
+	'~~',
+	'***',
+	'```',
+	'~~~',
+	'![',
+	'](',
+	'{}',
+	`${directivePrefix}/`,
+	`${directivePrefix}panel `,
+	'> ',
+	'- ',
+	'* ',
+	'1. ',
+	'2) ',
+	'# ',
+	'---',
+	'===',
+	'| ',
+	' |',
+	'<!--',
+	'-->',
+	'&amp;',
+	'&#',
 )
 const piece = fc.oneof(markdownPieces, syntaxTokens)
 
 const namedEntity = fc.constantFrom('&amp;', '&lt;', '&quot;', '&copy;', '&nbsp;', '&ouml;', '&bogus;', '&amp', '&#;', '&AMP;', '&ngE;')
 const numericEntity = fc
-  .tuple(fc.oneof(fc.integer({ max: 0x7f, min: 0 }), fc.integer({ max: 0xffff, min: 0 }), fc.integer({ max: 0x110000, min: 0 })), fc.boolean())
-  .map(([code, hex]) => (hex ? `&#x${code.toString(16)};` : `&#${code};`))
+	.tuple(fc.oneof(fc.integer({ max: 0x7f, min: 0 }), fc.integer({ max: 0xffff, min: 0 }), fc.integer({ max: 0x110000, min: 0 })), fc.boolean())
+	.map(([code, hex]) => (hex ? `&#x${code.toString(16)};` : `&#${code};`))
 const escape = fc.constantFrom(...'!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~a \n').map((escaped) => `\\${escaped}`)
 const backticks = fc.integer({ max: 3, min: 1 }).map((count) => '`'.repeat(count))
 const codeSpan = fc
-  .tuple(backticks, fc.oneof(prose, textOf(0)), fc.oneof({ arbitrary: fc.constant(undefined), weight: 4 }, { arbitrary: backticks, weight: 1 }))
-  .map(([opener, body, closer]) => `${opener}${body}${closer ?? opener}`)
+	.tuple(backticks, fc.oneof(prose, textOf(0)), fc.oneof({ arbitrary: fc.constant(undefined), weight: 4 }, { arbitrary: backticks, weight: 1 }))
+	.map(([opener, body, closer]) => `${opener}${body}${closer ?? opener}`)
 const autolink = fc.oneof(
-  fc.tuple(fc.constantFrom('http://', 'https://', 'mailto:', 'ab:', 'x+y.z-:'), prose).map(([scheme, rest]) => `<${scheme}${rest.replaceAll(' ', '/')}>`),
-  fc.stringMatching(/^<[a-z.+]{1,6}@[a-z-]{1,6}(?:\.[a-z]{1,4})?>$/),
+	fc.tuple(fc.constantFrom('http://', 'https://', 'mailto:', 'ab:', 'x+y.z-:'), prose).map(([scheme, rest]) => `<${scheme}${rest.replaceAll(' ', '/')}>`),
+	fc.stringMatching(/^<[a-z.+]{1,6}@[a-z-]{1,6}(?:\.[a-z]{1,4})?>$/),
 )
 const hostileAutolink = fc.tuple(fc.constantFrom('http://', 'ab:', 'a:'), textOf(0)).map(([scheme, rest]) => `<${scheme}${rest}>`)
 const inlineHtml = fc.constantFrom('<span>', '</span>', '<a href="x">', "<b class='y'/>", '<!-- c -->', '<!---->', '<?x?>', '<![CDATA[x]]>', '<!X y>', '<br/>', '<b', '<3', '< a>')
@@ -125,54 +125,54 @@ const url = fc.stringMatching(/^https?:\/\/[a-z]{1,6}\.[a-z]{2,3}(?:\/[a-z0-9()]
 const title = (text: Arbitrary<string>) => fc.oneof(fc.constant(''), text.map((held) => ` "${held}"`), text.map((held) => ` '${held}'`), text.map((held) => ` (${held})`))
 
 const attributeValue = fc.oneof(
-  { arbitrary: bareToken, weight: 3 },
-  { arbitrary: fc.constantFrom('true', 'false', '0', '1', '3', '-1', '1.5', '1e2', '"1"', '01', 'null', '"[]"', '"{}"', '"#deebff"'), weight: 2 },
-  { arbitrary: textOf(0).map(spellStringAttribute), weight: 3 },
-  { arbitrary: jsonValue.map(spellJsonAttribute), weight: 2 },
-  { arbitrary: textOf(0).map((held) => JSON.stringify(held)), weight: 1 },
-  { arbitrary: textOf(0).map((held) => `"${held}`), weight: 1 },
+	{ arbitrary: bareToken, weight: 3 },
+	{ arbitrary: fc.constantFrom('true', 'false', '0', '1', '3', '-1', '1.5', '1e2', '"1"', '01', 'null', '"[]"', '"{}"', '"#deebff"'), weight: 2 },
+	{ arbitrary: textOf(0).map(spellStringAttribute), weight: 3 },
+	{ arbitrary: jsonValue.map(spellJsonAttribute), weight: 2 },
+	{ arbitrary: textOf(0).map((held) => JSON.stringify(held)), weight: 1 },
+	{ arbitrary: textOf(0).map((held) => `"${held}`), weight: 1 },
 )
 const attributePairs = fc.uniqueArray(fc.tuple(fc.oneof({ arbitrary: fc.constantFrom(...attributeKeys), weight: 4 }, { arbitrary: bareToken, weight: 1 }), attributeValue), {
-  maxLength: 3,
-  minLength: 1,
-  selector: ([key]) => key,
+	maxLength: 3,
+	minLength: 1,
+	selector: ([key]) => key,
 })
 const hostileAttributes = fc.oneof(
-  { arbitrary: fc.constant(''), weight: 3 },
-  {
-    arbitrary: fc.tuple(attributePairs, fc.boolean()).map(([pairs, sorted]) => {
-      const ordered = sorted ? pairs.toSorted(([left], [right]) => (left < right ? -1 : 1)) : pairs
-      return `{${ordered.map(([key, value]) => `${key}=${value}`).join(' ')}}`
-    }),
-    weight: 6,
-  },
-  { arbitrary: fc.constantFrom('{}', '{ }', '{a}', '{a=}', '{=b}', '{a=b', '{a=b  c=d}', '{a="}"}'), weight: 1 },
+	{ arbitrary: fc.constant(''), weight: 3 },
+	{
+		arbitrary: fc.tuple(attributePairs, fc.boolean()).map(([pairs, sorted]) => {
+			const ordered = sorted ? pairs.toSorted(([left], [right]) => (left < right ? -1 : 1)) : pairs
+			return `{${ordered.map(([key, value]) => `${key}=${value}`).join(' ')}}`
+		}),
+		weight: 6,
+	},
+	{ arbitrary: fc.constantFrom('{}', '{ }', '{a}', '{a=}', '{=b}', '{a=b', '{a=b  c=d}', '{a="}"}'), weight: 1 },
 )
 
 function tableAttributes(vocabulary: AttributeVocabulary, slot?: string): Arbitrary<string> {
-  return attributes(vocabulary).map((attrs) => spellAttributes(spellVocabulary(vocabularyPairs(attrs, vocabulary, slot === undefined ? [] : [slot]) ?? [])))
+	return attributes(vocabulary).map((attrs) => spellAttributes(spellVocabulary(vocabularyPairs(attrs, vocabulary, slot === undefined ? [] : [slot]) ?? [])))
 }
 
 const directiveName = fc.oneof({ arbitrary: fc.constantFrom(...directiveNames), weight: 8 }, { arbitrary: fc.stringMatching(/^[A-Za-z0-9-]{1,6}$/), weight: 1 })
 const hostileArgument = fc.oneof(
-  { arbitrary: fc.constant(''), weight: 3 },
-  { arbitrary: fc.constantFrom(' info', ' warning', ' custom', ' DONE', ' TODO'), weight: 2 },
-  { arbitrary: fc.oneof(bareToken.map((held) => ` ${held}`), fc.constantFrom('  info', ' a b', ' "a"')), weight: 1 },
+	{ arbitrary: fc.constant(''), weight: 3 },
+	{ arbitrary: fc.constantFrom(' info', ' warning', ' custom', ' DONE', ' TODO'), weight: 2 },
+	{ arbitrary: fc.oneof(bareToken.map((held) => ` ${held}`), fc.constantFrom('  info', ' a b', ' "a"')), weight: 1 },
 )
 
 function hostileOpener(name: string, argument: string, attrs: string): string {
-  return `${directivePrefix}${name}${argument}${attrs === '' ? '' : ` ${attrs}`}`
+	return `${directivePrefix}${name}${argument}${attrs === '' ? '' : ` ${attrs}`}`
 }
 
 function container(opener: string, body: string, closer: string): string {
-  return [opener, body, closer].filter((line) => line !== '').join('\n')
+	return [opener, body, closer].filter((line) => line !== '').join('\n')
 }
 
 type CarriedParts = readonly [type: string, untyped: { [key: string]: JsonValue }]
 const carriedAttributes = fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true })
 const carriedParts = fc.oneof(
-  fc.tuple(fc.constantFrom('mention', 'paragraph', 'status', 'widget'), carriedAttributes).map(([type, attrs]): CarriedParts => [type, { attrs }]),
-  textOf(1).map((held): CarriedParts => ['text', { text: held }]),
+	fc.tuple(fc.constantFrom('mention', 'paragraph', 'status', 'widget'), carriedAttributes).map(([type, attrs]): CarriedParts => [type, { attrs }]),
+	textOf(1).map((held): CarriedParts => ['text', { text: held }]),
 )
 const unnamedParts = fc.tuple(fc.constantFrom(' x', 'a`b', 'a\\b', 'a&amp;b'), carriedAttributes).map(([type, attrs]): CarriedParts => [type, { attrs }])
 const carriedNode = carriedParts.map(([type, untyped]): JsonValue => ({ ...untyped, type }))
@@ -180,333 +180,333 @@ const spellCarry = (json: string) => spellInlineLeafDirective(carryName, `{json=
 const inlineCarry = carriedNode.map((node) => spellCarry(serializeCanonicalJson(node, 'compact')))
 const hostileInlineCarry = fc.oneof(carriedNode, jsonValue).map((node) => spellCarry(JSON.stringify(node, null, 1)))
 const blockCarry = fc.oneof(
-  { arbitrary: carriedParts.map(([type, untyped]) => fencedCodeBlock(`${carryFencePrefix}${type}`, serializeCanonicalJson(untyped, 'five-level'))), weight: 3 },
-  { arbitrary: unnamedParts.map(([type, untyped]) => fencedCodeBlock(carryFencePrefix, serializeCanonicalJson({ ...untyped, type }, 'five-level'))), weight: 1 },
+	{ arbitrary: carriedParts.map(([type, untyped]) => fencedCodeBlock(`${carryFencePrefix}${type}`, serializeCanonicalJson(untyped, 'five-level'))), weight: 3 },
+	{ arbitrary: unnamedParts.map(([type, untyped]) => fencedCodeBlock(carryFencePrefix, serializeCanonicalJson({ ...untyped, type }, 'five-level'))), weight: 1 },
 )
 const hostileBlockCarry = fc
-  .tuple(
-    fc.oneof(carriedParts, unnamedParts),
-    fc.oneof(
-      { arbitrary: fc.constantFrom(undefined, ''), weight: 6 },
-      { arbitrary: fc.constantFrom('widget', 'x y', 'a`b', 'a\\b', 'a&amp;b', ' padded'), weight: 1 },
-    ),
-    fc.oneof({ arbitrary: fc.constantFrom('untyped', 'typed'), weight: 6 }, { arbitrary: fc.constant('other'), weight: 1 }),
-    fc.oneof({ arbitrary: fc.constant('canonical'), weight: 4 }, { arbitrary: fc.constantFrom('compact', 'indented'), weight: 1 }),
-    jsonValue,
-  )
-  .map(([[type, untyped], named, body, spelling, other]) => {
-    const value = body === 'untyped' ? untyped : body === 'typed' ? { ...untyped, type } : other
-    const json = spelling === 'canonical' ? serializeCanonicalJson(value, 'five-level') : spelling === 'compact' ? JSON.stringify(value) : JSON.stringify(value, null, 1)
-    const info = `${carryFencePrefix}${named ?? type}`
-    return info.includes('`') ? `~~~${info}\n${json}\n~~~` : fencedCodeBlock(info, json)
-  })
+	.tuple(
+		fc.oneof(carriedParts, unnamedParts),
+		fc.oneof(
+			{ arbitrary: fc.constantFrom(undefined, ''), weight: 6 },
+			{ arbitrary: fc.constantFrom('widget', 'x y', 'a`b', 'a\\b', 'a&amp;b', ' padded'), weight: 1 },
+		),
+		fc.oneof({ arbitrary: fc.constantFrom('untyped', 'typed'), weight: 6 }, { arbitrary: fc.constant('other'), weight: 1 }),
+		fc.oneof({ arbitrary: fc.constant('canonical'), weight: 4 }, { arbitrary: fc.constantFrom('compact', 'indented'), weight: 1 }),
+		jsonValue,
+	)
+	.map(([[type, untyped], named, body, spelling, other]) => {
+		const value = body === 'untyped' ? untyped : body === 'typed' ? { ...untyped, type } : other
+		const json = spelling === 'canonical' ? serializeCanonicalJson(value, 'five-level') : spelling === 'compact' ? JSON.stringify(value) : JSON.stringify(value, null, 1)
+		const info = `${carryFencePrefix}${named ?? type}`
+		return info.includes('`') ? `~~~${info}\n${json}\n~~~` : fencedCodeBlock(info, json)
+	})
 
 function prefixLines(body: string, first: string, rest: (index: number) => string): string {
-  return body
-    .split('\n')
-    .map((line, index) => (index === 0 ? `${first}${line}` : line === '' ? rest(index).trimEnd() : `${rest(index)}${line}`))
-    .join('\n')
+	return body
+		.split('\n')
+		.map((line, index) => (index === 0 ? `${first}${line}` : line === '' ? rest(index).trimEnd() : `${rest(index)}${line}`))
+		.join('\n')
 }
 
 const separator = fc.oneof({ arbitrary: fc.constant('\n\n'), weight: 4 }, { arbitrary: fc.constant('\n'), weight: 3 }, { arbitrary: fc.constantFrom('\n\n\n', '\n \n', '\n\t\n'), weight: 1 })
 const quotePrefix = fc.oneof({ arbitrary: fc.constant('> '), weight: 6 }, { arbitrary: fc.constantFrom('>', ' > ', '>  ', '>\t', ''), weight: 1 })
 const listMarker = fc.oneof(
-  { arbitrary: fc.constantFrom('-', '*', '+'), weight: 3 },
-  {
-    arbitrary: fc
-      .tuple(fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 4 }, { arbitrary: fc.integer({ max: 1000000000, min: 0 }), weight: 1 }), fc.constantFrom('.', ')'))
-      .map(([start, delimiter]) => `${start}${delimiter}`),
-    weight: 2,
-  },
+	{ arbitrary: fc.constantFrom('-', '*', '+'), weight: 3 },
+	{
+		arbitrary: fc
+			.tuple(fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 4 }, { arbitrary: fc.integer({ max: 1000000000, min: 0 }), weight: 1 }), fc.constantFrom('.', ')'))
+			.map(([start, delimiter]) => `${start}${delimiter}`),
+		weight: 2,
+	},
 )
 const indentDrift = fc.oneof({ arbitrary: fc.constant(0), weight: 6 }, { arbitrary: fc.integer({ max: 2, min: -2 }), weight: 1 })
 const closerDrift = fc.option(fc.oneof(directiveName.map(spellDirectiveCloser), fc.constantFrom('', `${spellDirectiveCloser('panel')} x`)), { freq: 6 })
 
 function markdownOf(hostile: boolean): Arbitrary<string> {
-  const inline = inlineMarkdown(hostile)
-  return blockMarkdown(hostile, inline, leafBlocks(hostile, inline))
+	const inline = inlineMarkdown(hostile)
+	return blockMarkdown(hostile, inline, leafBlocks(hostile, inline))
 }
 
 function inlineMarkdown(hostile: boolean): InlineMarkdown {
-  const inlineDepth = fc.createDepthIdentifier()
-  const text = hostile ? fc.oneof(cleanText, textOf(0)) : cleanText
-  const word = fc.oneof({ arbitrary: prose, weight: 3 }, { arbitrary: text.filter((held) => held !== ''), weight: 2 })
-  const destination = fc.oneof(url, text, fc.stringMatching(/^<[0-9.#][a-z0-9 ]{0,6}>$/), fc.constant(''), ...(hostile ? [text.map((held) => `<${held}>`)] : []))
-  const label = fc.oneof(prose, word)
+	const inlineDepth = fc.createDepthIdentifier()
+	const text = hostile ? fc.oneof(cleanText, textOf(0)) : cleanText
+	const word = fc.oneof({ arbitrary: prose, weight: 3 }, { arbitrary: text.filter((held) => held !== ''), weight: 2 })
+	const destination = fc.oneof(url, text, fc.stringMatching(/^<[0-9.#][a-z0-9 ]{0,6}>$/), fc.constant(''), ...(hostile ? [text.map((held) => `<${held}>`)] : []))
+	const label = fc.oneof(prose, word)
 
-  const { inlines } = fc.letrec<{ inline: string; inlines: string }>((tie) => ({
-    inline: choose(
-      hostile,
-      [
-        { arbitrary: word, weight: 12 },
-        { arbitrary: fc.oneof(codeSpan, autolink, namedEntity, numericEntity, escape, hardBreak, textDirective, inlineCarry), weight: 8 },
-        { arbitrary: fc.oneof(hostileAutolink, hostileInlineCarry, hostileTextDirective, inlineHtml, piece), hostile: true, weight: 4 },
-        {
-          arbitrary: fc
-            .tuple(fc.constantFrom('*', '_', '**', '__', '***', '~~', '~'), fc.constantFrom('', '', ' '), tie('inlines'), fc.constantFrom('', '', ' '), fc.option(fc.constantFrom('*', '_', '**', '~~'), { freq: 4 }))
-            .map(([opener, inside, body, closing, closer]) => `${opener}${inside}${body}${closing}${closer ?? opener}`),
-          weight: 4,
-        },
-        {
-          arbitrary: fc
-            .tuple(fc.constantFrom('', '', hostile ? '!' : ''), tie('inlines'), fc.oneof(fc.tuple(destination, title(text)).map(([target, titled]) => `(${target}${titled})`), label.map((held) => `[${held}]`), fc.constantFrom('', '[]')))
-            .map(([image, content, target]) => `${image}[${content}]${target}`),
-          weight: 3,
-        },
-        {
-          arbitrary: fc.oneof(
-            ...Object.entries(inlineNodes).map(([name, model]) =>
-              fc
-                .tuple(model.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(model.attributes, model.textAttribute))
-                .map(([slot, attrs]) => (slot === null ? spellInlineLeafDirective(name, attrs) : `${spellInlineDirectiveOpener(name)}${slot}]${attrs}`)),
-            ),
-            ...Object.entries(markAttributes)
-              .filter(([name]) => hostile || markSpelling(name)?.kind === 'directive')
-              .map(([name, vocabulary]) => fc.tuple(tie('inlines'), tableAttributes(vocabulary)).map(([content, attrs]) => `${spellInlineDirectiveOpener(name)}${content}]${attrs}`)),
-          ),
-          weight: 2,
-        },
-        {
-          arbitrary: fc
-            .tuple(directiveName, fc.option(tie('inlines'), { freq: 3 }), hostileAttributes)
-            .map(([name, content, attrs]) => `${directivePrefix}${name}${content === null ? '' : `[${content}]`}${attrs}`),
-          hostile: true,
-          weight: 2,
-        },
-      ],
-      { depthIdentifier: inlineDepth, maxDepth: 3 },
-    ),
-    inlines: fc.array(tie('inline'), { depthIdentifier: inlineDepth, maxLength: 4, minLength: 1 }).map((parts) => parts.join('')),
-  }))
-  return { destination, inlines, label, oneLine: inlines.map((held) => held.replace(/[\n\r]/g, ' ')), text, word }
+	const { inlines } = fc.letrec<{ inline: string; inlines: string }>((tie) => ({
+		inline: choose(
+			hostile,
+			[
+				{ arbitrary: word, weight: 12 },
+				{ arbitrary: fc.oneof(codeSpan, autolink, namedEntity, numericEntity, escape, hardBreak, textDirective, inlineCarry), weight: 8 },
+				{ arbitrary: fc.oneof(hostileAutolink, hostileInlineCarry, hostileTextDirective, inlineHtml, piece), hostile: true, weight: 4 },
+				{
+					arbitrary: fc
+						.tuple(fc.constantFrom('*', '_', '**', '__', '***', '~~', '~'), fc.constantFrom('', '', ' '), tie('inlines'), fc.constantFrom('', '', ' '), fc.option(fc.constantFrom('*', '_', '**', '~~'), { freq: 4 }))
+						.map(([opener, inside, body, closing, closer]) => `${opener}${inside}${body}${closing}${closer ?? opener}`),
+					weight: 4,
+				},
+				{
+					arbitrary: fc
+						.tuple(fc.constantFrom('', '', hostile ? '!' : ''), tie('inlines'), fc.oneof(fc.tuple(destination, title(text)).map(([target, titled]) => `(${target}${titled})`), label.map((held) => `[${held}]`), fc.constantFrom('', '[]')))
+						.map(([image, content, target]) => `${image}[${content}]${target}`),
+					weight: 3,
+				},
+				{
+					arbitrary: fc.oneof(
+						...Object.entries(inlineNodes).map(([name, model]) =>
+							fc
+								.tuple(model.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(model.attributes, model.textAttribute))
+								.map(([slot, attrs]) => (slot === null ? spellInlineLeafDirective(name, attrs) : `${spellInlineDirectiveOpener(name)}${slot}]${attrs}`)),
+						),
+						...Object.entries(markAttributes)
+							.filter(([name]) => hostile || markSpelling(name)?.kind === 'directive')
+							.map(([name, vocabulary]) => fc.tuple(tie('inlines'), tableAttributes(vocabulary)).map(([content, attrs]) => `${spellInlineDirectiveOpener(name)}${content}]${attrs}`)),
+					),
+					weight: 2,
+				},
+				{
+					arbitrary: fc
+						.tuple(directiveName, fc.option(tie('inlines'), { freq: 3 }), hostileAttributes)
+						.map(([name, content, attrs]) => `${directivePrefix}${name}${content === null ? '' : `[${content}]`}${attrs}`),
+					hostile: true,
+					weight: 2,
+				},
+			],
+			{ depthIdentifier: inlineDepth, maxDepth: 3 },
+		),
+		inlines: fc.array(tie('inline'), { depthIdentifier: inlineDepth, maxLength: 4, minLength: 1 }).map((parts) => parts.join('')),
+	}))
+	return { destination, inlines, label, oneLine: inlines.map((held) => held.replace(/[\n\r]/g, ' ')), text, word }
 }
 
 function leafBlocks(hostile: boolean, { destination, inlines, label, oneLine, text, word }: InlineMarkdown): LeafMarkdown {
-  const fencedCode = fc
-    .tuple(
-      fc.constantFrom('```', '```', '~~~', '````', '``'),
-      fc.oneof(fc.constant(''), bareToken, text),
-      fc.array(fc.oneof(prose, text, fc.constantFrom('```', '~~~', spellDirectiveCloser('panel'), '    x')), { maxLength: 3 }),
-      fc.constantFrom('', '', '`', '~', 'none'),
-    )
-    .map(([fence, info, lines, closer]) => [`${fence}${info}`, ...lines, ...(closer === 'none' ? [] : [`${fence}${closer}`])].join('\n'))
-  const pipeTable = fc
-    .record({
-      body: fc.array(fc.array(oneLine, { maxLength: 3 }), { maxLength: 2 }),
-      delimiter: fc.array(fc.constantFrom('---', '-', ':--', '--:', ':-:', '', '==='), { maxLength: 3, minLength: 1 }),
-      header: fc.array(oneLine, { maxLength: 3, minLength: 1 }),
-      leading: fc.boolean(),
-      regular: hostile ? fc.boolean() : fc.constant(true),
-      trailing: fc.boolean(),
-    })
-    .map(({ body, delimiter, header, leading, regular, trailing }) => {
-      const row = (cells: readonly string[]) => (regular || leading ? `| ${cells.join(' | ')}` : cells.join(' | ')) + (regular || trailing ? ' |' : '')
-      const width = (cells: readonly string[]) => (regular ? header.map((_, index) => cells[index] ?? '') : cells)
-      return [row(header), row(regular ? header.map(() => '---') : delimiter), ...body.map((cells) => row(width(cells)))].join('\n')
-    })
+	const fencedCode = fc
+		.tuple(
+			fc.constantFrom('```', '```', '~~~', '````', '``'),
+			fc.oneof(fc.constant(''), bareToken, text),
+			fc.array(fc.oneof(prose, text, fc.constantFrom('```', '~~~', spellDirectiveCloser('panel'), '    x')), { maxLength: 3 }),
+			fc.constantFrom('', '', '`', '~', 'none'),
+		)
+		.map(([fence, info, lines, closer]) => [`${fence}${info}`, ...lines, ...(closer === 'none' ? [] : [`${fence}${closer}`])].join('\n'))
+	const pipeTable = fc
+		.record({
+			body: fc.array(fc.array(oneLine, { maxLength: 3 }), { maxLength: 2 }),
+			delimiter: fc.array(fc.constantFrom('---', '-', ':--', '--:', ':-:', '', '==='), { maxLength: 3, minLength: 1 }),
+			header: fc.array(oneLine, { maxLength: 3, minLength: 1 }),
+			leading: fc.boolean(),
+			regular: hostile ? fc.boolean() : fc.constant(true),
+			trailing: fc.boolean(),
+		})
+		.map(({ body, delimiter, header, leading, regular, trailing }) => {
+			const row = (cells: readonly string[]) => (regular || leading ? `| ${cells.join(' | ')}` : cells.join(' | ')) + (regular || trailing ? ' |' : '')
+			const width = (cells: readonly string[]) => (regular ? header.map((_, index) => cells[index] ?? '') : cells)
+			return [row(header), row(regular ? header.map(() => '---') : delimiter), ...body.map((cells) => row(width(cells)))].join('\n')
+		})
 
-  const leafBlock = choose(hostile, [
-    {
-      arbitrary: fc
-        .tuple(fc.integer({ max: 7, min: 1 }), fc.constantFrom(' ', ' ', '', '\t'), oneLine, fc.constantFrom('', '', ' #', '#', ' ##  '))
-        .map(([level, gap, content, closer]) => `${'#'.repeat(level)}${gap}${content}${closer}`),
-      weight: 3,
-    },
-    {
-      arbitrary: fc.tuple(inlines, fc.constantFrom('=', '-'), fc.integer({ max: 4, min: 1 }), fc.constantFrom('', ' ')).map(([content, underline, length, trailing]) => `${content}\n${underline.repeat(length)}${trailing}`),
-      weight: 2,
-    },
-    { arbitrary: fc.constantFrom('---', '***', '___', '- - -', ' * * *', '_____', '--', '*-*'), weight: 1 },
-    { arbitrary: fencedCode, weight: 2 },
-    { arbitrary: blockCarry, weight: 1 },
-    {
-      arbitrary: fc.tuple(fc.constantFrom('    ', '\t', '     '), fc.array(fc.oneof(prose, text), { maxLength: 3, minLength: 1 })).map(([indent, lines]) => lines.map((line) => `${indent}${line}`).join('\n')),
-      weight: 1,
-    },
-    { arbitrary: pipeTable, weight: 2 },
-    { arbitrary: fc.tuple(label, destination, title(text)).map(([name, target, titled]) => `[${name}]: ${target}${titled}`), weight: 1 },
-    { arbitrary: fc.tuple(word, fc.oneof(url, fc.constant(''))).map(([alt, target]) => `![${alt}](${target})`), weight: 1 },
-    { arbitrary: hostileBlockCarry, hostile: true, weight: 1 },
-    {
-      arbitrary: fc.constantFrom('<div>\ntext\n</div>', '<!-- comment -->', '<pre>\nx\n</pre>', '<?php echo 1; ?>', '<!DOCTYPE html>', '<table>', '<custom-tag attr="1">', '</div>', '<![CDATA[\nx\n]]>'),
-      hostile: true,
-      weight: 1,
-    },
-    {
-      arbitrary: fc.tuple(directiveName, hostileArgument, hostileAttributes).map(([name, argument, attrs]) => hostileOpener(name, argument, attrs)),
-      hostile: true,
-      weight: 1,
-    },
-    {
-      arbitrary: fc.constantFrom(`${directivePrefix}/`, spellDirectiveCloser('panel'), `${directivePrefix}panel`, `${directivePrefix} panel`, `${directivePrefix}panel info extra`, `${directivePrefix}Panel`),
-      hostile: true,
-      weight: 1,
-    },
-  ])
-  return { fencedCode, leafBlock }
+	const leafBlock = choose(hostile, [
+		{
+			arbitrary: fc
+				.tuple(fc.integer({ max: 7, min: 1 }), fc.constantFrom(' ', ' ', '', '\t'), oneLine, fc.constantFrom('', '', ' #', '#', ' ##  '))
+				.map(([level, gap, content, closer]) => `${'#'.repeat(level)}${gap}${content}${closer}`),
+			weight: 3,
+		},
+		{
+			arbitrary: fc.tuple(inlines, fc.constantFrom('=', '-'), fc.integer({ max: 4, min: 1 }), fc.constantFrom('', ' ')).map(([content, underline, length, trailing]) => `${content}\n${underline.repeat(length)}${trailing}`),
+			weight: 2,
+		},
+		{ arbitrary: fc.constantFrom('---', '***', '___', '- - -', ' * * *', '_____', '--', '*-*'), weight: 1 },
+		{ arbitrary: fencedCode, weight: 2 },
+		{ arbitrary: blockCarry, weight: 1 },
+		{
+			arbitrary: fc.tuple(fc.constantFrom('    ', '\t', '     '), fc.array(fc.oneof(prose, text), { maxLength: 3, minLength: 1 })).map(([indent, lines]) => lines.map((line) => `${indent}${line}`).join('\n')),
+			weight: 1,
+		},
+		{ arbitrary: pipeTable, weight: 2 },
+		{ arbitrary: fc.tuple(label, destination, title(text)).map(([name, target, titled]) => `[${name}]: ${target}${titled}`), weight: 1 },
+		{ arbitrary: fc.tuple(word, fc.oneof(url, fc.constant(''))).map(([alt, target]) => `![${alt}](${target})`), weight: 1 },
+		{ arbitrary: hostileBlockCarry, hostile: true, weight: 1 },
+		{
+			arbitrary: fc.constantFrom('<div>\ntext\n</div>', '<!-- comment -->', '<pre>\nx\n</pre>', '<?php echo 1; ?>', '<!DOCTYPE html>', '<table>', '<custom-tag attr="1">', '</div>', '<![CDATA[\nx\n]]>'),
+			hostile: true,
+			weight: 1,
+		},
+		{
+			arbitrary: fc.tuple(directiveName, hostileArgument, hostileAttributes).map(([name, argument, attrs]) => hostileOpener(name, argument, attrs)),
+			hostile: true,
+			weight: 1,
+		},
+		{
+			arbitrary: fc.constantFrom(`${directivePrefix}/`, spellDirectiveCloser('panel'), `${directivePrefix}panel`, `${directivePrefix} panel`, `${directivePrefix}panel info extra`, `${directivePrefix}Panel`),
+			hostile: true,
+			weight: 1,
+		},
+	])
+	return { fencedCode, leafBlock }
 }
 
 function blockMarkdown(hostile: boolean, { inlines, oneLine }: InlineMarkdown, { fencedCode, leafBlock }: LeafMarkdown): Arbitrary<string> {
-  const blockDepth = fc.createDepthIdentifier()
-  const { blocks } = fc.letrec<{ block: string; blocks: string }>((tie) => {
-    const bodyByModel = { block: fc.oneof(tie('blocks'), fc.constant('')), code: fencedCode, inline: fc.oneof(oneLine, fc.constant('')) }
-    const tableDirectives = Object.entries(blockNodes).map(([name, model]) => {
-      const argument =
-        blockArgument(name) === undefined
-          ? fc.constant(undefined)
-          : fc.oneof({ arbitrary: fc.constantFrom('DONE', 'TODO', 'custom', 'info', 'warning'), weight: 3 }, { arbitrary: bareToken, weight: 1 })
-      const attrs = hostile ? fc.oneof({ arbitrary: tableAttributes(model.attributes), weight: 4 }, { arbitrary: hostileAttributes, weight: 1 }) : tableAttributes(model.attributes)
-      if (model.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => spellDirectiveOpener(name, held, spelled))
-      return fc
-        .tuple(argument, attrs, bodyByModel[model.contentModel], hostile ? closerDrift : fc.constant(null))
-        .map(([held, spelled, body, closer]) => container(spellDirectiveOpener(name, held, spelled), body, closer ?? spellDirectiveCloser(name)))
-    })
-    return {
-      block: choose(
-        hostile,
-        [
-          { arbitrary: fc.array(inlines, { maxLength: 3, minLength: 1 }).map((lines) => lines.join('\n')), weight: 10 },
-          { arbitrary: leafBlock, weight: 10 },
-          {
-            arbitrary: fc.tuple(tie('blocks'), fc.array(quotePrefix, { maxLength: 3, minLength: 1 })).map(([body, prefixes]) => prefixLines(body, '> ', (index) => prefixes[index % prefixes.length] ?? '')),
-            weight: 3,
-          },
-          {
-            arbitrary: fc
-              .tuple(listMarker, fc.array(fc.tuple(fc.option(listMarker, { freq: 4 }), fc.constantFrom(' ', ' ', ' ', '  ', '\t', '', '     '), tie('blocks'), indentDrift), { maxLength: 3, minLength: 1 }), separator)
-              .map(([listed, items, gap]) =>
-                items
-                  .map(([own, space, body, drift]) => {
-                    const marker = own ?? listed
-                    return prefixLines(body, `${marker}${space}`, () => ' '.repeat(Math.max(0, marker.length + space.length + drift)))
-                  })
-                  .join(gap === '\n\n' ? '\n\n' : '\n'),
-              ),
-            weight: 4,
-          },
-          { arbitrary: fc.oneof(...tableDirectives), weight: 3 },
-          {
-            arbitrary: fc
-              .tuple(directiveName, hostileArgument, hostileAttributes, tie('blocks'), closerDrift)
-              .map(([name, argument, attrs, body, closer]) => container(hostileOpener(name, argument, attrs), body, closer ?? spellDirectiveCloser(name))),
-            hostile: true,
-            weight: 1,
-          },
-        ],
-        { depthIdentifier: blockDepth, maxDepth: 3 },
-      ),
-      blocks: fc
-        .array(fc.tuple(separator, tie('block')), { depthIdentifier: blockDepth, maxLength: 3, minLength: 1 })
-        .map((entries) => entries.map(([gap, block], index) => (index === 0 ? block : `${gap}${block}`)).join('')),
-    }
-  })
-  return blocks
+	const blockDepth = fc.createDepthIdentifier()
+	const { blocks } = fc.letrec<{ block: string; blocks: string }>((tie) => {
+		const bodyByModel = { block: fc.oneof(tie('blocks'), fc.constant('')), code: fencedCode, inline: fc.oneof(oneLine, fc.constant('')) }
+		const tableDirectives = Object.entries(blockNodes).map(([name, model]) => {
+			const argument =
+				blockArgument(name) === undefined
+					? fc.constant(undefined)
+					: fc.oneof({ arbitrary: fc.constantFrom('DONE', 'TODO', 'custom', 'info', 'warning'), weight: 3 }, { arbitrary: bareToken, weight: 1 })
+			const attrs = hostile ? fc.oneof({ arbitrary: tableAttributes(model.attributes), weight: 4 }, { arbitrary: hostileAttributes, weight: 1 }) : tableAttributes(model.attributes)
+			if (model.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => spellDirectiveOpener(name, held, spelled))
+			return fc
+				.tuple(argument, attrs, bodyByModel[model.contentModel], hostile ? closerDrift : fc.constant(null))
+				.map(([held, spelled, body, closer]) => container(spellDirectiveOpener(name, held, spelled), body, closer ?? spellDirectiveCloser(name)))
+		})
+		return {
+			block: choose(
+				hostile,
+				[
+					{ arbitrary: fc.array(inlines, { maxLength: 3, minLength: 1 }).map((lines) => lines.join('\n')), weight: 10 },
+					{ arbitrary: leafBlock, weight: 10 },
+					{
+						arbitrary: fc.tuple(tie('blocks'), fc.array(quotePrefix, { maxLength: 3, minLength: 1 })).map(([body, prefixes]) => prefixLines(body, '> ', (index) => prefixes[index % prefixes.length] ?? '')),
+						weight: 3,
+					},
+					{
+						arbitrary: fc
+							.tuple(listMarker, fc.array(fc.tuple(fc.option(listMarker, { freq: 4 }), fc.constantFrom(' ', ' ', ' ', '  ', '\t', '', '     '), tie('blocks'), indentDrift), { maxLength: 3, minLength: 1 }), separator)
+							.map(([listed, items, gap]) =>
+								items
+									.map(([own, space, body, drift]) => {
+										const marker = own ?? listed
+										return prefixLines(body, `${marker}${space}`, () => ' '.repeat(Math.max(0, marker.length + space.length + drift)))
+									})
+									.join(gap === '\n\n' ? '\n\n' : '\n'),
+							),
+						weight: 4,
+					},
+					{ arbitrary: fc.oneof(...tableDirectives), weight: 3 },
+					{
+						arbitrary: fc
+							.tuple(directiveName, hostileArgument, hostileAttributes, tie('blocks'), closerDrift)
+							.map(([name, argument, attrs, body, closer]) => container(hostileOpener(name, argument, attrs), body, closer ?? spellDirectiveCloser(name))),
+						hostile: true,
+						weight: 1,
+					},
+				],
+				{ depthIdentifier: blockDepth, maxDepth: 3 },
+			),
+			blocks: fc
+				.array(fc.tuple(separator, tie('block')), { depthIdentifier: blockDepth, maxLength: 3, minLength: 1 })
+				.map((entries) => entries.map(([gap, block], index) => (index === 0 ? block : `${gap}${block}`)).join('')),
+		}
+	})
+	return blocks
 }
 
 const cleanMarkdown = markdownOf(false)
 const hostileMarkdown = markdownOf(true)
 
 const canonical = adfDocument
-  .map((document) => adfToLosslessMarkdown(document))
-  .filter((emitted): emitted is Extract<Result<string>, { ok: true }> => emitted.ok)
-  .map((emitted) => emitted.value)
+	.map((document) => adfToLosslessMarkdown(document))
+	.filter((emitted): emitted is Extract<Result<string>, { ok: true }> => emitted.ok)
+	.map((emitted) => emitted.value)
 
 function edited(markdown: string, edits: readonly Edit[]): string {
-  let text = markdown
-  for (const [at, removed, inserted] of edits) {
-    const index = at % (text.length + 1)
-    text = `${text.slice(0, index)}${inserted}${text.slice(index + removed)}`
-  }
-  return text
+	let text = markdown
+	for (const [at, removed, inserted] of edits) {
+		const index = at % (text.length + 1)
+		text = `${text.slice(0, index)}${inserted}${text.slice(index + removed)}`
+	}
+	return text
 }
 
 const edit: Arbitrary<Edit> = fc.tuple(fc.nat(), fc.nat({ max: 3 }), fc.oneof(piece, fc.constant('')))
 
 const markdown = fc.oneof(
-  { arbitrary: cleanMarkdown, weight: 4 },
-  { arbitrary: hostileMarkdown, weight: 2 },
-  { arbitrary: fc.oneof(blockCarry, hostileBlockCarry), weight: 2 },
-  { arbitrary: canonical, weight: 2 },
-  { arbitrary: fc.tuple(fc.oneof(cleanMarkdown, canonical), fc.array(edit, { maxLength: 3, minLength: 1 })).map(([held, edits]) => edited(held, edits)), weight: 3 },
-  { arbitrary: fc.string({ maxLength: 40, unit: piece }), weight: 1 },
+	{ arbitrary: cleanMarkdown, weight: 4 },
+	{ arbitrary: hostileMarkdown, weight: 2 },
+	{ arbitrary: fc.oneof(blockCarry, hostileBlockCarry), weight: 2 },
+	{ arbitrary: canonical, weight: 2 },
+	{ arbitrary: fc.tuple(fc.oneof(cleanMarkdown, canonical), fc.array(edit, { maxLength: 3, minLength: 1 })).map(([held, edits]) => edited(held, edits)), weight: 3 },
+	{ arbitrary: fc.string({ maxLength: 40, unit: piece }), weight: 1 },
 )
 
 const document = fc
-  .tuple(markdown, fc.oneof({ arbitrary: fc.constant('\n'), weight: 8 }, { arbitrary: fc.constantFrom('\r\n', '\r'), weight: 1 }), fc.constantFrom('', '', '\n', '  \n'))
-  .map(([held, ending, trailing]) => `${held}${trailing}`.replaceAll('\n', ending))
+	.tuple(markdown, fc.oneof({ arbitrary: fc.constant('\n'), weight: 8 }, { arbitrary: fc.constantFrom('\r\n', '\r'), weight: 1 }), fc.constantFrom('', '', '\n', '  \n'))
+	.map(([held, ending, trailing]) => `${held}${trailing}`.replaceAll('\n', ending))
 
 function taskListOf(bodies: Arbitrary<string>): Arbitrary<string> {
-  return fc
-    .array(fc.tuple(fc.constantFrom('[ ]', '[x]'), fc.constantFrom('', 'Done\n\n', 'Done\n'), bodies), { maxLength: 3, minLength: 1 })
-    .map((items) => items.map(([marker, lead, body]) => prefixLines(`${lead}${body}`, `- ${marker} `, () => '      '.slice(0, marker.length + 3))).join('\n'))
+	return fc
+		.array(fc.tuple(fc.constantFrom('[ ]', '[x]'), fc.constantFrom('', 'Done\n\n', 'Done\n'), bodies), { maxLength: 3, minLength: 1 })
+		.map((items) => items.map(([marker, lead, body]) => prefixLines(`${lead}${body}`, `- ${marker} `, () => '      '.slice(0, marker.length + 3))).join('\n'))
 }
 
 const taskMarkdown = taskListOf(fc.oneof(cleanMarkdown, hostileMarkdown, taskListOf(cleanMarkdown)))
 
 function holdsDirectiveShape(document: AdfDocument): boolean {
-  const pending = [...nodeContent(document)]
-  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
-    if (!commonMarkTypes.has(node.type) || nodeMarks(node).some((mark) => !markdownMarkTypes.has(mark.type))) return true
-    pending.push(...nodeContent(node))
-  }
-  return false
+	const pending = [...nodeContent(document)]
+	for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+		if (!commonMarkTypes.has(node.type) || nodeMarks(node).some((mark) => !markdownMarkTypes.has(mark.type))) return true
+		pending.push(...nodeContent(node))
+	}
+	return false
 }
 
 test('generated markdown refuses, or its spelling reads back and spells itself', { timeout: propertyTimeout }, () => {
-  const parameters = propertyRuns(gateRuns)
-  let directiveShaped = 0
-  let fixpoints = 0
-  fc.assert(
-    fc.property(document, (input) => {
-      const parsed = losslessMarkdownToAdf(input)
-      if (!parsed.ok) return
-      const emitted = adfToLosslessMarkdown(parsed.value)
-      assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message} — spelling ${JSON.stringify(input)}`)
-      fixpoints += 1
-      if (holdsDirectiveShape(parsed.value)) directiveShaped += 1
-      const read = losslessMarkdownToAdf(emitted.value)
-      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
-      assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
-      const respelled = adfToLosslessMarkdown(read.value)
-      assert.ok(respelled.ok, respelled.ok ? '' : `${respelled.error.code}: ${respelled.error.message} — spelling ${JSON.stringify(emitted.value)} again`)
-      assert.equal(respelled.value, emitted.value)
-    }),
-    parameters,
-  )
-  if (!parameters.gate) return
-  assert.ok(fixpoints >= fixpointFloor, `${fixpoints} of ${gateRuns} runs reached the fixpoint, under the floor of ${fixpointFloor}`)
-  assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint held a node or mark outside CommonMark's own types, under the floor of ${directiveShapedFloor}`)
+	const parameters = propertyRuns(gateRuns)
+	let directiveShaped = 0
+	let fixpoints = 0
+	fc.assert(
+		fc.property(document, (input) => {
+			const parsed = losslessMarkdownToAdf(input)
+			if (!parsed.ok) return
+			const emitted = adfToLosslessMarkdown(parsed.value)
+			assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message} — spelling ${JSON.stringify(input)}`)
+			fixpoints += 1
+			if (holdsDirectiveShape(parsed.value)) directiveShaped += 1
+			const read = losslessMarkdownToAdf(emitted.value)
+			assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
+			assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
+			const respelled = adfToLosslessMarkdown(read.value)
+			assert.ok(respelled.ok, respelled.ok ? '' : `${respelled.error.code}: ${respelled.error.message} — spelling ${JSON.stringify(emitted.value)} again`)
+			assert.equal(respelled.value, emitted.value)
+		}),
+		parameters,
+	)
+	if (!parameters.gate) return
+	assert.ok(fixpoints >= fixpointFloor, `${fixpoints} of ${gateRuns} runs reached the fixpoint, under the floor of ${fixpointFloor}`)
+	assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint held a node or mark outside CommonMark's own types, under the floor of ${directiveShapedFloor}`)
 })
 
 test('generated markdown read as CommonMark refuses, or its document reads back through the lossless pair', { timeout: propertyTimeout }, () => {
-  fc.assert(
-    fc.property(document, (input) => {
-      const parsed = commonMarkToAdf(input)
-      if (!parsed.ok) return
-      const emitted = adfToLosslessMarkdown(parsed.value)
-      assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message} — spelling ${JSON.stringify(input)}`)
-      const read = losslessMarkdownToAdf(emitted.value)
-      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
-      assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
-    }),
-    propertyRuns(gateRuns),
-  )
+	fc.assert(
+		fc.property(document, (input) => {
+			const parsed = commonMarkToAdf(input)
+			if (!parsed.ok) return
+			const emitted = adfToLosslessMarkdown(parsed.value)
+			assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message} — spelling ${JSON.stringify(input)}`)
+			const read = losslessMarkdownToAdf(emitted.value)
+			assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
+			assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
+		}),
+		propertyRuns(gateRuns),
+	)
 })
 
 test('generated task lists read as portable markdown refuse, or build block task items of paragraphs alone and write a fixpoint', { timeout: propertyTimeout }, () => {
-  fc.assert(
-    fc.property(taskMarkdown, (input) => {
-      const parsed = portableMarkdownToAdf(input)
-      if (!parsed.ok) return
-      assert.deepEqual(blockTaskItemChildren(nodeContent(parsed.value)).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(input)}`)
-      const written = adfToPortableMarkdown(parsed.value)
-      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message} — spelling ${JSON.stringify(input)}`)
-      const read = portableMarkdownToAdf(written.value)
-      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
-      assert.deepEqual(adfToPortableMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
-    }),
-    propertyRuns(gateRuns),
-  )
+	fc.assert(
+		fc.property(taskMarkdown, (input) => {
+			const parsed = portableMarkdownToAdf(input)
+			if (!parsed.ok) return
+			assert.deepEqual(blockTaskItemChildren(nodeContent(parsed.value)).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(input)}`)
+			const written = adfToPortableMarkdown(parsed.value)
+			assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message} — spelling ${JSON.stringify(input)}`)
+			const read = portableMarkdownToAdf(written.value)
+			assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
+			assert.deepEqual(adfToPortableMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
+		}),
+		propertyRuns(gateRuns),
+	)
 })
 
 const destinationPieces = fc.constantFrom(...'ab 9"\'()[]{}=!:#', ' !adf:{localId="', `${directivePrefix}{localId=a}`, directivePrefix)
@@ -514,32 +514,32 @@ const bracketedDestination = fc.tuple(fc.constantFrom('u', 'v'), fc.array(destin
 const afterLink = fc.constantFrom('', '"}', ')"}', '}', ' text')
 
 test('an angle-bracket link destination holds its spaces, quotes and marker openers, and a marker after the link gives the heading its id', { timeout: propertyTimeout }, () => {
-  fc.assert(
-    fc.property(bracketedDestination, afterLink, fc.constantFrom('', ' !adf:{localId=h}'), (destination, after, marker) => {
-      const input = `# [a](<${destination}>)${after}${marker}`
-      const parsed = losslessMarkdownToAdf(input)
-      assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message} — reading ${JSON.stringify(input)}`)
-      const [heading] = parsed.value.content ?? []
-      assert.equal(heading?.attrs?.localId, marker === '' ? undefined : 'h', `reading ${JSON.stringify(input)}`)
-      assert.deepEqual(heading?.content?.[0]?.marks, [{ attrs: { href: destination }, type: 'link' }], `reading ${JSON.stringify(input)}`)
-    }),
-    propertyRuns(gateRuns),
-  )
+	fc.assert(
+		fc.property(bracketedDestination, afterLink, fc.constantFrom('', ' !adf:{localId=h}'), (destination, after, marker) => {
+			const input = `# [a](<${destination}>)${after}${marker}`
+			const parsed = losslessMarkdownToAdf(input)
+			assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message} — reading ${JSON.stringify(input)}`)
+			const [heading] = parsed.value.content ?? []
+			assert.equal(heading?.attrs?.localId, marker === '' ? undefined : 'h', `reading ${JSON.stringify(input)}`)
+			assert.deepEqual(heading?.content?.[0]?.marks, [{ attrs: { href: destination }, type: 'link' }], `reading ${JSON.stringify(input)}`)
+		}),
+		propertyRuns(gateRuns),
+	)
 })
 
 const linkOpeningText = fc.array(fc.constantFrom('u', ' ', '"', "'", '>', ')', '!adf:{localId="', 'x'), { maxLength: 6, minLength: 1 }).map((parts) => `[a](<${parts.join('')}`)
 
 test('text opening a link destination keeps its block id through a write and a read', { timeout: propertyTimeout }, () => {
-  fc.assert(
-    fc.property(linkOpeningText, fc.constantFrom('>)', '>)"', '>', 'h', '"}', ')'), fc.boolean(), (held, id, quoted) => {
-      const paragraph = { attrs: { localId: id }, content: [{ text: held, type: 'text' }], type: 'paragraph' }
-      const block = quoted ? { content: [paragraph], type: 'blockquote' } : { attrs: { level: 2, localId: id }, content: [{ text: held, type: 'text' }], type: 'heading' }
-      const written = adfToLosslessMarkdown({ content: [block], type: 'doc', version: 1 })
-      assert.ok(written.ok)
-      const read = losslessMarkdownToAdf(written.value)
-      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
-      assert.deepEqual(read.value.content, [block], `reading ${JSON.stringify(written.value)}`)
-    }),
-    propertyRuns(gateRuns),
-  )
+	fc.assert(
+		fc.property(linkOpeningText, fc.constantFrom('>)', '>)"', '>', 'h', '"}', ')'), fc.boolean(), (held, id, quoted) => {
+			const paragraph = { attrs: { localId: id }, content: [{ text: held, type: 'text' }], type: 'paragraph' }
+			const block = quoted ? { content: [paragraph], type: 'blockquote' } : { attrs: { level: 2, localId: id }, content: [{ text: held, type: 'text' }], type: 'heading' }
+			const written = adfToLosslessMarkdown({ content: [block], type: 'doc', version: 1 })
+			assert.ok(written.ok)
+			const read = losslessMarkdownToAdf(written.value)
+			assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
+			assert.deepEqual(read.value.content, [block], `reading ${JSON.stringify(written.value)}`)
+		}),
+		propertyRuns(gateRuns),
+	)
 })

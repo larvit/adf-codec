@@ -29,342 +29,342 @@ type Placed = { index: number; loose: AdfNode[] } | { index: number; loose?: und
 type Sourced = { block: AdfNode; path: ConvertErrorPath }
 
 const blockReducers: Readonly<Record<string, BlockReducer>> = {
-  blockCard: paragraphOfNode,
-  blockquote: (node, reduction) => contained({ type: 'blockquote' }, node, reduction),
-  bulletList: reduceList,
-  caption: (node, reduction) => paragraphOf(nodeContent(node), reduction),
-  codeBlock: reduceCodeBlock,
-  decisionList: (node, reduction) => reduceItems(node, reduction, (child, at) => (child.type === 'decisionItem' ? paragraphOf(nodeContent(child), at) : reduceStanding(child, at))),
-  embedCard: paragraphOfNode,
-  expand: reduceExpand,
-  extension: paragraphOfNode,
-  heading: reduceHeading,
-  media: reduceMedia,
-  mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index, children) => reduceStanding(child, childReduction(reduction, children, index)))),
-  nestedExpand: reduceExpand,
-  orderedList: reduceList,
-  panel: reducePanel,
-  paragraph: (node, reduction) => paragraphOf(nodeContent(node), reduction),
-  rule: () => success([{ type: 'rule' }]),
-  syncBlock: paragraphOfNode,
-  table: reduceTable,
-  taskList: reduceTaskList,
+	blockCard: paragraphOfNode,
+	blockquote: (node, reduction) => contained({ type: 'blockquote' }, node, reduction),
+	bulletList: reduceList,
+	caption: (node, reduction) => paragraphOf(nodeContent(node), reduction),
+	codeBlock: reduceCodeBlock,
+	decisionList: (node, reduction) => reduceItems(node, reduction, (child, at) => (child.type === 'decisionItem' ? paragraphOf(nodeContent(child), at) : reduceStanding(child, at))),
+	embedCard: paragraphOfNode,
+	expand: reduceExpand,
+	extension: paragraphOfNode,
+	heading: reduceHeading,
+	media: reduceMedia,
+	mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index, children) => reduceStanding(child, childReduction(reduction, children, index)))),
+	nestedExpand: reduceExpand,
+	orderedList: reduceList,
+	panel: reducePanel,
+	paragraph: (node, reduction) => paragraphOf(nodeContent(node), reduction),
+	rule: () => success([{ type: 'rule' }]),
+	syncBlock: paragraphOfNode,
+	table: reduceTable,
+	taskList: reduceTaskList,
 }
 
 export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
-  return withinEngineLimits(() => {
-    const read = readAdfDocument(document)
-    const reduced = read.ok ? reduceToPortable(read.value) : read
-    return reduced.ok ? writeMarkdown(reduced.value, portableWriting) : reduced
-  })
+	return withinEngineLimits(() => {
+		const read = readAdfDocument(document)
+		const reduced = read.ok ? reduceToPortable(read.value) : read
+		return reduced.ok ? writeMarkdown(reduced.value, portableWriting) : reduced
+	})
 }
 
 export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
-  // Measured on the caller's text, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
-  const checked = writableContent(document)
-  if (!checked.ok) return checked
-  // Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
-  const { normal, sources } = editorNormalForm(document)
-  const blocks = reduceBlocks(nodeContent(normal), { depth: 0, memo: spellingMemo(), path: [], sources })
-  if (!blocks.ok) return blocks
-  return success(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 }))
+	// Measured on the caller's text, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
+	const checked = writableContent(document)
+	if (!checked.ok) return checked
+	// Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
+	const { normal, sources } = editorNormalForm(document)
+	const blocks = reduceBlocks(nodeContent(normal), { depth: 0, memo: spellingMemo(), path: [], sources })
+	if (!blocks.ok) return blocks
+	return success(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 }))
 }
 
 function reduceBlocks(nodes: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
-  const placed: Placed[] = []
-  for (const [index, node] of nodes.entries()) {
-    const previous = placed[placed.length - 1]
-    if (!standsInline(node)) placed.push({ index, node })
-    else if (previous?.loose !== undefined) previous.loose.push(node)
-    else placed.push({ index, loose: [node] })
-  }
-  const sourced: Sourced[] = []
-  for (const entry of placed) {
-    const at = { ...reduction, path: [...reduction.path, 'content', sourceIndex(nodes, entry.index, reduction.sources)] }
-    const blocks = entry.loose === undefined ? reduceNode(entry.node, at) : paragraphOf(entry.loose, reduction)
-    if (!blocks.ok) return blocks
-    for (const block of blocks.value) sourced.push({ block, path: at.path })
-  }
-  return portableSequence(sourced, reduction)
+	const placed: Placed[] = []
+	for (const [index, node] of nodes.entries()) {
+		const previous = placed[placed.length - 1]
+		if (!standsInline(node)) placed.push({ index, node })
+		else if (previous?.loose !== undefined) previous.loose.push(node)
+		else placed.push({ index, loose: [node] })
+	}
+	const sourced: Sourced[] = []
+	for (const entry of placed) {
+		const at = { ...reduction, path: [...reduction.path, 'content', sourceIndex(nodes, entry.index, reduction.sources)] }
+		const blocks = entry.loose === undefined ? reduceNode(entry.node, at) : paragraphOf(entry.loose, reduction)
+		if (!blocks.ok) return blocks
+		for (const block of blocks.value) sourced.push({ block, path: at.path })
+	}
+	return portableSequence(sourced, reduction)
 }
 
 function reduceNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  if (reduction.depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, reduction.path)
-  const reducer = Object.hasOwn(blockReducers, node.type) ? blockReducers[node.type] : undefined
-  return (reducer ?? reduceBody)(node, reduction)
+	if (reduction.depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, reduction.path)
+	const reducer = Object.hasOwn(blockReducers, node.type) ? blockReducers[node.type] : undefined
+	return (reducer ?? reduceBody)(node, reduction)
 }
 
 function reduceStanding(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const blocks = standsInline(node) ? paragraphOf([node], reduction) : reduceNode(node, reduction)
-  return blocks.ok ? portableSequence(blocks.value.map((block) => ({ block, path: reduction.path })), reduction) : blocks
+	const blocks = standsInline(node) ? paragraphOf([node], reduction) : reduceNode(node, reduction)
+	return blocks.ok ? portableSequence(blocks.value.map((block) => ({ block, path: reduction.path })), reduction) : blocks
 }
 
 function standsInline(node: AdfNode): boolean {
-  if (node.type === 'text' || inlineNodeModel(node.type) !== undefined) return true
-  return !isBlockNodeType(node.type) && nodeContent(node).length === 0
+	if (node.type === 'text' || inlineNodeModel(node.type) !== undefined) return true
+	return !isBlockNodeType(node.type) && nodeContent(node).length === 0
 }
 
 function reduceBody(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  if (blockNodeModel(node.type)?.contentModel === 'inline') return paragraphOf(nodeContent(node), reduction)
-  return reduceBlocks(nodeContent(node), { ...reduction, depth: reduction.depth + 1 })
+	if (blockNodeModel(node.type)?.contentModel === 'inline') return paragraphOf(nodeContent(node), reduction)
+	return reduceBlocks(nodeContent(node), { ...reduction, depth: reduction.depth + 1 })
 }
 
 function childReduction(reduction: Reduction, children: readonly AdfNode[], index: number): Reduction {
-  return { ...reduction, depth: reduction.depth + 1, path: [...reduction.path, 'content', sourceIndex(children, index, reduction.sources)] }
+	return { ...reduction, depth: reduction.depth + 1, path: [...reduction.path, 'content', sourceIndex(children, index, reduction.sources)] }
 }
 
 function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> {
-  const blocks: AdfNode[] = []
-  for (const result of results) {
-    if (!result.ok) return result
-    for (const block of result.value) blocks.push(block)
-  }
-  return success(blocks)
+	const blocks: AdfNode[] = []
+	for (const result of results) {
+		if (!result.ok) return result
+		for (const block of result.value) blocks.push(block)
+	}
+	return success(blocks)
 }
 
 // A list still taking the directive form gives way to its items' blocks; one whose spelling is refused, too deep or too long, refuses the reduction.
 function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Result<AdfNode[]> {
-  const pending = blocks.filter(({ block }) => block.type !== 'paragraph' || nodeContent(block).length > 0).reverse()
-  const sequence: AdfNode[] = []
-  for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
-    const block = numberedPastMarkers(next.block)
-    const listed = block.type === 'bulletList' || block.type === 'orderedList'
-    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { ...portableWriting, memo: reduction.memo }) : success(!listed)
-    if (!spelled.ok) return spelled
-    if (spelled.value) {
-      sequence.push(block)
-      continue
-    }
-    // Back on `pending`: a replacement may take the directive form itself.
-    const { path } = next
-    const replacement = (block === next.block ? nodeContent(block).flatMap(nodeContent) : [block]).map((node) => ({ block: node, path }))
-    for (const node of replacement.reverse()) pending.push(node)
-  }
-  return success(sequence)
+	const pending = blocks.filter(({ block }) => block.type !== 'paragraph' || nodeContent(block).length > 0).reverse()
+	const sequence: AdfNode[] = []
+	for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
+		const block = numberedPastMarkers(next.block)
+		const listed = block.type === 'bulletList' || block.type === 'orderedList'
+		const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { ...portableWriting, memo: reduction.memo }) : success(!listed)
+		if (!spelled.ok) return spelled
+		if (spelled.value) {
+			sequence.push(block)
+			continue
+		}
+		// Back on `pending`: a replacement may take the directive form itself.
+		const { path } = next
+		const replacement = (block === next.block ? nodeContent(block).flatMap(nodeContent) : [block]).map((node) => ({ block: node, path }))
+		for (const node of replacement.reverse()) pending.push(node)
+	}
+	return success(sequence)
 }
 
 // A numbered list whose markers run past CommonMark's keeps its numbers as text in a bullet list.
 function numberedPastMarkers(list: AdfNode): AdfNode {
-  const order = nodeAttrs(list)['order']
-  if (list.type !== 'orderedList' || typeof order !== 'number' || order + nodeContent(list).length - 1 <= largestListMarker) return list
-  return { content: nodeContent(list).map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
+	const order = nodeAttrs(list)['order']
+	if (list.type !== 'orderedList' || typeof order !== 'number' || order + nodeContent(list).length - 1 <= largestListMarker) return list
+	return { content: nodeContent(list).map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
 }
 
 // A task keeps its marker as text; a list item stands as one, and anything else nests in the item before it.
 function tasksAsText(tasks: readonly AdfNode[]): AdfNode[] {
-  const items: AdfNode[] = []
-  for (const child of tasks) {
-    const previous = isTaskItem(child) || child.type === 'listItem' ? undefined : items.pop()
-    items.push(itemOf(previous === undefined ? taskAsText(child) : [...nodeContent(previous), child]))
-  }
-  return items
+	const items: AdfNode[] = []
+	for (const child of tasks) {
+		const previous = isTaskItem(child) || child.type === 'listItem' ? undefined : items.pop()
+		items.push(itemOf(previous === undefined ? taskAsText(child) : [...nodeContent(previous), child]))
+	}
+	return items
 }
 
 function taskAsText(child: AdfNode): readonly AdfNode[] {
-  const marker = taskMarker(nodeAttrs(child)['state'])
-  if (child.type === 'taskItem') return [paragraph(nodeContent(child).length === 0 ? [text(marker)] : [text(`${marker} `), ...nodeContent(child)])]
-  if (child.type === 'blockTaskItem') return marked(nodeContent(child), marker)
-  return child.type === 'listItem' ? nodeContent(child) : [child]
+	const marker = taskMarker(nodeAttrs(child)['state'])
+	if (child.type === 'taskItem') return [paragraph(nodeContent(child).length === 0 ? [text(marker)] : [text(`${marker} `), ...nodeContent(child)])]
+	if (child.type === 'blockTaskItem') return marked(nodeContent(child), marker)
+	return child.type === 'listItem' ? nodeContent(child) : [child]
 }
 
 function paragraph(content: readonly AdfNode[]): AdfNode {
-  return { content: [...content], type: 'paragraph' }
+	return { content: [...content], type: 'paragraph' }
 }
 
 function text(value: string): AdfNode {
-  return { text: value, type: 'text' }
+	return { text: value, type: 'text' }
 }
 
 function listOf(items: readonly AdfNode[], type: string): AdfNode[] {
-  return items.length === 0 ? [] : [{ content: [...items], type }]
+	return items.length === 0 ? [] : [{ content: [...items], type }]
 }
 
 function paragraphOf(nodes: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
-  const content = reduceInline(nodes, 'paragraph', reduction)
-  return content.ok ? success(content.value.length === 0 ? [] : [paragraph(content.value)]) : content
+	const content = reduceInline(nodes, 'paragraph', reduction)
+	return content.ok ? success(content.value.length === 0 ? [] : [paragraph(content.value)]) : content
 }
 
 function paragraphOfNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  return paragraphOf([node], reduction)
+	return paragraphOf([node], reduction)
 }
 
 function contained(shell: AdfNode, node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const content = reduceBlocks(nodeContent(node), { ...reduction, depth: reduction.depth + 1 })
-  return content.ok ? success([{ ...shell, content: content.value }]) : content
+	const content = reduceBlocks(nodeContent(node), { ...reduction, depth: reduction.depth + 1 })
+	return content.ok ? success([{ ...shell, content: content.value }]) : content
 }
 
 function reducePanel(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const panelType = nodeAttrs(node)['panelType']
-  return contained(typeof panelType === 'string' ? { attrs: { panelType }, type: 'panel' } : { type: 'panel' }, node, reduction)
+	const panelType = nodeAttrs(node)['panelType']
+	return contained(typeof panelType === 'string' ? { attrs: { panelType }, type: 'panel' } : { type: 'panel' }, node, reduction)
 }
 
 function reduceExpand(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const held = nodeAttrs(node)['title']
-  const title = typeof held === 'string' ? withoutTrailingBlanks(oneLine(held).replace(/^[ \t]+/, '')) : ''
-  return contained(title === '' ? { type: node.type } : { attrs: { title }, type: node.type }, node, reduction)
+	const held = nodeAttrs(node)['title']
+	const title = typeof held === 'string' ? withoutTrailingBlanks(oneLine(held).replace(/^[ \t]+/, '')) : ''
+	return contained(title === '' ? { type: node.type } : { attrs: { title }, type: node.type }, node, reduction)
 }
 
 // A backward scan: an unanchored-end regex retries from every blank in a long run.
 function withoutTrailingBlanks(text: string): string {
-  let end = text.length
-  while (end > 0 && (text.charAt(end - 1) === ' ' || text.charAt(end - 1) === '\t')) end -= 1
-  return text.slice(0, end)
+	let end = text.length
+	while (end > 0 && (text.charAt(end - 1) === ' ' || text.charAt(end - 1) === '\t')) end -= 1
+	return text.slice(0, end)
 }
 
 function reduceHeading(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const level = nodeAttrs(node)['level']
-  if (!isHeadingLevel(level)) return paragraphOf(nodeContent(node), reduction)
-  const content = reduceInline(nodeContent(node), 'heading', reduction)
-  return content.ok ? success([{ attrs: { level }, content: content.value, type: 'heading' }]) : content
+	const level = nodeAttrs(node)['level']
+	if (!isHeadingLevel(level)) return paragraphOf(nodeContent(node), reduction)
+	const content = reduceInline(nodeContent(node), 'heading', reduction)
+	return content.ok ? success([{ attrs: { level }, content: content.value, type: 'heading' }]) : content
 }
 
 function reduceCodeBlock(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const leaves = inlineLeaves(nodeContent(node), 'paragraph', reduction)
-  if (!leaves.ok) return leaves
-  const code = leaves.value.map((leaf) => leaf.text ?? '\n').join('')
-  const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims.portable)
-  const block: AdfNode = { content: code === '' ? [] : [text(code)], type: 'codeBlock' }
-  return success([slot.kind === 'fence' ? { ...block, attrs: { language: slot.info } } : block])
+	const leaves = inlineLeaves(nodeContent(node), 'paragraph', reduction)
+	if (!leaves.ok) return leaves
+	const code = leaves.value.map((leaf) => leaf.text ?? '\n').join('')
+	const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims.portable)
+	const block: AdfNode = { content: code === '' ? [] : [text(code)], type: 'codeBlock' }
+	return success([slot.kind === 'fence' ? { ...block, attrs: { language: slot.info } } : block])
 }
 
 function reduceList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const listed = reduceItems(node, reduction, (child, at) => (child.type === 'listItem' ? reduceBlocks(nodeContent(child), at) : reduceStanding(child, at)))
-  if (!listed.ok || node.type !== 'orderedList') return listed
-  const order = nodeAttrs(node)['order']
-  const start = typeof order === 'number' && Number.isInteger(order) && order >= 0 ? order : 1
-  return success(listed.value.map((list) => ({ ...list, attrs: { order: start } })))
+	const listed = reduceItems(node, reduction, (child, at) => (child.type === 'listItem' ? reduceBlocks(nodeContent(child), at) : reduceStanding(child, at)))
+	if (!listed.ok || node.type !== 'orderedList') return listed
+	const order = nodeAttrs(node)['order']
+	const start = typeof order === 'number' && Number.isInteger(order) && order >= 0 ? order : 1
+	return success(listed.value.map((list) => ({ ...list, attrs: { order: start } })))
 }
 
 function reduceItems(node: AdfNode, reduction: Reduction, itemBlocks: (child: AdfNode, at: Reduction) => Result<AdfNode[]>): Result<AdfNode[]> {
-  const items = concatenated(nodeContent(node).map((child, index, children) => listItem(itemBlocks(child, childReduction(reduction, children, index)))))
-  return items.ok ? success(listOf(items.value, node.type === 'orderedList' ? 'orderedList' : 'bulletList')) : items
+	const items = concatenated(nodeContent(node).map((child, index, children) => listItem(itemBlocks(child, childReduction(reduction, children, index)))))
+	return items.ok ? success(listOf(items.value, node.type === 'orderedList' ? 'orderedList' : 'bulletList')) : items
 }
 
 function listItem(blocks: Result<AdfNode[]>): Result<AdfNode[]> {
-  return blocks.ok ? success([itemOf(blocks.value)]) : blocks
+	return blocks.ok ? success([itemOf(blocks.value)]) : blocks
 }
 
 // A list item's first line reads as no rule and holds no line of spaces alone: the rule and the spaces give way.
 function itemOf(blocks: readonly AdfNode[]): AdfNode {
-  const rules = blocks.findIndex((block) => block.type !== 'rule')
-  const content = blankedCode(blocks.slice(rules === -1 ? blocks.length : rules))
-  return content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' }
+	const rules = blocks.findIndex((block) => block.type !== 'rule')
+	const content = blankedCode(blocks.slice(rules === -1 ? blocks.length : rules))
+	return content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' }
 }
 
 function blankedCode(blocks: readonly AdfNode[]): AdfNode[] {
-  return blocks.map((block) => (block.type === 'codeBlock' ? { ...block, content: blankedLines(nodeContent(block)) } : block))
+	return blocks.map((block) => (block.type === 'codeBlock' ? { ...block, content: blankedLines(nodeContent(block)) } : block))
 }
 
 function blankedLines(code: readonly AdfNode[]): AdfNode[] {
-  const blanked = code.map((leaf) => leaf.text ?? '').join('').replace(/^[ \t]+$/gm, '')
-  return blanked === '' ? [] : [text(blanked)]
+	const blanked = code.map((leaf) => leaf.text ?? '').join('').replace(/^[ \t]+$/gm, '')
+	return blanked === '' ? [] : [text(blanked)]
 }
 
 // A task list opening with a task and holding tasks and task lists alone keeps its spelling; any other keeps its markers as text. A child reducing to nothing counts for neither.
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const kept: { blocks: AdfNode[]; child: AdfNode }[] = []
-  const children = nodeContent(node)
-  for (const [index, child] of children.entries()) {
-    const at = childReduction(reduction, children, index)
-    const reduced = isTaskItem(child) ? reduceTask(child, at) : reduceStanding(child, at)
-    if (!reduced.ok) return reduced
-    if (reduced.value.length > 0) kept.push({ blocks: reduced.value, child })
-  }
-  const nestsTasks = kept.every(({ child }) => isTaskItem(child) || child.type === 'taskList')
-  const tasks: AdfNode[] = []
-  for (const { blocks, child } of kept) {
-    const standsAlone = !nestsTasks && !isTaskItem(child) && child.type !== 'taskList'
-    for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
-  }
-  const items = nestsTasks ? taskListItems(tasks) : undefined
-  return success(items === undefined ? listOf(tasksAsText(tasks), 'bulletList') : splitTaskList(items))
+	const kept: { blocks: AdfNode[]; child: AdfNode }[] = []
+	const children = nodeContent(node)
+	for (const [index, child] of children.entries()) {
+		const at = childReduction(reduction, children, index)
+		const reduced = isTaskItem(child) ? reduceTask(child, at) : reduceStanding(child, at)
+		if (!reduced.ok) return reduced
+		if (reduced.value.length > 0) kept.push({ blocks: reduced.value, child })
+	}
+	const nestsTasks = kept.every(({ child }) => isTaskItem(child) || child.type === 'taskList')
+	const tasks: AdfNode[] = []
+	for (const { blocks, child } of kept) {
+		const standsAlone = !nestsTasks && !isTaskItem(child) && child.type !== 'taskList'
+		for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
+	}
+	const items = nestsTasks ? taskListItems(tasks) : undefined
+	return success(items === undefined ? listOf(tasksAsText(tasks), 'bulletList') : splitTaskList(items))
 }
 
 function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
-  const attrs = { state: nodeAttrs(task)['state'] === 'DONE' ? 'DONE' : 'TODO' }
-  if (task.type === 'taskItem') {
-    const content = reduceInline(nodeContent(task), 'paragraph', at)
-    return content.ok ? success([{ attrs, content: content.value, type: 'taskItem' }]) : content
-  }
-  const blocks = reduceBlocks(nodeContent(task), at)
-  return blocks.ok ? success([{ attrs, content: blocks.value, type: 'blockTaskItem' }]) : blocks
+	const attrs = { state: nodeAttrs(task)['state'] === 'DONE' ? 'DONE' : 'TODO' }
+	if (task.type === 'taskItem') {
+		const content = reduceInline(nodeContent(task), 'paragraph', at)
+		return content.ok ? success([{ attrs, content: content.value, type: 'taskItem' }]) : content
+	}
+	const blocks = reduceBlocks(nodeContent(task), at)
+	return blocks.ok ? success([{ attrs, content: blocks.value, type: 'blockTaskItem' }]) : blocks
 }
 
 // The marker leads the first paragraph, or stands as one where the blocks open with another.
 function marked(blocks: readonly AdfNode[], marker: string): AdfNode[] {
-  const [first, ...rest] = blocks
-  if (first?.type === 'paragraph') return [paragraph([text(`${marker} `), ...nodeContent(first)]), ...rest]
-  return [paragraph([text(marker)]), ...blocks]
+	const [first, ...rest] = blocks
+	if (first?.type === 'paragraph') return [paragraph([text(`${marker} `), ...nodeContent(first)]), ...rest]
+	return [paragraph([text(marker)]), ...blocks]
 }
 
 function reduceTable(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const rows: PlacedCell[][] = []
-  const rowNodes = nodeContent(node)
-  for (const [rowIndex, row] of rowNodes.entries()) {
-    const rowReduction = childReduction(reduction, rowNodes, rowIndex)
-    const cells: PlacedCell[] = []
-    const rowCells = row.type === 'tableRow' ? nodeContent(row) : [row]
-    for (const [cellIndex, cell] of rowCells.entries()) {
-      const paragraph = cellParagraph(cell, childReduction(rowReduction, rowCells, cellIndex))
-      if (!paragraph.ok) return paragraph
-      cells.push({ colspan: span(nodeAttrs(cell)['colspan']), paragraph: paragraph.value, rowspan: span(nodeAttrs(cell)['rowspan']) })
-    }
-    rows.push(cells)
-  }
-  const grid = spannedGrid(rows)
-  const width = grid.reduce((widest, cells) => Math.max(widest, cells.length), 0)
-  const tableRows = grid.map((cells, rowIndex) => ({
-    content: Array.from({ length: width }, (_, column): AdfNode => ({ content: [cells[column] ?? { type: 'paragraph' }], type: rowIndex === 0 ? 'tableHeader' : 'tableCell' })),
-    type: 'tableRow',
-  }))
-  return success(width === 0 ? [] : [{ content: tableRows, type: 'table' }])
+	const rows: PlacedCell[][] = []
+	const rowNodes = nodeContent(node)
+	for (const [rowIndex, row] of rowNodes.entries()) {
+		const rowReduction = childReduction(reduction, rowNodes, rowIndex)
+		const cells: PlacedCell[] = []
+		const rowCells = row.type === 'tableRow' ? nodeContent(row) : [row]
+		for (const [cellIndex, cell] of rowCells.entries()) {
+			const paragraph = cellParagraph(cell, childReduction(rowReduction, rowCells, cellIndex))
+			if (!paragraph.ok) return paragraph
+			cells.push({ colspan: span(nodeAttrs(cell)['colspan']), paragraph: paragraph.value, rowspan: span(nodeAttrs(cell)['rowspan']) })
+		}
+		rows.push(cells)
+	}
+	const grid = spannedGrid(rows)
+	const width = grid.reduce((widest, cells) => Math.max(widest, cells.length), 0)
+	const tableRows = grid.map((cells, rowIndex) => ({
+		content: Array.from({ length: width }, (_, column): AdfNode => ({ content: [cells[column] ?? { type: 'paragraph' }], type: rowIndex === 0 ? 'tableHeader' : 'tableCell' })),
+		type: 'tableRow',
+	}))
+	return success(width === 0 ? [] : [{ content: tableRows, type: 'table' }])
 }
 
 function span(value: unknown): number {
-  return typeof value === 'number' && Number.isInteger(value) && value > 1 ? value : 1
+	return typeof value === 'number' && Number.isInteger(value) && value > 1 ? value : 1
 }
 
 // A span keeps its cell under its header by empty cells where it covered; they number no more than the table's cells.
 function spannedGrid(rows: readonly PlacedCell[][]): (AdfNode | undefined)[][] {
-  const grid: (AdfNode | undefined)[][] = rows.map(() => [])
-  const covered = rows.map(() => new Set<number>())
-  let padding = rows.reduce((count, cells) => count + cells.length, 0)
-  for (const [rowIndex, cells] of rows.entries()) {
-    let column = 0
-    for (const cell of cells) {
-      while (covered[rowIndex]?.has(column) === true) column += 1
-      setCell(grid, rowIndex, column, cell.paragraph)
-      for (let row = rowIndex; row < Math.min(rows.length, rowIndex + cell.rowspan) && padding > 0; row += 1) {
-        for (let spanned = row === rowIndex ? 1 : 0; spanned < cell.colspan && padding > 0; spanned += 1) {
-          covered[row]?.add(column + spanned)
-          setCell(grid, row, column + spanned, { type: 'paragraph' })
-          padding -= 1
-        }
-      }
-      column += 1
-    }
-  }
-  return grid
+	const grid: (AdfNode | undefined)[][] = rows.map(() => [])
+	const covered = rows.map(() => new Set<number>())
+	let padding = rows.reduce((count, cells) => count + cells.length, 0)
+	for (const [rowIndex, cells] of rows.entries()) {
+		let column = 0
+		for (const cell of cells) {
+			while (covered[rowIndex]?.has(column) === true) column += 1
+			setCell(grid, rowIndex, column, cell.paragraph)
+			for (let row = rowIndex; row < Math.min(rows.length, rowIndex + cell.rowspan) && padding > 0; row += 1) {
+				for (let spanned = row === rowIndex ? 1 : 0; spanned < cell.colspan && padding > 0; spanned += 1) {
+					covered[row]?.add(column + spanned)
+					setCell(grid, row, column + spanned, { type: 'paragraph' })
+					padding -= 1
+				}
+			}
+			column += 1
+		}
+	}
+	return grid
 }
 
 function setCell(grid: (AdfNode | undefined)[][], row: number, column: number, cell: AdfNode): void {
-  const cells = grid[row]
-  if (cells !== undefined && cells[column] === undefined) cells[column] = cell
+	const cells = grid[row]
+	if (cells !== undefined && cells[column] === undefined) cells[column] = cell
 }
 
 function cellParagraph(cell: AdfNode, reduction: Reduction): Result<AdfNode> {
-  const blocks = cell.type === 'tableCell' || cell.type === 'tableHeader' ? nodeContent(cell) : [cell]
-  const content = reduceInline(blocks, 'table-cell', reduction)
-  return content.ok ? success(content.value.length === 0 ? { type: 'paragraph' } : paragraph(content.value)) : content
+	const blocks = cell.type === 'tableCell' || cell.type === 'tableHeader' ? nodeContent(cell) : [cell]
+	const content = reduceInline(blocks, 'table-cell', reduction)
+	return content.ok ? success(content.value.length === 0 ? { type: 'paragraph' } : paragraph(content.value)) : content
 }
 
 function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const attrs = nodeAttrs(media)
-  const url = attrs['url']
-  if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
-  const held = attrs['alt']
-  const alt = typeof held === 'string' ? oneLine(held).trim() : ''
-  const mark = nodeMarks(media).find(({ type }) => type === 'link')
-  const link = mark === undefined ? undefined : portableLink(mark, 'paragraph')
-  return success([centeredImage([externalMedia(alt, writableHref(url), link === undefined ? undefined : linkAttrs(nodeAttrs(link)))])])
+	const attrs = nodeAttrs(media)
+	const url = attrs['url']
+	if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
+	const held = attrs['alt']
+	const alt = typeof held === 'string' ? oneLine(held).trim() : ''
+	const mark = nodeMarks(media).find(({ type }) => type === 'link')
+	const link = mark === undefined ? undefined : portableLink(mark, 'paragraph')
+	return success([centeredImage([externalMedia(alt, writableHref(url), link === undefined ? undefined : linkAttrs(nodeAttrs(link)))])])
 }

@@ -33,94 +33,94 @@ const nestingCommonMarkShapeWeight = 21
 const spelledTypes = new Set(['text', ...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes)])
 
 export function textOf(minLength: number): Arbitrary<string> {
-  return fc.oneof(
-    { arbitrary: fc.string({ maxLength: 12, minLength, unit: markdownPieces }), weight: 4 },
-    { arbitrary: fc.string({ maxLength: 6, minLength, unit: 'grapheme' }), weight: 1 },
-  )
+	return fc.oneof(
+		{ arbitrary: fc.string({ maxLength: 12, minLength, unit: markdownPieces }), weight: 4 },
+		{ arbitrary: fc.string({ maxLength: 6, minLength, unit: 'grapheme' }), weight: 1 },
+	)
 }
 
 const text = textOf(1)
 const unknownType = fc.oneof(fc.stringMatching(/^[a-z][A-Za-z0-9]{0,7}$/), text).filter((type) => !spelledTypes.has(type))
 const numberValue = fc.oneof(
-  { arbitrary: fc.integer({ max: 10, min: -1 }), weight: 6 },
-  { arbitrary: fc.double({ noDefaultInfinity: true, noNaN: true }), weight: 2 },
-  { arbitrary: fc.constant(-0), weight: 1 },
+	{ arbitrary: fc.integer({ max: 10, min: -1 }), weight: 6 },
+	{ arbitrary: fc.double({ noDefaultInfinity: true, noNaN: true }), weight: 2 },
+	{ arbitrary: fc.constant(-0), weight: 1 },
 )
 
 const keyPiece = fc.oneof({ arbitrary: markdownPieces, weight: 4 }, { arbitrary: fc.string({ maxLength: 1, minLength: 1, unit: 'grapheme' }), weight: 1 })
 export const jsonKey = fc.string({ maxLength: 8, unit: keyPiece })
 
 export const { jsonValue } = fc.letrec<{ jsonValue: JsonValue }>((tie) => ({
-  jsonValue: fc.oneof(
-    { depthSize: 'small', maxDepth: 2 },
-    fc.oneof(fc.constant(null), fc.boolean(), numberValue, textOf(0)),
-    fc.array(tie('jsonValue'), { maxLength: 3 }),
-    fc.dictionary(jsonKey, tie('jsonValue'), { maxKeys: 3, noNullPrototype: true }),
-  ),
+	jsonValue: fc.oneof(
+		{ depthSize: 'small', maxDepth: 2 },
+		fc.oneof(fc.constant(null), fc.boolean(), numberValue, textOf(0)),
+		fc.array(tie('jsonValue'), { maxLength: 3 }),
+		fc.dictionary(jsonKey, tie('jsonValue'), { maxKeys: 3, noNullPrototype: true }),
+	),
 }))
 
 const valueByKind: Readonly<Record<AttributeKind, Arbitrary<JsonValue>>> = {
-  boolean: fc.boolean(),
-  json: jsonValue,
-  number: numberValue,
-  numbers: fc.array(numberValue, { maxLength: 3 }),
-  string: textOf(0),
+	boolean: fc.boolean(),
+	json: jsonValue,
+	number: numberValue,
+	numbers: fc.array(numberValue, { maxLength: 3 }),
+	string: textOf(0),
 }
 
 export function attributes(vocabulary: AttributeVocabulary): Arbitrary<AdfAttributes> {
-  const model = Object.fromEntries(
-    Object.entries(vocabulary).map(([key, kind]) => [key, fc.oneof({ arbitrary: fc.constant(undefined), weight: 2 }, { arbitrary: valueByKind[kind], weight: 1 })]),
-  )
-  return fc.record(model).map(heldAttributes)
+	const model = Object.fromEntries(
+		Object.entries(vocabulary).map(([key, kind]) => [key, fc.oneof({ arbitrary: fc.constant(undefined), weight: 2 }, { arbitrary: valueByKind[kind], weight: 1 })]),
+	)
+	return fc.record(model).map(heldAttributes)
 }
 
 function heldAttributes(held: Readonly<Record<string, JsonValue | undefined>>): AdfAttributes {
-  const attrs: AdfAttributes = {}
-  for (const [key, value] of Object.entries(held)) if (value !== undefined) attrs[key] = value
-  return attrs
+	const attrs: AdfAttributes = {}
+	for (const [key, value] of Object.entries(held)) if (value !== undefined) attrs[key] = value
+	return attrs
 }
 
 // An empty attrs, content or marks key, and adjacent text CommonMark would read back as one, stay occasional: each takes a spelling outside CommonMark.
 // The copy gives fast-check's null-prototype records the prototype a parsed node has.
 function occasionallyEmpty<T extends AdfMark | AdfNode>(arbitrary: Arbitrary<T>): Arbitrary<T> {
-  return fc.tuple(arbitrary, fc.nat({ max: 9 })).map(([held, roll]) => (roll === 0 ? { ...held } : withoutEmptyKeys(held)))
+	return fc.tuple(arbitrary, fc.nat({ max: 9 })).map(([held, roll]) => (roll === 0 ? { ...held } : withoutEmptyKeys(held)))
 }
 
 function withoutEmptyKeys<T extends AdfMark | AdfNode>(held: T): T {
-  const kept: Partial<Record<EmptyKey, unknown>> & T = { ...held }
-  for (const key of emptyKeys(held)) delete kept[key]
-  return kept
+	const kept: Partial<Record<EmptyKey, unknown>> & T = { ...held }
+	for (const key of emptyKeys(held)) delete kept[key]
+	return kept
 }
 
 const localId = fc.oneof({ arbitrary: fc.stringMatching(/^[0-9a-f-]{1,12}$/), weight: 3 }, { arbitrary: textOf(0), weight: 1 })
 
 function occasionallyIdentified(arbitrary: Arbitrary<AdfNode>): Arbitrary<AdfNode> {
-  return fc.tuple(arbitrary, fc.option(localId, { freq: 2, nil: undefined })).map(([held, id]) => (id === undefined ? held : { ...held, attrs: { ...held.attrs, localId: id } }))
+	return fc.tuple(arbitrary, fc.option(localId, { freq: 2, nil: undefined })).map(([held, id]) => (id === undefined ? held : { ...held, attrs: { ...held.attrs, localId: id } }))
 }
 
 function occasionallyApart(arbitrary: Arbitrary<AdfNode[]>): Arbitrary<AdfNode[]> {
-  return fc.tuple(arbitrary, fc.nat({ max: 5 })).map(([nodes, roll]) => (roll === 0 ? nodes : mergeAdjacentText(nodes, joinsWhenRead)))
+	return fc.tuple(arbitrary, fc.nat({ max: 5 })).map(([nodes, roll]) => (roll === 0 ? nodes : mergeAdjacentText(nodes, joinsWhenRead)))
 }
 
 function externalImage({ alt, link, url }: { alt: string | undefined; link: LinkDefinition | undefined; url: string }): AdfNode {
-  return centeredImage([externalMedia(alt ?? '', url, link === undefined ? undefined : toLinkAttrs(link))])
+	return centeredImage([externalMedia(alt ?? '', url, link === undefined ? undefined : toLinkAttrs(link))])
 }
 
 function codeBlock(language: string | undefined, lines: readonly string[]): AdfNode {
-  const content = lines.map((line): AdfNode => ({ text: line, type: 'text' }))
-  const held: AdfNode = language === undefined ? { type: 'codeBlock' } : { attrs: { language }, type: 'codeBlock' }
-  return content.length === 0 ? held : { ...held, content }
+	const content = lines.map((line): AdfNode => ({ text: line, type: 'text' }))
+	const held: AdfNode = language === undefined ? { type: 'codeBlock' } : { attrs: { language }, type: 'codeBlock' }
+	return content.length === 0 ? held : { ...held, content }
 }
 
 function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): AdfNode {
-  const rows = [header, ...body.map((cells) => header.map((_, index) => cells[index] ?? emptyCell))]
-  return { content: rows.map((content): AdfNode => ({ content, type: 'tableRow' })), type: 'table' }
+	const rows = [header, ...body.map((cells) => header.map((_, index) => cells[index] ?? emptyCell))]
+	return { content: rows.map((content): AdfNode => ({ content, type: 'tableRow' })), type: 'table' }
 }
 
 const mark: Arbitrary<AdfMark> = occasionallyEmpty(fc.oneof(
-  { arbitrary: fc.oneof(...Object.entries(markAttributes).map(([type, vocabulary]) => attributes(vocabulary).map((attrs) => ({ attrs, type })))), weight: 9 },
-  { arbitrary: attributes({ color: 'string' }).map((attrs) => ({ attrs, type: 'backgroundColor' })), weight: 2 },
-  { arbitrary: fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), type: unknownType }), weight: 1 },
+	{ arbitrary: fc.oneof(...Object.entries(markAttributes).map(([type, vocabulary]) => attributes(vocabulary).map((attrs) => ({ attrs, type })))), weight: 9 },
+	{ arbitrary: attributes({ color: 'string' }).map((attrs) => ({ attrs, type: 'backgroundColor' })), weight: 2 },
+	{ arbitrary: fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), type: unknownType }), weight: 1 },
 ))
 const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type })
 const blockMark: Arbitrary<AdfMark> = occasionallyEmpty(fc.oneof(...Object.entries(blockMarkAttributes).map(([type, vocabulary]) => attributes(vocabulary).map((attrs) => ({ attrs, type })))))
@@ -128,100 +128,100 @@ const blockMark: Arbitrary<AdfMark> = occasionallyEmpty(fc.oneof(...Object.entri
 const textNode = occasionallyEmpty(fc.record({ marks, text: fc.oneof({ arbitrary: text, weight: 19 }, { arbitrary: fc.constant(''), weight: 1 }) }).map((held): AdfNode => ({ ...held, type: 'text' })))
 
 const backtickRunNode = fc
-  .record({ marks: fc.oneof(fc.constant<AdfMark[]>([]), fc.constant<AdfMark[]>([{ type: 'code' }]), marks), text: fc.string({ maxLength: 6, minLength: 1, unit: fc.constantFrom('`', '``', ' ', 'a') }) })
-  .map((held): AdfNode => ({ ...held, type: 'text' }))
+	.record({ marks: fc.oneof(fc.constant<AdfMark[]>([]), fc.constant<AdfMark[]>([{ type: 'code' }]), marks), text: fc.string({ maxLength: 6, minLength: 1, unit: fc.constantFrom('`', '``', ' ', 'a') }) })
+	.map((held): AdfNode => ({ ...held, type: 'text' }))
 
 const autolinkTextNode = fc
-  .record({ href: fc.tuple(fc.constantFrom('ab:', 'http://'), textOf(0)).map(([scheme, rest]) => `${scheme}${rest}`), marks })
-  .map(({ href, marks: held }): AdfNode => ({ marks: [...held.filter((outer) => outer.type !== 'link'), { attrs: { href }, type: 'link' }], text: href, type: 'text' }))
+	.record({ href: fc.tuple(fc.constantFrom('ab:', 'http://'), textOf(0)).map(([scheme, rest]) => `${scheme}${rest}`), marks })
+	.map(({ href, marks: held }): AdfNode => ({ marks: [...held.filter((outer) => outer.type !== 'link'), { attrs: { href }, type: 'link' }], text: href, type: 'text' }))
 
 // Atlassian's schema gives a card no link mark, which every writer refuses.
 const cardMarks = marks.map((held) => held.filter(({ type }) => type !== 'link'))
 
 const inlineArbitraries = Object.entries(inlineNodes).map(([type, model]) =>
-  occasionallyEmpty(fc.record({ attrs: attributes(model.attributes), marks: type === 'inlineCard' ? cardMarks : marks }).map((held): AdfNode => ({ ...held, type }))),
+	occasionallyEmpty(fc.record({ attrs: attributes(model.attributes), marks: type === 'inlineCard' ? cardMarks : marks }).map((held): AdfNode => ({ ...held, type }))),
 )
 
 function weighted(arbitraries: readonly Arbitrary<AdfNode>[], weight: number): { arbitrary: Arbitrary<AdfNode>; weight: number }[] {
-  return arbitraries.map((arbitrary) => ({ arbitrary, weight }))
+	return arbitraries.map((arbitrary) => ({ arbitrary, weight }))
 }
 
 const positions = fc.letrec<Positions>((tie) => {
-  const blockContent = fc.array(tie('block'), { depthIdentifier, maxLength: 3 })
-  const inlineContent = occasionallyApart(fc.array(tie('inline'), { depthIdentifier, maxLength: 4 }))
-  const contentByModel = {
-    block: blockContent,
-    code: occasionallyApart(fc.array(text.map((held): AdfNode => ({ text: held, type: 'text' })), { maxLength: 2 })),
-    inline: inlineContent,
-    none: fc.constant<AdfNode[]>([]),
-  }
-  const blockMarks = fc.oneof(
-    { arbitrary: fc.constant<AdfMark[]>([]), weight: 4 },
-    { arbitrary: marks, weight: 1 },
-    { arbitrary: fc.uniqueArray(fc.oneof(blockMark, mark), { maxLength: 3, selector: (held) => held.type }), weight: 1 },
-  )
-  const blockArbitraries = Object.entries(blockNodes).map(([type, model]) => {
-    const argument = blockArgument(type)
-    const vocabulary: AttributeVocabulary = argument === undefined ? model.attributes : { ...model.attributes, [argument]: 'string' }
-    const node = occasionallyEmpty(fc.record({ attrs: attributes(vocabulary), content: contentByModel[model.contentModel], marks: blockMarks }).map((held): AdfNode => ({ ...held, type })))
-    return { leaf: model.contentModel === 'code' || model.contentModel === 'none', node }
-  })
-  const unknownNode = occasionallyEmpty(
-    fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), content: fc.array(tie('inline'), { depthIdentifier, maxLength: 2 }), marks, type: unknownType }),
-  )
-  const leafBlocks = blockArbitraries.filter((entry) => entry.leaf).map((entry) => entry.node)
-  const containerBlocks = blockArbitraries.filter((entry) => !entry.leaf).map((entry) => entry.node)
-  const misplacedWeight = 7
-  const paragraph = occasionallyEmpty(
-    fc.oneof({ arbitrary: inlineContent, weight: 3 }, { arbitrary: occasionallyApart(fc.array(backtickRunNode, { maxLength: 4, minLength: 2 })), weight: 1 }).map((content): AdfNode => ({ content, type: 'paragraph' })),
-  )
-  const cell = (type: string) => paragraph.map((held): AdfNode => ({ content: [held], type }))
-  const listItems = fc.array(
-    occasionallyIdentified(occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'listItem' })))),
-    { depthIdentifier, maxLength: 3, minLength: 1 },
-  )
-  const flatCommonMarkShapes = [
-    occasionallyIdentified(occasionallyEmpty(fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' })))),
-    occasionallyIdentified(paragraph),
-    occasionallyIdentified(fc.record({ language: fc.option(text, { nil: undefined }), lines: fc.array(text, { maxLength: 2 }) }).map(({ language, lines }): AdfNode => codeBlock(language, lines))),
-    occasionallyIdentified(fc.constant<AdfNode>({ type: 'rule' })),
-    fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
-    fc.record({ alt: fc.option(text, { nil: undefined }), link: fc.option(fc.record({ destination: text, title: text }, { requiredKeys: ['destination'] }), { nil: undefined }), url: text }).map(externalImage),
-  ]
-  const task = (type: string, content: Arbitrary<AdfNode[]>) =>
-    occasionallyEmpty(fc.record({ content, state: fc.constantFrom('DONE', 'TODO') }).map(({ content: held, state }): AdfNode => ({ attrs: { state }, content: held, type })))
-  const taskItem = fc.oneof({ arbitrary: task('taskItem', inlineContent), weight: 3 }, { arbitrary: task('blockTaskItem', blockContent), weight: 1 })
-  const nestingCommonMarkShapes = [
-    occasionallyIdentified(occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'blockquote' })))),
-    fc.array(fc.oneof({ arbitrary: taskItem, weight: 3 }, { arbitrary: tie('block'), weight: 1 }), { depthIdentifier, maxLength: 3, minLength: 1 }).map((content): AdfNode => ({ content, type: 'taskList' })),
-    occasionallyIdentified(listItems.map((content): AdfNode => ({ content, type: 'bulletList' }))),
-    occasionallyIdentified(
-      fc
-        .record({
-          content: listItems,
-          order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 8 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 2 }, { arbitrary: fc.constant(-0), weight: 1 }),
-        })
-        .map(({ content, order }): AdfNode => ({ attrs: { order }, content, type: 'orderedList' })),
-    ),
-  ]
-  const flatBlocks = [...weighted(leafBlocks, 2), ...weighted(flatCommonMarkShapes, flatCommonMarkShapeWeight)]
-  return {
-    block: fc.oneof(
-      { depthIdentifier, depthSize: 'small', maxDepth: 4 },
-      { arbitrary: fc.oneof(...flatBlocks), weight: flatBlocks.reduce((sum, entry) => sum + entry.weight, 0) },
-      { arbitrary: fc.oneof(...containerBlocks), weight: containerBlocks.length * 2 },
-      { arbitrary: fc.oneof(textNode, ...inlineArbitraries, unknownNode), weight: misplacedWeight },
-      { arbitrary: fc.oneof(...nestingCommonMarkShapes), weight: nestingCommonMarkShapes.length * nestingCommonMarkShapeWeight },
-    ),
-    inline: fc.oneof(
-      { depthIdentifier, depthSize: 'small', maxDepth: 4 },
-      { arbitrary: textNode, weight: 12 },
-      { arbitrary: autolinkTextNode, weight: 2 },
-      { arbitrary: backtickRunNode, weight: 3 },
-      { arbitrary: fc.oneof(...inlineArbitraries), weight: 7 },
-      { arbitrary: fc.oneof(...blockArbitraries.map((entry) => entry.node), unknownNode), weight: 2 },
-    ),
-  }
+	const blockContent = fc.array(tie('block'), { depthIdentifier, maxLength: 3 })
+	const inlineContent = occasionallyApart(fc.array(tie('inline'), { depthIdentifier, maxLength: 4 }))
+	const contentByModel = {
+		block: blockContent,
+		code: occasionallyApart(fc.array(text.map((held): AdfNode => ({ text: held, type: 'text' })), { maxLength: 2 })),
+		inline: inlineContent,
+		none: fc.constant<AdfNode[]>([]),
+	}
+	const blockMarks = fc.oneof(
+		{ arbitrary: fc.constant<AdfMark[]>([]), weight: 4 },
+		{ arbitrary: marks, weight: 1 },
+		{ arbitrary: fc.uniqueArray(fc.oneof(blockMark, mark), { maxLength: 3, selector: (held) => held.type }), weight: 1 },
+	)
+	const blockArbitraries = Object.entries(blockNodes).map(([type, model]) => {
+		const argument = blockArgument(type)
+		const vocabulary: AttributeVocabulary = argument === undefined ? model.attributes : { ...model.attributes, [argument]: 'string' }
+		const node = occasionallyEmpty(fc.record({ attrs: attributes(vocabulary), content: contentByModel[model.contentModel], marks: blockMarks }).map((held): AdfNode => ({ ...held, type })))
+		return { leaf: model.contentModel === 'code' || model.contentModel === 'none', node }
+	})
+	const unknownNode = occasionallyEmpty(
+		fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), content: fc.array(tie('inline'), { depthIdentifier, maxLength: 2 }), marks, type: unknownType }),
+	)
+	const leafBlocks = blockArbitraries.filter((entry) => entry.leaf).map((entry) => entry.node)
+	const containerBlocks = blockArbitraries.filter((entry) => !entry.leaf).map((entry) => entry.node)
+	const misplacedWeight = 7
+	const paragraph = occasionallyEmpty(
+		fc.oneof({ arbitrary: inlineContent, weight: 3 }, { arbitrary: occasionallyApart(fc.array(backtickRunNode, { maxLength: 4, minLength: 2 })), weight: 1 }).map((content): AdfNode => ({ content, type: 'paragraph' })),
+	)
+	const cell = (type: string) => paragraph.map((held): AdfNode => ({ content: [held], type }))
+	const listItems = fc.array(
+		occasionallyIdentified(occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'listItem' })))),
+		{ depthIdentifier, maxLength: 3, minLength: 1 },
+	)
+	const flatCommonMarkShapes = [
+		occasionallyIdentified(occasionallyEmpty(fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' })))),
+		occasionallyIdentified(paragraph),
+		occasionallyIdentified(fc.record({ language: fc.option(text, { nil: undefined }), lines: fc.array(text, { maxLength: 2 }) }).map(({ language, lines }): AdfNode => codeBlock(language, lines))),
+		occasionallyIdentified(fc.constant<AdfNode>({ type: 'rule' })),
+		fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
+		fc.record({ alt: fc.option(text, { nil: undefined }), link: fc.option(fc.record({ destination: text, title: text }, { requiredKeys: ['destination'] }), { nil: undefined }), url: text }).map(externalImage),
+	]
+	const task = (type: string, content: Arbitrary<AdfNode[]>) =>
+		occasionallyEmpty(fc.record({ content, state: fc.constantFrom('DONE', 'TODO') }).map(({ content: held, state }): AdfNode => ({ attrs: { state }, content: held, type })))
+	const taskItem = fc.oneof({ arbitrary: task('taskItem', inlineContent), weight: 3 }, { arbitrary: task('blockTaskItem', blockContent), weight: 1 })
+	const nestingCommonMarkShapes = [
+		occasionallyIdentified(occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'blockquote' })))),
+		fc.array(fc.oneof({ arbitrary: taskItem, weight: 3 }, { arbitrary: tie('block'), weight: 1 }), { depthIdentifier, maxLength: 3, minLength: 1 }).map((content): AdfNode => ({ content, type: 'taskList' })),
+		occasionallyIdentified(listItems.map((content): AdfNode => ({ content, type: 'bulletList' }))),
+		occasionallyIdentified(
+			fc
+				.record({
+					content: listItems,
+					order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 8 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 2 }, { arbitrary: fc.constant(-0), weight: 1 }),
+				})
+				.map(({ content, order }): AdfNode => ({ attrs: { order }, content, type: 'orderedList' })),
+		),
+	]
+	const flatBlocks = [...weighted(leafBlocks, 2), ...weighted(flatCommonMarkShapes, flatCommonMarkShapeWeight)]
+	return {
+		block: fc.oneof(
+			{ depthIdentifier, depthSize: 'small', maxDepth: 4 },
+			{ arbitrary: fc.oneof(...flatBlocks), weight: flatBlocks.reduce((sum, entry) => sum + entry.weight, 0) },
+			{ arbitrary: fc.oneof(...containerBlocks), weight: containerBlocks.length * 2 },
+			{ arbitrary: fc.oneof(textNode, ...inlineArbitraries, unknownNode), weight: misplacedWeight },
+			{ arbitrary: fc.oneof(...nestingCommonMarkShapes), weight: nestingCommonMarkShapes.length * nestingCommonMarkShapeWeight },
+		),
+		inline: fc.oneof(
+			{ depthIdentifier, depthSize: 'small', maxDepth: 4 },
+			{ arbitrary: textNode, weight: 12 },
+			{ arbitrary: autolinkTextNode, weight: 2 },
+			{ arbitrary: backtickRunNode, weight: 3 },
+			{ arbitrary: fc.oneof(...inlineArbitraries), weight: 7 },
+			{ arbitrary: fc.oneof(...blockArbitraries.map((entry) => entry.node), unknownNode), weight: 2 },
+		),
+	}
 })
 
 // Short texts under a few marks beside nodes only the carry spells: the lines where one misread or carried run sits beside another.
@@ -230,41 +230,41 @@ const lineMark = fc.constantFrom<AdfMark>({ type: 'backgroundColor' }, { type: '
 const lineMarks = fc.uniqueArray(lineMark, { maxLength: 3, selector: (held) => held.type })
 const lineText = fc.string({ maxLength: 3, minLength: 1, unit: fc.constantFrom(' ', '(', '*', '-', '.', '0', '=', '[', '_', '`', 'a', 'un') })
 const lineLeaf = fc.oneof(
-  { arbitrary: fc.record({ marks: emphasisStack, text: lineText }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 4 },
-  { arbitrary: fc.record({ marks: lineMarks, text: lineText }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 8 },
-  { arbitrary: fc.constant<AdfNode>({ type: 'hardBreak' }), weight: 1 },
-  { arbitrary: fc.record({ attrs: fc.constantFrom({ id: 'a' }, { id: 'a', odd: 'b' }), marks: lineMarks }).map((held): AdfNode => ({ ...held, type: 'mention' })), weight: 1 },
+	{ arbitrary: fc.record({ marks: emphasisStack, text: lineText }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 4 },
+	{ arbitrary: fc.record({ marks: lineMarks, text: lineText }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 8 },
+	{ arbitrary: fc.constant<AdfNode>({ type: 'hardBreak' }), weight: 1 },
+	{ arbitrary: fc.record({ attrs: fc.constantFrom({ id: 'a' }, { id: 'a', odd: 'b' }), marks: lineMarks }).map((held): AdfNode => ({ ...held, type: 'mention' })), weight: 1 },
 )
 export const lineContainer = fc.constantFrom<LineContainer>('heading', 'paragraph', 'table-cell')
 // A unit repeated is the line where one misread run re-pairs every copy after it.
 const repeatedUnit = fc
-  .tuple(fc.array(lineLeaf, { maxLength: 2 }), fc.array(lineLeaf, { maxLength: 3, minLength: 1 }), fc.integer({ max: 5, min: 2 }), fc.array(lineLeaf, { maxLength: 2 }))
-  .map(([head, unit, repeats, tail]) => [...head, ...Array.from({ length: repeats }, () => unit.map((node) => ({ ...node }))).flat(), ...tail])
+	.tuple(fc.array(lineLeaf, { maxLength: 2 }), fc.array(lineLeaf, { maxLength: 3, minLength: 1 }), fc.integer({ max: 5, min: 2 }), fc.array(lineLeaf, { maxLength: 2 }))
+	.map(([head, unit, repeats, tail]) => [...head, ...Array.from({ length: repeats }, () => unit.map((node) => ({ ...node }))).flat(), ...tail])
 export const markedLine = fc.oneof(fc.array(lineLeaf, { maxLength: 10, minLength: 1 }), repeatedUnit)
 
 export const adfDocument = fc.oneof(
-  { arbitrary: fc.array(positions.block, { depthIdentifier, maxLength: 4, minLength: 1 }).map((content): AdfDocument => ({ content, type: 'doc', version: 1 })), weight: 30 },
-  { arbitrary: fc.constant<AdfDocument>({ content: [], type: 'doc', version: 1 }), weight: 1 },
-  { arbitrary: fc.constant<AdfDocument>({ type: 'doc', version: 1 }), weight: 1 },
+	{ arbitrary: fc.array(positions.block, { depthIdentifier, maxLength: 4, minLength: 1 }).map((content): AdfDocument => ({ content, type: 'doc', version: 1 })), weight: 30 },
+	{ arbitrary: fc.constant<AdfDocument>({ content: [], type: 'doc', version: 1 }), weight: 1 },
+	{ arbitrary: fc.constant<AdfDocument>({ type: 'doc', version: 1 }), weight: 1 },
 )
 
 export function propertyRuns(gateRuns: number): { gate: boolean; numRuns: number; seed?: number } {
-  const deepRuns = env[deepRunsVariable]
-  if (deepRuns === undefined) return { gate: true, numRuns: gateRuns, seed: gateSeed }
-  assert.ok(/^[1-9]\d*$/.test(deepRuns), `${deepRunsVariable} is a run count in digits, such as ${deepRunsVariable}=10000: found ${JSON.stringify(deepRuns)}`)
-  return { gate: false, numRuns: Number(deepRuns) }
+	const deepRuns = env[deepRunsVariable]
+	if (deepRuns === undefined) return { gate: true, numRuns: gateRuns, seed: gateSeed }
+	assert.ok(/^[1-9]\d*$/.test(deepRuns), `${deepRunsVariable} is a run count in digits, such as ${deepRunsVariable}=10000: found ${JSON.stringify(deepRuns)}`)
+	return { gate: false, numRuns: Number(deepRuns) }
 }
 
 export function blockTaskItemChildren(nodes: readonly AdfNode[]): string[] {
-  const types: string[] = []
-  const pending = [...nodes]
-  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
-    if (node.type === 'blockTaskItem') for (const child of nodeContent(node)) types.push(child.type)
-    for (const child of nodeContent(node)) pending.push(child)
-  }
-  return types
+	const types: string[] = []
+	const pending = [...nodes]
+	for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+		if (node.type === 'blockTaskItem') for (const child of nodeContent(node)) types.push(child.type)
+		for (const child of nodeContent(node)) pending.push(child)
+	}
+	return types
 }
 
 export function spliced(text: string, [at, removed, piece]: readonly [number, number, string]): string {
-  return `${text.slice(0, at % (text.length + 1))}${piece}${text.slice((at % (text.length + 1)) + removed)}`
+	return `${text.slice(0, at % (text.length + 1))}${piece}${text.slice((at % (text.length + 1)) + removed)}`
 }

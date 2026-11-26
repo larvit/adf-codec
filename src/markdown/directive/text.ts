@@ -9,13 +9,13 @@ const spelledRun = new RegExp(`^(?:[ \\t]+|\\n+|\\0+|${loneSurrogates})$`)
 export const textDirectiveName = name
 
 export function spellTextDirective(text: string): string {
-  return spellInlineLeafDirective(name, spellAttributes([[name, spellStringAttribute(text)]]))
+	return spellInlineLeafDirective(name, spellAttributes([[name, spellStringAttribute(text)]]))
 }
 
 export function readTextDirective(span: DirectiveSpan): Read<string> | undefined {
-  if (span.name !== name) return undefined
-  const spelled = readSoleStringAttribute(span, name)
-  if (spelled.fault !== undefined) return spelled
-  if (!spelledRun.test(spelled.value)) return { fault: unsupportedNodeShape(`${name} spells one run of spaces and tabs, one run of newlines, one run of null characters, or one run of lone surrogates: this one doesn't spell any of them`) }
-  return spelled
+	if (span.name !== name) return undefined
+	const spelled = readSoleStringAttribute(span, name)
+	if (spelled.fault !== undefined) return spelled
+	if (!spelledRun.test(spelled.value)) return { fault: unsupportedNodeShape(`${name} spells one run of spaces and tabs, one run of newlines, one run of null characters, or one run of lone surrogates: this one doesn't spell any of them`) }
+	return spelled
 }

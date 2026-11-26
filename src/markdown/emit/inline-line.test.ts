@@ -9,54 +9,54 @@ import { lineContainer, markedLine, propertyRuns, propertyTimeout } from '../../
 import { success, type Result } from '../../result.ts'
 
 test('spells a line alike taking every fallback a pass finds or the first alone', { timeout: propertyTimeout }, () => {
-  fc.assert(
-    fc.property(markedLine, lineContainer, (nodes, container) => {
-      assert.deepEqual(emitInlineLine(nodes, container, [], 'lossless'), firstFallbackLine(nodes, container))
-    }),
-    // Lines the fixed seed rarely generates: carrying one run lets a neighbour or its holder read as written, or one pass carries every copy of a repeated mark run.
-    {
-      ...propertyRuns(3000),
-      examples: [
-        [[{ marks: [{ type: 'em' }], text: '-', type: 'text' }, { text: '0', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: 'un', type: 'text' }, { text: '0', type: 'text' }], 'paragraph'],
-        [[{ marks: [{ type: 'em' }, { type: 'strike' }], text: 'a', type: 'text' }, { text: 'a', type: 'text' }, { marks: [{ type: 'strong' }, { type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'strong' }], text: 'a', type: 'text' }], 'paragraph'],
-        [[{ marks: [{ type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strike' }, { type: 'strong' }], text: 'a', type: 'text' }, { text: 'a', type: 'text' }], 'paragraph'],
-        [[1, 2, 3].flatMap(() => [{ text: 'un', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }]), 'paragraph'],
-        [[{ text: 'un', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }, { marks: [{ type: 'strike' }], text: 'un', type: 'text' }, { marks: [{ type: 'strike' }, { type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }, { text: 'z', type: 'text' }], 'paragraph'],
-        [[{ marks: [{ type: 'strike' }], text: ' b', type: 'text' }, { marks: [{ type: 'em' }], text: '!-', type: 'text' }], 'paragraph'],
-        [[{ marks: [{ type: 'strike' }], text: 'r', type: 'text' }, { marks: [{ type: 'strike' }, { type: 'strong' }, { type: 'em' }], text: '[ ', type: 'text' }, ...[1, 2, 3, 4, 5].map(() => ({ marks: [{ type: 'strike' }], text: ' ', type: 'text' }))], 'heading'],
-        [[{ text: 'a', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strike' }], text: '(', type: 'text' }, { marks: [{ type: 'em' }], text: 'a', type: 'text' }], 'paragraph'],
-        [[{ text: 'b', type: 'text' }, { marks: [{ type: 'strong' }], text: '(a', type: 'text' }, { marks: [{ type: 'em' }], text: '(b', type: 'text' }, { text: 'c', type: 'text' }], 'paragraph'],
-      ],
-    },
-  )
+	fc.assert(
+		fc.property(markedLine, lineContainer, (nodes, container) => {
+			assert.deepEqual(emitInlineLine(nodes, container, [], 'lossless'), firstFallbackLine(nodes, container))
+		}),
+		// Lines the fixed seed rarely generates: carrying one run lets a neighbour or its holder read as written, or one pass carries every copy of a repeated mark run.
+		{
+			...propertyRuns(3000),
+			examples: [
+				[[{ marks: [{ type: 'em' }], text: '-', type: 'text' }, { text: '0', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: 'un', type: 'text' }, { text: '0', type: 'text' }], 'paragraph'],
+				[[{ marks: [{ type: 'em' }, { type: 'strike' }], text: 'a', type: 'text' }, { text: 'a', type: 'text' }, { marks: [{ type: 'strong' }, { type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'strong' }], text: 'a', type: 'text' }], 'paragraph'],
+				[[{ marks: [{ type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strike' }, { type: 'strong' }], text: 'a', type: 'text' }, { text: 'a', type: 'text' }], 'paragraph'],
+				[[1, 2, 3].flatMap(() => [{ text: 'un', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }]), 'paragraph'],
+				[[{ text: 'un', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }, { marks: [{ type: 'strike' }], text: 'un', type: 'text' }, { marks: [{ type: 'strike' }, { type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }, { text: 'z', type: 'text' }], 'paragraph'],
+				[[{ marks: [{ type: 'strike' }], text: ' b', type: 'text' }, { marks: [{ type: 'em' }], text: '!-', type: 'text' }], 'paragraph'],
+				[[{ marks: [{ type: 'strike' }], text: 'r', type: 'text' }, { marks: [{ type: 'strike' }, { type: 'strong' }, { type: 'em' }], text: '[ ', type: 'text' }, ...[1, 2, 3, 4, 5].map(() => ({ marks: [{ type: 'strike' }], text: ' ', type: 'text' }))], 'heading'],
+				[[{ text: 'a', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strike' }], text: '(', type: 'text' }, { marks: [{ type: 'em' }], text: 'a', type: 'text' }], 'paragraph'],
+				[[{ text: 'b', type: 'text' }, { marks: [{ type: 'strong' }], text: '(a', type: 'text' }, { marks: [{ type: 'em' }], text: '(b', type: 'text' }, { text: 'c', type: 'text' }], 'paragraph'],
+			],
+		},
+	)
 })
 
 test('carries the range it is handed on its first call, leaving the fallbacks it was handed as they were', () => {
-  const fallbacks = withheldMarkFallbacks([{ text: 'a', type: 'text' }], 'lossless')
-  const taken = takeFallback(fallbacks, [{ first: 0, last: 0 }], [])
-  assert.deepEqual(taken.ok ? [...taken.value.carried] : taken, [0])
-  assert.deepEqual([...fallbacks.carried], [])
+	const fallbacks = withheldMarkFallbacks([{ text: 'a', type: 'text' }], 'lossless')
+	const taken = takeFallback(fallbacks, [{ first: 0, last: 0 }], [])
+	assert.deepEqual(taken.ok ? [...taken.value.carried] : taken, [0])
+	assert.deepEqual([...fallbacks.carried], [])
 })
 
 test('refuses a carry of a range the line already carried', () => {
-  const taken = takeFallback(withheldMarkFallbacks([{ text: 'a', type: 'text' }], 'lossless'), [{ first: 0, last: 0 }], [])
-  const again = taken.ok ? takeFallback(taken.value, [{ first: 0, last: 0 }], []) : taken
-  assert.deepEqual(again.ok ? undefined : [again.error.code, again.error.message], ['unsupported-node-shape', 'a carry took no inline node the line had not carried, so the line has no spelling left'])
+	const taken = takeFallback(withheldMarkFallbacks([{ text: 'a', type: 'text' }], 'lossless'), [{ first: 0, last: 0 }], [])
+	const again = taken.ok ? takeFallback(taken.value, [{ first: 0, last: 0 }], []) : taken
+	assert.deepEqual(again.ok ? undefined : [again.error.code, again.error.message], ['unsupported-node-shape', 'a carry took no inline node the line had not carried, so the line has no spelling left'])
 })
 
 // Writes the spanned line where it reads back, else the parted line taking only the first fallback each pass finds, with no cap.
 function firstFallbackLine(nodes: readonly AdfNode[], container: LineContainer): Result<string> {
-  let fallbacks = withheldMarkFallbacks(nodes, 'lossless')
-  const spanned = linePass(nodes, container, [], fallbacks, 'spanned')
-  if (!spanned.ok) return spanned
-  if (spanned.value.fallback === undefined) return success(spanned.value.line)
-  for (;;) {
-    const attempt = linePass(nodes, container, [], fallbacks, 'parted')
-    if (!attempt.ok) return attempt
-    const { fallback } = attempt.value
-    if (fallback === undefined) return success(attempt.value.line)
-    const taken = takeFallback(fallbacks, fallback === 'opening-link' ? fallback : [fallback[0]], [])
-    if (!taken.ok) return taken
-    fallbacks = taken.value
-  }
+	let fallbacks = withheldMarkFallbacks(nodes, 'lossless')
+	const spanned = linePass(nodes, container, [], fallbacks, 'spanned')
+	if (!spanned.ok) return spanned
+	if (spanned.value.fallback === undefined) return success(spanned.value.line)
+	for (;;) {
+		const attempt = linePass(nodes, container, [], fallbacks, 'parted')
+		if (!attempt.ok) return attempt
+		const { fallback } = attempt.value
+		if (fallback === undefined) return success(attempt.value.line)
+		const taken = takeFallback(fallbacks, fallback === 'opening-link' ? fallback : [fallback[0]], [])
+		if (!taken.ok) return taken
+		fallbacks = taken.value
+	}
 }

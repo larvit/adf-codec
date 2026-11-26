@@ -10,63 +10,63 @@ import { serializeCanonicalJson, spellsCanonicalJson } from '../canonical-json.t
 
 // The attributes a node holds besides those its element writes, as `data-*` attributes sorted by key, a value that is no string as JSON; `undefined` where the node holds what no attribute writes: a mark, an empty key, or an attribute the vocabulary does not hold as that kind (docs/decisions.md §The HTML dialect).
 export function dataAttributes(node: AdfNode, vocabulary: AttributeVocabulary, written: readonly string[]): string | undefined {
-  if (!holdsOnlyAttributes(node, Object.keys(vocabulary))) return undefined
-  const pairs = vocabularyPairs(nodeAttrs(node), vocabulary, written)
-  if (pairs === undefined) return undefined
-  let attributes = ''
-  for (const { key, kind, value } of pairs.sort((left, right) => (left.key < right.key ? -1 : 1))) {
-    const attribute = optionalAttribute(dataName(key), kind === 'string' ? value : serializeCanonicalJson(value, 'compact'))
-    if (attribute === undefined) return undefined
-    attributes += attribute
-  }
-  return attributes
+	if (!holdsOnlyAttributes(node, Object.keys(vocabulary))) return undefined
+	const pairs = vocabularyPairs(nodeAttrs(node), vocabulary, written)
+	if (pairs === undefined) return undefined
+	let attributes = ''
+	for (const { key, kind, value } of pairs.sort((left, right) => (left.key < right.key ? -1 : 1))) {
+		const attribute = optionalAttribute(dataName(key), kind === 'string' ? value : serializeCanonicalJson(value, 'compact'))
+		if (attribute === undefined) return undefined
+		attributes += attribute
+	}
+	return attributes
 }
 
 // What `dataAttributes` wrote, its pairs' values unescaped. A pair it does not write in that order is no HTML of the dialect; a `data-*` name or a value no attribute of the node spells is the node's shape, as a directive's is (docs/decisions.md §Which code a cause takes).
 export function readDataAttributes(pairs: readonly (readonly [string, string])[], element: string, vocabulary: AttributeVocabulary, written: readonly string[]): Read<AdfAttributes> {
-  const attrs: AdfAttributes = {}
-  let previous = ''
-  for (const [name, spelled] of pairs) {
-    const [key, kind] = dataKey(name, vocabulary, written) ?? []
-    if (key === undefined || kind === undefined) return { fault: nameFault(name, element) }
-    if (key <= previous) return { fault: unmappable(`the data-* attributes stand once each, sorted by the attribute they name: found ${name} after ${dataName(previous)}`) }
-    const value = dataValue(spelled, kind)
-    if (value === undefined) return { fault: { code: 'unsupported-node-shape', message: `${name} holds no ${kind} written as compact JSON` } }
-    attrs[key] = value
-    previous = key
-  }
-  return { value: attrs }
+	const attrs: AdfAttributes = {}
+	let previous = ''
+	for (const [name, spelled] of pairs) {
+		const [key, kind] = dataKey(name, vocabulary, written) ?? []
+		if (key === undefined || kind === undefined) return { fault: nameFault(name, element) }
+		if (key <= previous) return { fault: unmappable(`the data-* attributes stand once each, sorted by the attribute they name: found ${name} after ${dataName(previous)}`) }
+		const value = dataValue(spelled, kind)
+		if (value === undefined) return { fault: { code: 'unsupported-node-shape', message: `${name} holds no ${kind} written as compact JSON` } }
+		attrs[key] = value
+		previous = key
+	}
+	return { value: attrs }
 }
 
 // As `readDataAttributes`, skipping `leading` where it is the first pair and refusing it later; the caller reads `leading`'s value.
 export function readDataAttributesAfter(leading: string, pairs: readonly (readonly [string, string])[], element: string, vocabulary: AttributeVocabulary, written: readonly string[]): Read<AdfAttributes> {
-  const repeated = pairs.findIndex(([name], index) => index > 0 && name === leading)
-  const data = readDataAttributes(pairs.slice(pairs[0]?.[0] === leading ? 1 : 0, repeated < 0 ? pairs.length : repeated), element, vocabulary, written)
-  const before = repeated < 0 ? undefined : pairs[repeated - 1]
-  if (data.fault !== undefined || before === undefined) return data
-  return { fault: unmappable(`<${element}> takes ${leading} once, before its data-* attributes: found ${leading} after ${before[0]}`) }
+	const repeated = pairs.findIndex(([name], index) => index > 0 && name === leading)
+	const data = readDataAttributes(pairs.slice(pairs[0]?.[0] === leading ? 1 : 0, repeated < 0 ? pairs.length : repeated), element, vocabulary, written)
+	const before = repeated < 0 ? undefined : pairs[repeated - 1]
+	if (data.fault !== undefined || before === undefined) return data
+	return { fault: unmappable(`<${element}> takes ${leading} once, before its data-* attributes: found ${leading} after ${before[0]}`) }
 }
 
 // The attribute `name` spells, among those the element itself does not write.
 function dataKey(name: string, vocabulary: AttributeVocabulary, written: readonly string[]): [string, AttributeKind] | undefined {
-  return Object.entries(vocabulary).find(([candidate]) => !written.includes(candidate) && dataName(candidate) === name)
+	return Object.entries(vocabulary).find(([candidate]) => !written.includes(candidate) && dataName(candidate) === name)
 }
 
 function dataName(key: string): string {
-  return `data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`
+	return `data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`
 }
 
 export function dataValue(spelled: string, kind: AttributeKind): JsonValue | undefined {
-  if (kind === 'string') return spelled
-  const { value } = parseJsonText(spelled)
-  return value !== undefined && holdsKind(value, kind) && spellsCanonicalJson(value, 'compact', spelled) ? value : undefined
+	if (kind === 'string') return spelled
+	const { value } = parseJsonText(spelled)
+	return value !== undefined && holdsKind(value, kind) && spellsCanonicalJson(value, 'compact', spelled) ? value : undefined
 }
 
 function nameFault(name: string, element: string): ConvertFault {
-  const message = `<${element}> takes no ${name} attribute`
-  return name.startsWith('data-') ? { code: 'unsupported-node-shape', message } : unmappable(message)
+	const message = `<${element}> takes no ${name} attribute`
+	return name.startsWith('data-') ? { code: 'unsupported-node-shape', message } : unmappable(message)
 }
 
 function unmappable(message: string): ConvertFault {
-  return { code: 'unmappable-html', message }
+	return { code: 'unmappable-html', message }
 }
