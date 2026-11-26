@@ -16,7 +16,6 @@
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 207 | 0.4.0 |  |  | **Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.** | 2 | 2 | 2 | 4 | 3 | 11 by 3, 6 by 1 | 3.4 |
-| 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 1 | 2 | 5 | 7 | code health by 5 | 2.3 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -94,30 +93,6 @@ Touches:
 - `spec/wiki.md`: `## Marks`
 - `src/wiki/emit/adf-to-jira-wiki.test.ts`
 - `src/wiki/parse/jira-wiki-to-adf.test.ts`
-
-### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
-
-Technical principle "One owner per value": the `Walk` record passes through functions that mutate it
-and return `void`; `walk.leaf` alone is written in seven places, and `openedList` reads the
-`endedLists` that `closeLeaf` fills. `ContainerStack` in the same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
-functions write `pending`, `pieces`, `brackets`, `linkOpenersFrom` and `openingSpellableLink` on the `Scan`
-they are handed, most of them returning `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
-`mintTaskIds` (`portable/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
-`takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
-`writeUnpaired` and `markHighlights` (`inline-content.ts`), whose order changes the
-output.
-Once `Scan`'s pieces have owners, the bracket resolution — `linkedAlt` through `linkTo`,
-`holdsLink`, and `closeBracket` through `altText` — can leave `inline-content.ts` (about 690 lines)
-for a module of its own. That module resolves an image once, into a node holding its alt text and
-its link, so `imageAlt`, `resolvedPieces` and `directiveMarkPieces` no longer filter and regroup
-`ImageLink` pieces. Found by the architecture pass of the release review of 0.3.0, 2026-11-08.
-
-Touches:
-
-- `src/markdown/parse/blocks.ts`
-- `src/markdown/inline-content.ts`
-- `src/markdown/portable/task-ids.ts`: `mintTaskIds`
-- `src/markdown/emit/inline-line.ts`: `takeFallback`, `settledLine`, `lineSegments`
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 
