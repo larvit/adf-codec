@@ -1503,7 +1503,7 @@ alt text.
 ## Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer keeps only its content
 
 2026-11-15, the maintainer. Goals 1, 7 and 11. Valid while Jira's renderer reads the `{adf}` macro.
-`adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` have landed; the README's section on them lands with `todo.md` item 196.
+`adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` have landed.
 
 Wiki markup has no spelling for some nodes and marks, a layout among them. The lossless wiki
 writer wraps each such node's ADF JSON in Jira's own `{adf}` macro: `{adf:display=block}` for a
@@ -1520,7 +1520,7 @@ rendered the status lozenge between its neighbouring words.
 ## Jira wiki markup's writers are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option
 
 2026-11-16, a developer panel. Goals 6, 7 and 8. Valid while a lossy writer drops form with no
-refusal. `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` have landed; the README's section on them lands with `todo.md` item 196.
+refusal. `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` have landed.
 
 Seven fresh-context readers, seated as the bot, the viewer/editor app and the LLM pipeline, were
 told the trap: an app saving through the lossy writer loses form on every save, with nothing
