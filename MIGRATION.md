@@ -58,8 +58,8 @@ indented every level, so a carry nested deeper than five levels is written diffe
 | `"d": {`, `"e": [`, `1,`, `2`, `]`, `}`, a line each, at the sixth level and deeper | `"d": {"e":[1,2]}` on one line |
 
 A carried node whose deeply nested JSON `0.3.1` refused as `unsupported-node-shape` now converts.
-`losslessMarkdownToAdf` still reads the carry `0.3.1` wrote, but `0.3.1` can't read the new one, so
-upgrade every reader before the writer. A test pinning the text of a carry nested deeper than five
+`losslessMarkdownToAdf` still reads the carry `0.3.1` wrote. `0.3.1` refuses a carry nested deeper
+than five levels that `0.4.0` wrote, so upgrade every reader before the writer. A test pinning the text of a carry nested deeper than five
 levels needs the new spelling.
 
 `portableMarkdownToAdf` reads more of GFM's pipe table:

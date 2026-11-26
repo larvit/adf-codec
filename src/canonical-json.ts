@@ -13,7 +13,7 @@ export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling)
   return [...canonicalJsonPieces(value, spelling)].join('')
 }
 
-// Stops at the first piece, passed through `respell`, that does not match `text`, so a text far from canonical costs no more than its matching start.
+// Stops at the first piece, passed through `respell`, that does not match `text`: built whole, the 'two-space' spelling of a short compact text can pass the engine's longest string.
 export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string, respell = (canonical: string): string => canonical): boolean {
   let offset = 0
   for (const canonical of canonicalJsonPieces(value, spelling)) {

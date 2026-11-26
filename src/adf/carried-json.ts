@@ -15,7 +15,7 @@ export type BoundedJson = { readonly bounded: JsonValue }
 export function carriedJson(carried: AdfNode | readonly AdfNode[], spelled: object, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
   const headroom = levels - nestingDepth(carried)
   if (!isJsonValue(spelled) || headroom < 0) return faulted(nestedPast(levels), path)
-  // The JSON alone can pass the bound, which no check of the document's text sees: join only up to it.
+  // A carried node's JSON can pass the bound by itself: join only up to the bound.
   const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
   return json.ok ? success({ headroom, json: json.value }) : json
 }
