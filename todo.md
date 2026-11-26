@@ -15,7 +15,6 @@
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
-| 207 | 0.4.0 |  |  | **Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.** | 2 | 2 | 2 | 4 | 3 | 11 by 3, 6 by 1 | 3.4 |
 | 209 | 0.4.0 |  |  | **End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.** | 2 | 2 | 2 | 4 | 2 | 11 by 2 | 2.2 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
@@ -80,20 +79,6 @@ Touches:
 
 - `README.md`: `## Main functionality`, `## Quick start`, `## Other ADF converters`, `## The calls`, `### The error shape` (small), `## The guarantees`, `## Everything exported`
 - `converter-comparison/compare.mjs`: lines 67-108 (small)
-
-### 207. Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.
-
-Item 200's probes of a Jira Cloud site (2026-11-25, 2026-11-26) found three things `linkedAddress` in `src/wiki/spellings.ts` doesn't model. Jira stores a linked `href` with `"` as `%22`, `<` as `%3C`, `>` as `%3E`, `` ` `` as `%60` and a final `^` as `%5E`. It links a path or anchor holding `^:`, which `linkedAddress` reads as text, and a bare `http://x/^y`, which it stores as `http://x/%5Ey`. And it reads `^y` after a path inside a bracket, as in `[a|http://x/^y]`, as an attachment embed, which the reader leaves as text.
-
-`jiraWikiToAdf` keeps the `href` as written, so `[a|/a"b]` reads as `href` `/a"b` where Jira stores `/a%22b`. The lossless writer writes a `link` whose `href` holds one of these characters as a bracket that Jira stores differently. Decide, by `docs/decisions.md` §A wiki link's address is one that Jira links, whether the reader should convert these characters to their escapes and the writer should carry such an `href`. Then make both agree with Jira, and list the characters in `spec/wiki.md` §Marks.
-
-Touches:
-- `src/wiki/spellings.ts`: `linkedAddress`
-- `src/wiki/parse/inline.ts`: `bracket`, `bracketed`, `bareAddress`
-- `src/wiki/emit/inline-line.ts`: `linkDelimiters`
-- `spec/wiki.md`: `## Marks`
-- `src/wiki/emit/adf-to-jira-wiki.test.ts`
-- `src/wiki/parse/jira-wiki-to-adf.test.ts`
 
 ### 209. End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.
 
