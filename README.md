@@ -582,9 +582,10 @@ Ping !adf:mention[@Mikael]{id=5b10a2} â€” !adf:status[In review]{color=yellow} â
 - To keep a literal `!adf:` as text, escape it: `\!adf:`, block and inline alike. A code span and a
   code block hold `!adf:` as content.
 
-An image attached to a Jira issue is a `file` media, as Jira writes a pasted image. Its `id` is the
-attachment's media file id: the UUID in the URL that `GET /rest/api/3/attachment/content/{id}`
-redirects to. Jira reads an empty `collection`:
+To show an image attached to a Jira issue in that issue's description or a comment on it, give
+`losslessMarkdownToAdf` a `file` media; `portableMarkdownToAdf` reads these lines as text. The
+media's `id` is the attachment's media file id: the UUID after `/file/` in the URL that
+`GET /rest/api/3/attachment/content/{attachmentId}` redirects to. Its `collection` is empty.
 
 ```
 !adf:mediaSingle {layout=center}

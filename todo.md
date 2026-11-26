@@ -94,7 +94,7 @@ Touches:
 
 ### 219. Show in the README how lossless markdown spells an image attached to a Jira issue.
 
-A consumer posting comments to Jira looked for a way to show an issue's attachment and found none: the README never shows the `file` media spelling, which lives only in `spec/flavour.md`. They wrote `![alt](…/rest/api/3/attachment/content/<id>)` instead, an external image that shows only to a viewer signed in to the site. A probe of larvit.atlassian.net on 2026-11-26 confirmed that Jira stores `mediaSingle` > `media {type=file id=<media file id> collection=""}` and renders it as the attachment. The media file id is the UUID in the `Location` that `GET /rest/api/3/attachment/content/<attachment id>` redirects to. Resolving an attachment by name stays out of the library (AGENTS.md §1).
+A consumer posting comments to Jira looked for a way to show an issue's attachment and didn't find one: the README never shows the `file` media spelling, which lives only in `spec/flavour.md`. They wrote `![alt](…/rest/api/3/attachment/content/<id>)` instead, an external image that shows only to a viewer signed in to the site. A probe of larvit.atlassian.net on 2026-11-26 confirmed that Jira stores `mediaSingle` > `media {type=file id=<media file id> collection=""}` and renders it as the attachment. The media file id is the UUID after `/file/` in the `Location` that `GET /rest/api/3/attachment/content/<attachment id>` redirects to. Resolving an attachment by name stays out of the library (AGENTS.md §1).
 
 Touches:
 - `README.md`: `### What directives spell` (small)
