@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A lone surrogate no longer reaches markdown raw, where UTF-8 storage turned it into U+FFFD. `adfToLosslessMarkdown` writes a link, an image or a code block language holding one as its directive, its carry or its `language` attribute, so the document reads back equal. `adfToPortableMarkdown` drops one from text, a title and an alt text, and writes one in a link's or an image's address as `%EF%BF%BD`. A mention, emoji or extension key holding only lone surrogates, whitespace and null characters counts as empty in every format, and is written by its fallback.
 - Make `adfToPortableMarkdown` linear in a run of spaces or tabs inside one text node, where 80 000 spaces between two letters took 7 s.
 - Read no trailing `!adf:{…}` marker from inside a link destination, so `[a](<u !adf:{localId=">)"}` reads as a link followed by the text `"}`; the lossless writer spells a heading or paragraph id as the block's directive where its marker would join a link.
 - **Breaking:** `adfToLosslessMarkdown` writes a paragraph, heading, quote, list, list item, code block or rule holding a `localId` in its CommonMark spelling, with the id in an `!adf:{localId=…}` marker, where `0.3.1` wrote a directive. An empty paragraph or heading, and a list with an item whose id has no first paragraph, keep the directive. `losslessMarkdownToAdf` still reads the directives `0.3.1` wrote; `0.3.1` can't read the markers.

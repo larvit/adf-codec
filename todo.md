@@ -15,7 +15,6 @@
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 208 | 0.4.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 2 | 7.8 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
-| 206 | 0.4.0 |  | defect | **Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.** | 3 | 1 | 2 | 4 | 4 | 1 by 2 | 5.2 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
@@ -95,25 +94,6 @@ Touches:
 - `src/markdown/inline-content.ts`
 - `src/markdown/portable/task-ids.ts`: `mintTaskIds`
 - `src/markdown/emit/inline-line.ts`: `takeFallback`, `settledLine`, `lineSegments`
-
-### 206. Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.
-
-Item 38 made `adfToLosslessMarkdown` spell a lone surrogate in a text node as `!adf:text{text="\ud800"}`, and carry it in a code span, a code block, an image's alt text and an `emoji`, `mention` or `status` slot. Still raw: a link's `href` and title, an image's title, and any other string the writer prints outside `{attrs}`. Each reads back as U+FFFD after a UTF-8 encode, breaking README goal 1. Carry each such string, as item 38 carries the alt text.
-
-`adfToPortableMarkdown` still writes a lone surrogate raw in text, since it writes no directive and so cannot use the text directive. Decide whether to replace it with U+FFFD or drop it, weighing README goal 7 ("drops form, never content") and the portable reduction that already removes carriage returns and null characters (`textLeaves` and `portableLink` in `src/markdown/portable/inline-reduction.ts`). Record the answer as an entry in `docs/decisions.md`, and its title in `AGENTS.md`.
-
-Found by item 38's stability review, 2026-11-25.
-
-Touches:
-
-- `src/markdown/emit/inline-line.ts`: `tryLink`, `tryImageLine`, `textSegments`, `spelledApart` (small)
-- `src/markdown/portable/inline-reduction.ts`: `textLeaves`, `portableLink` (small)
-- `src/markdown/commonmark/link-syntax.ts`: `spellDestination`, `spellTitle` (small)
-- `spec/flavour.md`: `## Inline nodes`, `## Marks` (small)
-- `src/markdown/emit/adf-to-markdown.test.ts`
-- `src/markdown/portable/inline-reduction.test.ts`
-- `docs/decisions.md`
-- `AGENTS.md`: `## Decisions` (small)
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
