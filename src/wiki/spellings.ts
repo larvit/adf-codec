@@ -60,7 +60,7 @@ export function wellFormedAddress(address: string): boolean {
   return (address.match(/#/g)?.length ?? 0) <= 1 && !/%(?![0-9a-f]{2})/i.test(address)
 }
 
-// spec/wiki.md, Marks: the addresses the reader and the writer take as a link in `[<address>]` and `[<text>|<address>]`.
+// spec/wiki.md, Marks: the addresses the reader takes as a link in `[<address>]` and `[<text>|<address>]`, and the writer too where `storedHref` leaves one as it is.
 export function linkedAddress(address: string): boolean {
   const pathOrAnchor = address.startsWith('/') || address.startsWith('#')
   const attachmentEmbed = pathOrAnchor ? /\^[^:]+$/ : /\^./
@@ -74,7 +74,7 @@ export function linkedAddress(address: string): boolean {
   return schemesAfterColon.has(lowered) && rest !== '' && !rest.startsWith('#')
 }
 
-// spec/wiki.md, Marks: the `href` Jira stores for a linked address, which escapes `"`, `<`, `>`, a backtick and `^`.
+// spec/wiki.md, Marks: the `href` Jira stores for a linked address.
 export function storedHref(address: string): string {
   return address.replaceAll('"', '%22').replaceAll('<', '%3C').replaceAll('>', '%3E').replaceAll('`', '%60').replaceAll('^', '%5E')
 }

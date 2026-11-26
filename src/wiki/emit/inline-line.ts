@@ -77,12 +77,12 @@ function leafSpelling(node: AdfNode): string | undefined {
   return accessLevel === '' && typeof id === 'string' && spellableUrl.test(id) ? `[~accountid:${id}]` : undefined
 }
 
-// `[<href>]`: the text is the href of the link that is its innermost mark, a link marking no node beside it; `spelledMarks` has already refused an `href` that is no address.
+// `[<address>]`: the text is an address that Jira stores as the `href` of the link that is its innermost mark, a link marking no node beside it.
 function hrefSpelling(node: AdfNode, text: string, nodes: readonly AdfNode[], index: number): string | undefined {
   const link = nodeMarks(node).at(-1)
   if (link?.type !== 'link') return undefined
   const { href, ...others } = nodeAttrs(link)
-  if (href !== text || Object.keys(others).length > 0) return undefined
+  if (!linkedAddress(text) || storedHref(text) !== href || Object.keys(others).length > 0) return undefined
   const sharesLink = (neighbour: AdfNode | undefined): boolean => neighbour !== undefined && nodeMarks(neighbour).some((mark) => identicalMark(mark, link))
   return sharesLink(nodes[index - 1]) || sharesLink(nodes[index + 1]) ? undefined : `[${text}]`
 }
