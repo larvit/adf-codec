@@ -208,7 +208,7 @@ section, or one past 80 lines, is read in ranges.
 - `MIGRATION.md`: the top `## From` section, the release being built.
 - `README.md`: `## Goals`, `## Audience` and the sections the chunk changes or cites.
 - `docs/decisions.md`: only the entries the chunk cites, by their titles under `## Decisions` above.
-- `spec/flavour.md`, `spec/html.md`: the sections the chunk changes or cites.
+- `spec/flavour.md`, `spec/html.md`, `spec/wiki.md`: the sections the chunk changes or cites.
 - A test file or `ci.sh`: its tests or legs, from
   `grep -nE '^\s*test\(|^(\w+=\S+ )*leg ' <file> | cut -c1-110`, then a ranged read of the ones the
   chunk touches.
