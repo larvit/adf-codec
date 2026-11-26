@@ -33,7 +33,8 @@ type Shape = { attrs: AdfAttributes; type: string } & (
 type Holder = Shape & Marked & { content: AdfNode[]; depth: number; place: Place | undefined }
 
 // An open element with no content of its own: `unwrap` and `inline` hand theirs to the holder under them, and `hidden` drops it. `opens` is the link an `<a>` starts.
-type Passing = Marked & { holder: Holder } & ({ kind: 'hidden' | 'unwrap' } | { kind: 'inline'; opens: Link | undefined })
+// `root` is the frame of the outermost hidden element around this one, itself included.
+type Passing = Marked & { holder: Holder } & ({ kind: 'hidden'; root: number } | { kind: 'unwrap' } | { kind: 'inline'; opens: Link | undefined })
 
 type Frame = Holder | Passing
 
@@ -107,6 +108,8 @@ const cellTypes: Readonly<Record<string, string>> = { td: 'tableCell', th: 'tabl
 const containerTypes: Readonly<Record<string, string>> = { blockquote: 'blockquote', ol: 'orderedList', ul: 'bulletList' }
 const endTag = /<\/([a-zA-Z][^\t\n\f\r />]*)[^>]*>?/y
 // WHATWG HTML §15.3.1: what a browser shows none of.
+// The start tags WHATWG HTML §13.2.6.4.4, the in-head insertion mode, keeps in a `<head>`.
+const headContent: ReadonlySet<string> = new Set(['base', 'basefont', 'bgsound', 'link', 'meta', 'noframes', 'noscript', 'script', 'style', 'template', 'title'])
 const hiddenElements: ReadonlySet<string> = new Set(['area', 'base', 'basefont', 'datalist', 'head', 'link', 'meta', 'noembed', 'noframes', 'param', 'rp', 'script', 'style', 'template', 'title'])
 // WHATWG HTML §15.3.4: the elements a browser shows as each mark.
 const markElements: ReadonlyMap<string, AdfMark> = new Map<string, AdfMark>([
@@ -269,22 +272,42 @@ function nearest(reading: Reading, name: string): number {
 }
 
 function readElement(reading: Reading, index: number, tag: Tag): Result<number, ParseError> {
-	const top = topOf(reading)
 	const { attributes, name } = tag
 	if (rawTextElements.has(name)) return success(afterRawText(reading.html, name, tag.end))
+	endHidden(reading, name)
+	const top = topOf(reading)
 	if (top.kind === 'pre') return success(readInPre(top, tag))
 	const claimed = claimsDialect(attributes)
 	if (top.kind === 'hidden' || hiddenElements.has(name) || (attributes.has('hidden') && !claimed)) {
-		if (!voidElements.has(name)) push(reading, passing('hidden', name, top))
+		if (!voidElements.has(name)) push(reading, { holder: holding(top), kind: 'hidden', link: top.link, marks: top.marks, name, root: top.kind === 'hidden' ? top.root : reading.frames.length })
 		return success(tag.end)
 	}
 	if (claimed) return readDialect(reading, index, name)
 	return opened(reading, tag)
 }
 
-// An element handing its content to the holder around it, or dropping it.
-function passing(kind: 'hidden' | 'unwrap', name: string, top: Frame): Passing {
-	return { holder: holding(top), kind, link: top.link, marks: top.marks, name }
+// Ends the hidden element around a start tag where HTML's parser ends it for a missing end tag, so what follows is read.
+function endHidden(reading: Reading, name: string): void {
+	const top = topOf(reading)
+	if (top.kind !== 'hidden') return
+	const hidden = reading.frames[top.root]?.name ?? ''
+	const table = nearest(reading, 'table')
+	const ends =
+		hidden === 'head'
+			? !headContent.has(name)
+			: hidden === 'p'
+				? name === 'hr' || isBlock(name)
+				: hidden === 'li'
+					? name === 'li' && Math.max(nearest(reading, 'ol'), nearest(reading, 'ul')) < top.root
+					: hidden === 'tr'
+						? name === 'tr' && table < top.root
+						: Object.hasOwn(cellTypes, hidden) && (name === 'tr' || Object.hasOwn(cellTypes, name)) && table < top.root
+	if (ends) closeThrough(reading, top.root)
+}
+
+// An element handing its content to the holder around it.
+function unwrapping(name: string, top: Frame): Passing {
+	return { holder: holding(top), kind: 'unwrap', link: top.link, marks: top.marks, name }
 }
 
 function afterRawText(html: string, name: string, from: number): number {
@@ -397,7 +420,7 @@ function openBlock(reading: Reading, name: string, attributes: Attributes, end: 
 	const holder = holderOf(reading)
 	const mapped = mappedNode(reading, name, attributes)
 	if (mapped === undefined) {
-		push(reading, passing('unwrap', name, top))
+		push(reading, unwrapping(name, top))
 		return success(end)
 	}
 	const { deeper, shape } = mapped

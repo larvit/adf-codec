@@ -716,11 +716,12 @@ a `<style>`, a comment and every attribute but those naming a link, an image, a 
 code block's language are dropped. [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md#other-html)
 lists every element.
 
-HTML `adfToHtml` wrote reads this way too once it is changed outside a carry element, its final line
-feed trimmed included. It then loses each `data-*` attribute outside an element that claims the
-dialect, ids, alignment and colours among them, and nothing is refused. Pass the HTML whole. To learn
+HTML `adfToHtml` wrote reads this way too once it is changed outside every element that claims the
+dialect, its final line feed trimmed included. It then loses each `data-*` attribute outside such an
+element, ids, alignment and colours among them, and nothing is refused. Pass the HTML whole. To learn
 before a save whether it read as `adfToHtml`'s own, write the document read with `adfToHtml` and
-compare: only that reading gives back the HTML handed in.
+compare: HTML that comes back unchanged read so. HTML a browser serialized can read so too and still
+come back changed.
 
 In such HTML, an element holding a `data-adf` attribute or a class starting `adf-` claims the
 dialect. It reads only as `adfToHtml` writes it, and is `unmappable-html` otherwise.
