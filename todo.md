@@ -17,7 +17,6 @@
 | 210 | 0.4.0 |  | principle | **Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 211 | 0.4.0 |  |  | **Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 196 | 0.4.0 |  | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
-| 209 | 0.4.0 |  |  | **End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.** | 2 | 2 | 2 | 4 | 2 | 11 by 2 | 2.2 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
@@ -126,17 +125,6 @@ Touches:
 
 - `README.md`: `## Main functionality`, `## Quick start`, `## Other ADF converters`, `## The calls`, `### The error shape` (small), `## The guarantees`, `## Everything exported`
 - `converter-comparison/compare.mjs`: lines 67-108 (small)
-
-### 209. End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.
-
-`address` in `src/wiki/parse/inline.ts` ends a bare `http(s)://` address at `)`, `'` and `!`. Probes of a Jira Cloud site on 2026-11-26, a wiki description line holding the bare address read back as ADF, show Jira links through all three: `http://x/a)b`, `http://x/a'b` and `http://x/a!b` each read as one link whose text and `href` are the whole string. Jira ends a bare address at `"`, a backtick and `>`, and not at `<`; item 207 fixed those.
-
-How Jira treats a trailing `)`, `'` or `!` is still unprobed. The test 'a bare address less the punctuation ending it' in `src/wiki/parse/jira-wiki-to-adf.test.ts` reads `(http://a.b/c).` as the link `http://a.b/c` plus `).`. Probe first: `http://x/a)`, `(http://x/a)`, `http://x/a!` and `http://x/a'`, each alone and in a sentence. Then make the reader end a bare address as Jira does, and update the ends `spec/wiki.md` §What only the reader reads lists.
-
-Touches:
-- `src/wiki/parse/inline.ts`: `address`, `bareAddress` (small)
-- `src/wiki/parse/jira-wiki-to-adf.test.ts`
-- `spec/wiki.md`: `## What only the reader reads` (small)
 
 ### 170. Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.
 
