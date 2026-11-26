@@ -40,6 +40,18 @@ function item(...content: AdfNode[]): AdfNode {
   return { content, type: 'listItem' }
 }
 
+function arrays(levels: number): AdfAttributes[string] {
+  let value: AdfAttributes[string] = 1
+  for (let level = 0; level < levels; level += 1) value = [value]
+  return value
+}
+
+function listed(levels: number, inner: AdfNode): AdfNode {
+  let node = inner
+  for (let level = 0; level < levels; level += 1) node = { content: [item(node)], type: 'bulletList' }
+  return node
+}
+
 function nested(type: string, levels: number, inner: AdfNode): AdfNode {
   let node = inner
   for (let level = 0; level < levels; level += 1) node = { content: [node], type }
@@ -83,10 +95,13 @@ test('escapes text, and keeps tabs, line feeds and form feeds', () => {
   assert.equal(html(adfToHtml(document(paragraph(text('a < b && c > "d" \'e\'\tf\ng\fh'))))), '<p>a &lt; b &amp;&amp; c &gt; &quot;d&quot; \'e\'\tf\ng\fh</p>\n')
 })
 
+for (const value of ['a\r\nb', 'a\0b', 'a\u0001b', 'a\u007fb', 'a\u0085b', 'a﷐b', 'a￿b', 'a🿾b', 'a\ud800b', 'a\udc00b']) {
+  test(`carries text holding a character HTML text cannot hold: ${JSON.stringify(value)}`, () => {
+    assert.equal(carriedSpans(text(value)), 1)
+  })
+}
+
 test('carries text holding a character HTML text cannot hold, escaping it in the JSON', () => {
-  for (const value of ['a\r\nb', 'a\0b', 'a\u0001b', 'a\u007fb', 'a\u0085b', 'a﷐b', 'a￿b', 'a🿾b', 'a\ud800b', 'a\udc00b']) {
-    assert.equal(carriedSpans(text(value)), 1, JSON.stringify(value))
-  }
   assert.equal(carriedSpans(text('😄 a b')), 0)
   assert.equal(html(adfToHtml(document(paragraph(text('a\u0085﷐b', { type: 'odd' }))))).includes('&quot;text&quot;:&quot;a\\u0085\\ufdd0b&quot;'), true)
   assert.equal(html(adfToHtml(document(paragraph(text('a\u{1fffe}b', { type: 'odd' }))))).includes('&quot;text&quot;:&quot;a\\ud83f\\udffeb&quot;'), true)
@@ -202,9 +217,7 @@ test('writes underline, subscript, superscript and the two colours as elements, 
   assert.equal(marked({ attrs: { color: 'rgb(1, 2, 3) "x"' }, type: 'backgroundColor' }), '<p><mark data-background-color="rgb(1, 2, 3) &quot;x&quot;">x</mark></p>\n')
 })
 
-test('carries text holding a mark HTML cannot spell: attributes besides those the element takes, a colour that is no string, or a type that is neither sub nor sup', () => {
-  const carriedText = (mark: AdfMark): boolean => html(adfToHtml(document(paragraph(text('x', mark))))).includes('adf-carry')
-  for (const mark of [
+const unspellableMarks: AdfMark[] = [
     { attrs: {}, type: 'underline' },
     { attrs: { type: 'sub' }, type: 'underline' },
     { attrs: { type: 'big' }, type: 'subsup' },
@@ -214,8 +227,13 @@ test('carries text holding a mark HTML cannot spell: attributes besides those th
     { attrs: { color: 'red', x: 1 }, type: 'textColor' },
     { attrs: { color: 7 }, type: 'textColor' },
     { type: 'backgroundColor' },
-  ]) assert.equal(carriedText(mark), true, JSON.stringify(mark))
-})
+]
+
+for (const mark of unspellableMarks) {
+  test(`carries text holding a mark HTML cannot spell: ${JSON.stringify(mark)}`, () => {
+    assert.equal(html(adfToHtml(document(paragraph(text('x', mark))))).includes('adf-carry'), true)
+  })
+}
 
 test('writes a paragraph or heading marked with center or end alignment as a data-align attribute', () => {
   const aligned = (align: string, node: AdfNode = paragraph(text('x'))): string => html(adfToHtml(document({ ...node, marks: [{ attrs: { align }, type: 'alignment' }] })))
@@ -289,8 +307,11 @@ test('carries an emoji, mention, status, date or card holding what its element c
   assert.equal(carried({ attrs: { timestamp: 'soon' }, type: 'date' }), true)
   assert.equal(carried({ attrs: { timestamp: 1756080000000 }, type: 'date' }), true)
   assert.equal(carried({ type: 'date' }), true)
-  for (const timestamp of ['253402300800000', '-62135596800001', '-62167219200000']) assert.equal(carried({ attrs: { timestamp }, type: 'date' }), true)
-  for (const timestamp of ['253402300799999', '-62135596800000']) assert.equal(carried({ attrs: { timestamp }, type: 'date' }), false)
+  assert.equal(carried({ attrs: { timestamp: '253402300800000' }, type: 'date' }), true)
+  assert.equal(carried({ attrs: { timestamp: '-62135596800001' }, type: 'date' }), true)
+  assert.equal(carried({ attrs: { timestamp: '-62167219200000' }, type: 'date' }), true)
+  assert.equal(carried({ attrs: { timestamp: '253402300799999' }, type: 'date' }), false)
+  assert.equal(carried({ attrs: { timestamp: '-62135596800000' }, type: 'date' }), false)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap' } }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap' }, url: 'https://example.com/' }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { url: '' }, type: 'inlineCard' }), true)
@@ -394,18 +415,26 @@ test('shows a carried image marked by a link to another target as that link, the
   assert.equal(inline({ attrs: { href: 'https://example.com/', title: 5 }, type: 'link' }), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
 })
 
-test('refuses an inline card a link marks, which Atlassian\'s schema does not allow, inside a carried node too', () => {
-  const marks: AdfMark[] = [{ attrs: { href: 'https://example.com/' }, type: 'link' }]
-  const cards: AdfNode[] = [{ attrs: { url: 'https://example.com/roadmap' }, marks, type: 'inlineCard' }, { attrs: { data: { name: 'Roadmap', url: 'https://example.com/roadmap' } }, marks, type: 'inlineCard' }]
-  for (const card of cards) {
+const linkMarks: AdfMark[] = [{ attrs: { href: 'https://example.com/' }, type: 'link' }]
+const linkedCards: [string, AdfNode][] = [
+  ['a url', { attrs: { url: 'https://example.com/roadmap' }, marks: linkMarks, type: 'inlineCard' }],
+  ['data', { attrs: { data: { name: 'Roadmap', url: 'https://example.com/roadmap' } }, marks: linkMarks, type: 'inlineCard' }],
+]
+
+for (const [held, card] of linkedCards) {
+  test(`refuses an inline card holding ${held} that a link marks, which Atlassian's schema does not allow`, () => {
     const refused = adfToHtml(document(paragraph(text('See '), card)))
     assert.equal(!refused.ok && refused.error.code, 'unsupported-node-shape')
     assert.deepEqual(!refused.ok && refused.error.path, ['content', 0, 'content', 1])
     assert.match(!refused.ok ? refused.error.message : '', /inlineCard.*link/)
-  }
-  const carried = adfToHtml(document({ content: [paragraph(cards[0] ?? text('x'))], type: 'bodiedExtension' }))
+  })
+}
+
+test('refuses an inline card a link marks inside a carried node and a list item too', () => {
+  const card: AdfNode = { attrs: { url: 'https://example.com/roadmap' }, marks: linkMarks, type: 'inlineCard' }
+  const carried = adfToHtml(document({ content: [paragraph(card)], type: 'bodiedExtension' }))
   assert.deepEqual(!carried.ok && carried.error.path, ['content', 0, 'content', 0, 'content', 0])
-  const nested = adfToHtml(document({ content: [{ content: [paragraph(cards[0] ?? text('x'))], type: 'listItem' }], type: 'bulletList' }))
+  const nested = adfToHtml(document({ content: [{ content: [paragraph(card)], type: 'listItem' }], type: 'bulletList' }))
   assert.deepEqual(!nested.ok && nested.error.path, ['content', 0, 'content', 0, 'content', 0, 'content', 0])
 })
 
@@ -499,9 +528,12 @@ test('carries a node holding what its element cannot', () => {
   assert.equal(carriedBlock({ attrs: { color: 'a\u0001' }, type: 'rule' }), true)
   assert.equal(carriedBlock({ attrs: { level: 1 }, type: 'rule' }), true)
   assert.equal(carriedBlock({ type: 'unknownBlock' }), true)
-  for (const level of [0, 1.5, 7]) assert.equal(carriedBlock({ attrs: { level }, content: [text('x')], type: 'heading' }), true, String(level))
+  assert.equal(carriedBlock({ attrs: { level: 0 }, content: [text('x')], type: 'heading' }), true)
+  assert.equal(carriedBlock({ attrs: { level: 1.5 }, content: [text('x')], type: 'heading' }), true)
+  assert.equal(carriedBlock({ attrs: { level: 7 }, content: [text('x')], type: 'heading' }), true)
   assert.equal(carriedBlock({ marks: [{ attrs: { level: 1 }, type: 'indentation' }], type: 'blockquote' }), true)
-  for (const order of [1.5, -0]) assert.equal(carriedBlock({ attrs: { order }, content: [item(paragraph(text('x')))], type: 'orderedList' }), true, String(order))
+  assert.equal(carriedBlock({ attrs: { order: 1.5 }, content: [item(paragraph(text('x')))], type: 'orderedList' }), true)
+  assert.equal(carriedBlock({ attrs: { order: -0 }, content: [item(paragraph(text('x')))], type: 'orderedList' }), true)
   assert.equal(carriedBlock({ attrs: { localId: 7 }, content: [item(paragraph(text('x')))], type: 'orderedList' }), true)
   assert.equal(carriedBlock({ content: [item(paragraph(text('x'))), paragraph(text('y'))], type: 'bulletList' }), true)
   assert.equal(carriedBlock({ content: [{ attrs: {}, content: [paragraph(text('x'))], type: 'listItem' }], type: 'bulletList' }), true)
@@ -575,16 +607,13 @@ test('writes blocks nested 500 levels, and refuses the next level, a list\'s ite
   const deep = adfToHtml(document(nested('blockquote', largestNesting + 1, paragraph(text('x')))))
   assert.equal(refusal(deep).startsWith('unsupported-nesting-depth at /'), true)
   assert.equal(!deep.ok && deep.error.message.includes('500'), true)
-  let items: AdfNode = paragraph(text('x'))
-  for (let level = 0; level < largestNesting; level += 1) items = { content: [item(items)], type: 'bulletList' }
+  const items = listed(largestNesting, paragraph(text('x')))
   assert.equal(refusal(adfToHtml(document(items))), 'written')
   assert.equal(refusal(adfToHtml(document({ content: [item(items)], type: 'bulletList' }))).startsWith('unsupported-nesting-depth at /'), true)
 })
 
 test('refuses a carried block whose JSON nests past the levels its depth leaves, and an inline carry past 500', () => {
-  let value: AdfAttributes[string] = 1
-  for (let level = 0; level < largestNesting - 2; level += 1) value = [value]
-  const carried: AdfNode = { attrs: { a: value }, type: 'unknownBlock' }
+  const carried: AdfNode = { attrs: { a: arrays(largestNesting - 2) }, type: 'unknownBlock' }
   assert.equal(refusal(adfToHtml(document(carried))), 'written')
   assert.equal(refusal(adfToHtml(document({ content: [carried], type: 'blockquote' }))), 'unsupported-nesting-depth at /content/0/content/0')
   const deep = nested('unknownInline', largestNesting, text('x'))
@@ -693,26 +722,27 @@ test('refuses, at the item\'s text, an inline carry nested past 500 in a task or
   assert.equal(refusal(adfToHtml(document({ content: [decision], type: 'decisionList' }))), 'unsupported-nesting-depth at /content/0/content/0/content/0')
 })
 
-test('writes panels, expands and nested expands nested 500 levels, and refuses the next level', () => {
-  for (const type of ['panel', 'expand', 'nestedExpand']) {
+for (const type of ['panel', 'expand', 'nestedExpand']) {
+  test(`writes panels, expands and nested expands nested 500 levels, and refuses the next level: ${type}`, () => {
     assert.equal(refusal(adfToHtml(document(nested(type, largestNesting, paragraph(text('x')))))), 'written')
     const deep = adfToHtml(document(nested(type, largestNesting + 1, paragraph(text('x')))))
     assert.equal(refusal(deep).startsWith('unsupported-nesting-depth at /'), true)
     assert.equal(!deep.ok && deep.error.message.includes('500'), true)
-  }
-})
+  })
+}
 
-test('writes a task or decision list nested 499 levels, its items one level below it, and refuses the next level', () => {
-  const lists: AdfNode[] = [
-    { content: [{ attrs: { state: 'TODO' }, content: [text('x')], type: 'taskItem' }], type: 'taskList' },
-    { content: [{ attrs: { state: 'DECIDED' }, content: [text('x')], type: 'decisionItem' }], type: 'decisionList' },
-  ]
-  for (const list of lists) {
+const nestedTaskLists: AdfNode[] = [
+  { content: [{ attrs: { state: 'TODO' }, content: [text('x')], type: 'taskItem' }], type: 'taskList' },
+  { content: [{ attrs: { state: 'DECIDED' }, content: [text('x')], type: 'decisionItem' }], type: 'decisionList' },
+]
+
+for (const list of nestedTaskLists) {
+  test(`writes a task or decision list nested 499 levels, its items one level below it, and refuses the next level: ${list.type}`, () => {
     assert.equal(refusal(adfToHtml(document(nested('panel', largestNesting - 1, list)))), 'written')
     const deep = adfToHtml(document(nested('panel', largestNesting, list)))
     assert.equal(refusal(deep).startsWith('unsupported-nesting-depth at /'), true)
-  }
-})
+  })
+}
 
 test('writes a caption as a figcaption, refuses an inline carry nested past 500 in it, and carries what is no caption', () => {
   const media: AdfNode = { attrs: { type: 'external', url: 'https://example.com/moon.jpg' }, type: 'media' }

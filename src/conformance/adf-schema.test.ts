@@ -31,6 +31,30 @@ test('the ADF JSON Schemas are @atlaskit/adf-schema 57.4.9, vendored byte-exact'
 })
 
 test('the tables spell the attribute names and kinds the ADF JSON Schemas give each type they spell, the pinned gaps apart', () => {
+  assert.deepEqual(spellingMismatches(), [])
+})
+
+test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned carried ones and the grammar's own apart", () => {
+  assert.deepEqual(unspelledTypes(), [])
+})
+
+for (const [type, model] of Object.entries(inlineNodes)) {
+  test(`the inline node table gives ${type} exactly the mark types the ADF JSON Schemas give it, in order`, () => {
+    assert.deepEqual(model.markTypes, [...(schemaTypes().marked.get(type) ?? [])].sort())
+  })
+}
+
+for (const file of schemaFiles) {
+  test(`code text takes exactly the mark types ${file} gives a code_inline_node`, () => {
+    assert.deepEqual(narrowedMarkTypes(file, 'code_inline_node'), codeTextMarkTypes)
+  })
+
+  test(`formatted text takes exactly the mark types ${file} gives a formatted_text_inline_node`, () => {
+    assert.deepEqual(narrowedMarkTypes(file, 'formatted_text_inline_node'), formattedTextMarkTypes)
+  })
+}
+
+function spellingMismatches(): string[] {
   const { held } = schemaTypes()
   const spelledTypes = spelled()
   const found: string[] = []
@@ -59,10 +83,10 @@ test('the tables spell the attribute names and kinds the ADF JSON Schemas give e
     else if (kind === undefined) found.push(`${gap}: the gaps list names it, the schema holds nothing`)
     else found.push(`${gap}: the gaps list names it, the tables spell ${kind}`)
   }
-  assert.deepEqual(found, [])
-})
+  return found
+}
 
-test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned carried ones and the grammar's own apart", () => {
+function unspelledTypes(): string[] {
   const { held } = schemaTypes()
   const spelledNames = new Set(spelled().map(([type]) => type))
   const found: string[] = []
@@ -73,34 +97,17 @@ test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned c
     if (!held.has(type)) found.push(`${type}: the carried list names the type, the schema holds no definition of it`)
     if (spelledNames.has(type)) found.push(`${type}: the carried list names the type, and the tables spell it`)
   }
-  assert.deepEqual(found, [])
-})
+  return found
+}
 
-test('the inline node table gives a type exactly the mark types the ADF JSON Schemas give it, in order', () => {
-  const { marked } = schemaTypes()
-  for (const [type, model] of Object.entries(inlineNodes)) assert.deepEqual(model.markTypes, [...(marked.get(type) ?? [])].sort(), type)
-})
-
-test('code text takes exactly the mark types the ADF JSON Schemas give a code_inline_node', () => {
-  for (const file of schemaFiles) {
-    const definitions = schemaObject(schemaObject(JSON.parse(readFileSync(join(root, file), 'utf8')), file)['definitions'], `${file} definitions`)
-    const where = `${file} code_inline_node`
-    const marks = alternatives(schemaObject(definitions['code_inline_node'], where), definitions, where).flatMap((properties) => properties.get('marks') ?? [])
-    // allOf narrows text_node's marks, which hold every mark type, to the ones code text takes.
-    const narrowed = marks.map((schema) => heldMarkTypes(schema, definitions, `${where}.marks`)).filter((types) => !types.includes('every mark type'))
-    assert.deepEqual(narrowed.flat().sort(), codeTextMarkTypes, file)
-  }
-})
-
-test('formatted text takes exactly the mark types the ADF JSON Schemas give a formatted_text_inline_node', () => {
-  for (const file of schemaFiles) {
-    const definitions = schemaObject(schemaObject(JSON.parse(readFileSync(join(root, file), 'utf8')), file)['definitions'], `${file} definitions`)
-    const where = `${file} formatted_text_inline_node`
-    const marks = alternatives(schemaObject(definitions['formatted_text_inline_node'], where), definitions, where).flatMap((properties) => properties.get('marks') ?? [])
-    const narrowed = marks.map((schema) => heldMarkTypes(schema, definitions, `${where}.marks`)).filter((types) => !types.includes('every mark type'))
-    assert.deepEqual(narrowed.flat().sort(), formattedTextMarkTypes, file)
-  }
-})
+function narrowedMarkTypes(file: string, name: string): string[] {
+  const definitions = schemaObject(schemaObject(JSON.parse(readFileSync(join(root, file), 'utf8')), file)['definitions'], `${file} definitions`)
+  const where = `${file} ${name}`
+  const marks = alternatives(schemaObject(definitions[name], where), definitions, where).flatMap((properties) => properties.get('marks') ?? [])
+  // allOf narrows text_node's marks, which hold every mark type, to the ones the node takes.
+  const narrowed = marks.map((schema) => heldMarkTypes(schema, definitions, `${where}.marks`)).filter((types) => !types.includes('every mark type'))
+  return narrowed.flat().sort()
+}
 
 function spelled(): Spelled[] {
   return [

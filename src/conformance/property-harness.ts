@@ -264,3 +264,7 @@ export function blockTaskItemChildren(nodes: readonly AdfNode[]): string[] {
   }
   return types
 }
+
+export function spliced(text: string, [at, removed, piece]: readonly [number, number, string]): string {
+  return `${text.slice(0, at % (text.length + 1))}${piece}${text.slice((at % (text.length + 1)) + removed)}`
+}

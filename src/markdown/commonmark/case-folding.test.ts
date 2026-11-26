@@ -39,13 +39,17 @@ test('folds every code point to the mapping the standard gives it', () => {
 })
 
 test('leaves every other code point as it is', () => {
+  assert.deepEqual(foldedOutsideTheMappings(), [])
+})
+
+function foldedOutsideTheMappings(): number[] {
   const changed: number[] = []
   for (let point = 0; point <= 0x10ffff; point++) {
     const character = String.fromCodePoint(point)
     if (!mappings.has(character) && foldCase(character) !== character) changed.push(point)
   }
-  assert.deepEqual(changed, [])
-})
+  return changed
+}
 
 test('folds a string code point by code point, a surrogate pair as one', () => {
   assert.equal(foldCase('Ab\u{10400}Ç ẞ'), 'ab\u{10428}ç ss')

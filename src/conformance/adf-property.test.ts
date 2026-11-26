@@ -3,7 +3,7 @@ import fc from 'fast-check'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../adf/document.ts'
-import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } from './property-harness.ts'
+import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout, spliced } from './property-harness.ts'
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPlainText } from '../plain-text/adf-to-plain-text.ts'
@@ -152,13 +152,7 @@ test('a generated document writes HTML holding no character HTML cannot hold, an
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
       assert.ok(!/(?![\t\n\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/u.test(written.value), `writing ${JSON.stringify(document)}`)
       const page = written.value.replace(/<[^>]*>/g, '').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&amp;', '&').replace(unshown, '')
-      let from = 0
-      for (const text of documentTexts(document.content ?? [])) {
-        const shown = text.replace(unshown, '')
-        const at = page.indexOf(shown, from)
-        assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(shown)} is not shown after ${from}`)
-        from = at + shown.length
-      }
+      assert.equal(firstUnshown(page, documentTexts(document.content ?? []).map((text) => text.replace(unshown, ''))), undefined, `writing ${JSON.stringify(document)}`)
     }),
     propertyRuns(gateRuns),
   )
@@ -170,13 +164,7 @@ test('a generated document writes plain text showing every text node\'s text in 
       const written = adfToPlainText(document)
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
       const page = written.value.replaceAll(/\s/g, '')
-      let from = 0
-      for (const text of documentTexts(document.content ?? [])) {
-        const shown = text.replaceAll(/\s/g, '')
-        const at = page.indexOf(shown, from)
-        assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(shown)} is not shown after ${from}`)
-        from = at + shown.length
-      }
+      assert.equal(firstUnshown(page, documentTexts(document.content ?? []).map((text) => text.replaceAll(/\s/g, ''))), undefined, `writing ${JSON.stringify(document)}`)
     }),
     propertyRuns(gateRuns),
   )
@@ -201,9 +189,7 @@ test('HTML edited anywhere reads, if at all, to a document whose HTML reads back
     fc.property(adfDocument, edits, (document, cuts) => {
       const written = adfToHtml(document)
       assert.ok(written.ok)
-      let html = written.value
-      for (const [at, removed, piece] of cuts) html = `${html.slice(0, at % (html.length + 1))}${piece}${html.slice((at % (html.length + 1)) + removed)}`
-      assertReadsBack(html)
+      assertReadsBack(cuts.reduce(spliced, written.value))
     }),
     propertyRuns(gateRuns),
   )
@@ -229,3 +215,13 @@ test('a generated document writes the portable markdown its editor-normal form w
     propertyRuns(gateRuns),
   )
 })
+
+function firstUnshown(page: string, texts: readonly string[]): string | undefined {
+  let from = 0
+  for (const shown of texts) {
+    const at = page.indexOf(shown, from)
+    if (at < 0) return shown
+    from = at + shown.length
+  }
+  return undefined
+}

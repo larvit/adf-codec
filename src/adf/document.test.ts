@@ -30,6 +30,12 @@ function nested(levels: number): JsonValue {
   return value
 }
 
+function inPanels(node: AdfNode, levels: number): AdfNode {
+  let held = node
+  for (let level = 0; level < levels; level += 1) held = { content: [held], type: 'panel' }
+  return held
+}
+
 function withAttribute(value: JsonValue): unknown {
   return { content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }
 }
@@ -120,11 +126,25 @@ test('accepts the JSON values an attribute may hold', () => {
   assert.equal(readable(vm.runInNewContext("({ content: [{ attrs: { a: { b: [1] } }, type: 'paragraph' }], type: 'doc', version: 1 })")), true)
 })
 
-test('refuses an attribute value that is an object JSON does not hold', () => {
-  class Point { x = 1 }
-  for (const value of [new Date(0), new Map([['b', 1]]), new Set([1]), new Uint8Array([1, 2]), new Point(), [new Map()], { b: new Set() }]) {
-    assert.equal(readable({ content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }), false, String(value))
-  }
+class Point { x = 1 }
+
+const unheldValues: [string, unknown][] = [
+  ['a Date', new Date(0)],
+  ['a Map', new Map([['b', 1]])],
+  ['a Set', new Set([1])],
+  ['a typed array', new Uint8Array([1, 2])],
+  ['a class instance', new Point()],
+  ['an array holding a Map', [new Map()]],
+  ['an object holding a Set', { b: new Set() }],
+]
+
+for (const [name, value] of unheldValues) {
+  test(`refuses an attribute value that is ${name}`, () => {
+    assert.equal(readable({ content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  })
+}
+
+test('refuses attributes, or a mark attribute value, that are an object JSON does not hold', () => {
   assert.equal(readable({ content: [{ attrs: new Map(), type: 'paragraph' }], type: 'doc', version: 1 }), false)
   assert.equal(readable({ content: [{ marks: [{ attrs: { href: new URL('https://x.test') }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
 })
@@ -168,27 +188,26 @@ test('opens every writer with the same checks: a document, version 1, and no mor
   assert.equal(checked({ content: [text], type: 'doc', version: 1 }), 'unsupported-node-shape')
 })
 
-test('refuses an inline card a link marks, wherever the document holds it and whichever call writes it', () => {
-  const card = { attrs: { url: 'https://example.com/roadmap' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
-  const paragraph = { content: [{ text: 'See ', type: 'text' }, card], type: 'paragraph' }
-  const holders = [
-    { holder: paragraph, path: ['content', 0, 'content', 1] },
-    { holder: { content: [{ content: [paragraph], type: 'listItem' }], type: 'bulletList' }, path: ['content', 0, 'content', 0, 'content', 0, 'content', 1] },
-    { holder: { content: [paragraph], type: 'panel' }, path: ['content', 0, 'content', 0, 'content', 1] },
-    { holder: { content: [card, { text: 'x', type: 'text' }], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }, path: ['content', 0, 'content', 0] },
-    { holder: { content: [{ content: [card], type: 'futureNode' }], type: 'futureBlock' }, path: ['content', 0, 'content', 0, 'content', 0] },
-  ]
-  const writers = [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]
-  for (const { holder, path } of holders) {
-    for (const write of writers) {
+const shapeWriters = [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]
+const linkedCard = { attrs: { url: 'https://example.com/roadmap' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
+const linkedCardParagraph = { content: [{ text: 'See ', type: 'text' }, linkedCard], type: 'paragraph' }
+const linkedCardHolders = [
+  { holder: linkedCardParagraph, path: ['content', 0, 'content', 1], where: 'a paragraph' },
+  { holder: { content: [{ content: [linkedCardParagraph], type: 'listItem' }], type: 'bulletList' }, path: ['content', 0, 'content', 0, 'content', 0, 'content', 1], where: 'a list item' },
+  { holder: { content: [linkedCardParagraph], type: 'panel' }, path: ['content', 0, 'content', 0, 'content', 1], where: 'a panel' },
+  { holder: { content: [linkedCard, { text: 'x', type: 'text' }], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }, path: ['content', 0, 'content', 0], where: 'an aligned paragraph' },
+  { holder: { content: [{ content: [linkedCard], type: 'futureNode' }], type: 'futureBlock' }, path: ['content', 0, 'content', 0, 'content', 0], where: 'a node of an unknown type' },
+]
+
+for (const { holder, path, where } of linkedCardHolders) {
+  for (const write of shapeWriters) {
+    test(`${write.name} refuses an inline card a link marks in ${where}`, () => {
       const result = write({ content: [holder], type: 'doc', version: 1 })
       refused(result, 'unsupported-node-shape', 'inlineCard', 'link')
       assert.deepEqual(!result.ok && result.error.path, path)
-    }
+    })
   }
-})
-
-const shapeWriters = [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]
+}
 
 const schemaRefusals: readonly { facts: string[]; node: AdfNode }[] = [
   { facts: ['panel', 'no text key'], node: { text: 'x', type: 'panel' } },
@@ -239,18 +258,19 @@ test('names the first link-marked card in document order', () => {
   assert.deepEqual(!result.ok && result.error.path, ['content', 0, 'content', 0])
 })
 
-test('writes a card holding no link mark, and a node type it does not know holding one', () => {
-  const comment = { attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }
-  const link = { attrs: { href: 'https://example.com/' }, type: 'link' }
-  const marked = { content: [{ attrs: { url: 'https://example.com/roadmap' }, marks: [comment], type: 'inlineCard' }, { marks: [link], type: 'futureInline' }], type: 'paragraph' }
-  for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) assert.equal(write({ content: [marked], type: 'doc', version: 1 }).ok, true)
-})
+for (const write of shapeWriters) {
+  test(`${write.name} writes a card holding no link mark, and a node type it does not know holding one`, () => {
+    const comment = { attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }
+    const link = { attrs: { href: 'https://example.com/' }, type: 'link' }
+    const marked = { content: [{ attrs: { url: 'https://example.com/roadmap' }, marks: [comment], type: 'inlineCard' }, { marks: [link], type: 'futureInline' }], type: 'paragraph' }
+    assert.equal(write({ content: [marked], type: 'doc', version: 1 }).ok, true)
+  })
+}
 
 test('names a link-marked card at any depth by its path alone, with no step quadratic in the depth', () => {
   const depth = 100_000
-  let node: AdfNode = { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
-  for (let level = 0; level < depth; level += 1) node = { content: [node], type: 'panel' }
-  const result = writableContent({ content: [node], type: 'doc', version: 1 })
+  const card = { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
+  const result = writableContent({ content: [inPanels(card, depth)], type: 'doc', version: 1 })
   assert.equal(!result.ok && result.error.path.length, 2 * (depth + 1))
   assert.deepEqual(!result.ok && result.error.path.slice(0, 4), ['content', 0, 'content', 0])
 })
