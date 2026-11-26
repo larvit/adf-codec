@@ -13,8 +13,8 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 212 | 0.4.0 |  |  | **Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.** | 2 | 2 | 2 | 4 | 3 | 11 by 3 | 2.5 |
-| 213 | 0.4.0 |  |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
+| 213 | 0.4.0 | 107, 212 |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -47,24 +47,6 @@ Touches:
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string `` (small)
 
-### 213. Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.
-
-`~/.claude/principles/technical-principles.md` says to indent with hard tabs by default, and a project's own setting wins. This project's `AGENTS.md` §Code rules has said "Two-space indent" since its first commit, with no reason recorded, and the 177 `src` files, 14,500 indented lines, follow it. The maintainer found the default ignored on 2026-11-26 and asked for tabs in the source. Spellings of a format stay in spaces (§The block carry indents five levels in two spaces and writes deeper values compact): the carry's JSON, the corpus and the spec's examples don't change.
-
-Convert the leading whitespace of each line of `src`, `browser-tests`, `package-tests`, `release-tooling`, `mutation-tests`, `bundle-size`, `feature-table`, `converter-comparison`, `corpus-gathering` and the `.sh` and `.js` files at the root, one tab for each two spaces. Leave alone a line inside a template literal or a string whose indentation is the string's content, such as a test's expected markdown; a test that fails on the change shows one missed. Add an `.editorconfig` with `indent_style = tab` for those files and `indent_style = space` for `*.md`, `*.json`, `*.yml` and `corpus/**`. Replace "Two-space indent" in `AGENTS.md` §Code rules with "Tab indent". Land the conversion in one commit with no other change, so `git blame` can skip it with `.git-blame-ignore-revs`. Wait for the chunk's other items to merge first, since every open branch conflicts with it.
-
-Where an item `todo-item show` lists later in the release holds a `Touches:` line with `lines <first>-<last>`, the line numbers stay, since a tab replaces two spaces on the same line.
-
-Touches:
-
-- `.editorconfig`
-- `.git-blame-ignore-revs`
-- `AGENTS.md`: `## 4. Code rules` (small)
-- `src`
-- `ci.sh`
-- `publish.sh`
-- `docker-runner.sh`
-
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 
 The block carry indents two spaces a level, so about 1 MB of deeply nested arrays in a carried
@@ -90,6 +72,24 @@ Touches:
 - `corpus/round-trip/opaque-carry/code-block-children.md`
 - `corpus/errors/carry-fence-type.md`
 - `corpus/errors/carry-fence-type-spellable.md`
+
+### 213. Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.
+
+`~/.claude/principles/technical-principles.md` says to indent with hard tabs by default, and a project's own setting wins. This project's `AGENTS.md` §Code rules has said "Two-space indent" since its first commit, with no reason recorded, and the 177 `src` files, 14,500 indented lines, follow it. The maintainer found the default ignored on 2026-11-26 and asked for tabs in the source. Spellings of a format stay in spaces (§The block carry indents five levels in two spaces and writes deeper values compact): the carry's JSON, the corpus and the spec's examples don't change.
+
+Convert the leading whitespace of each line of `src`, `browser-tests`, `package-tests`, `release-tooling`, `mutation-tests`, `bundle-size`, `feature-table`, `converter-comparison`, `corpus-gathering` and the `.sh` and `.js` files at the root, one tab for each two spaces. Leave alone a line inside a template literal or a string whose indentation is the string's content, such as a test's expected markdown; a test that fails on the change shows one missed. Add an `.editorconfig` with `indent_style = tab` for those files and `indent_style = space` for `*.md`, `*.json`, `*.yml` and `corpus/**`. Replace "Two-space indent" in `AGENTS.md` §Code rules with "Tab indent". Land the conversion in one commit with no other change, so `git blame` can skip it with `.git-blame-ignore-revs`. Items 212 and 107 block this one (Blocked by), since every open branch conflicts with the conversion: the plan orders by that cell, and this sentence alone let a chunk start while both were open.
+
+Where an item `todo-item show` lists later in the release holds a `Touches:` line with `lines <first>-<last>`, the line numbers stay, since a tab replaces two spaces on the same line.
+
+Touches:
+
+- `.editorconfig`
+- `.git-blame-ignore-revs`
+- `AGENTS.md`: `## 4. Code rules` (small)
+- `src`
+- `ci.sh`
+- `publish.sh`
+- `docker-runner.sh`
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 
