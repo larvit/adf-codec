@@ -153,7 +153,7 @@ parenthesized value set reading `string`; fenced examples are skipped. Keep pros
 
 - Tab indent, English everywhere. Alphabetical order wherever order carries no meaning,
   keyed on the name a line introduces: an import sorts on its first binding, type imports ahead of
-  value imports, so moving or renaming a module reorders nothing.
+  value imports, so moving or renaming a module doesn't reorder anything.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a reader validating the
   fields it claims (`readAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
