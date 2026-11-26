@@ -321,7 +321,7 @@ function readDialect(reading: Reading, index: number, name: string): Result<numb
 	endParagraph(reading)
 	const holder = holderOf(reading)
 	const block = reading.readBlock(html, index, { index: holder.content.length, parent: holder.place }, holder.depth + impliedRow(holder, ''))
-	if (block === undefined) return refused('unmappable-html', `<${name}> holds data-adf or an adf- class, which mark an element adfToHtml writes, and adfToHtml writes no <${name}> holding either: ${foundAt(html, index)}`, html, index, inline)
+	if (block === undefined) return refused('unmappable-html', `<${name}> holds data-adf or an adf- class, which mark an element adfToHtml writes, and adfToHtml writes no <${name}> that opens like this one: ${foundAt(html, index)}`, html, index, inline)
 	if (block.ok) put(holder, block.value.node)
 	return block.ok ? success(block.value.end) : block
 }
