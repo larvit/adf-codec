@@ -1703,3 +1703,20 @@ Read most (opens and searches):
 - `src/canonical-json.test.ts` 1
 - `src/canonical-json.ts` 1
 - `src/conformance/markdown-property.test.ts` 1
+
+## Reading cost, chunk 47111bff61e5, finished 2026-11-26T09:47:54Z
+
+159399 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/canonical-json.ts` 5
+- `src/markdown/emit/inline-line.ts` 4
+- `src/length-bound.ts` 3
+- `src/markdown/commonmark/link-syntax.ts` 3
+- `CHANGELOG.md` 2
+- `ci.sh` 2
+- `docker-runner.sh` 2
+- `docs/decisions.md` 2
+- `src/canonical-json.test.ts` 2
+- `src/markdown/emit/adf-to-markdown.ts` 2
