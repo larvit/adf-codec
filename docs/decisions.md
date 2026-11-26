@@ -150,8 +150,8 @@ fences are unchanged at five levels. Spaces, not tabs: a spelling of a format us
 expect of JSON, and a tab inside a list item or a block quote meets CommonMark's tab stops. This
 doesn't set the source files' indentation, which `~/.claude/principles/technical-principles.md`
 sets to tabs. A stored carry nested deeper than five levels is respelled, which `MIGRATION.md`
-says: `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it, the
-way it reads the other spellings `0.4.0` replaces, and the next write spells it in five levels.
+says. `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it.
+The next write spells it in five levels. `todo.md` item 107 builds it.
 
 ## The carry fence names the node type
 
@@ -1068,8 +1068,8 @@ character of it, and the portable reduction refuses on the caller's text, edge w
 since merging that text first could build past the bound. Each block, the writer's result and the
 CommonMark ask's spelling are held to the bound as they are built. V8 throws building the same
 string past the bound, SpiderMonkey past its own longest string, and `withinEngineLimits` refuses
-both throws as the same `tooLong`, so every engine stops at the same block with the same answer. A
-carry's JSON stops at the bound unbuilt (`joinedWithin`).
+both throws as the same `tooLong`, so every engine stops at the same block with the same answer.
+`joinedWithin` stops joining a carry's JSON at the bound, before the string is built.
 
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).

@@ -180,12 +180,11 @@ unreinterpreted, and the next emit spells it canonically (`docs/decisions.md` §
 product). Block and inline positions canonicalize differently, each fitting where it sits:
 
 - **Block position**: a fenced code block with info string `adf:` and the node's type, body = the
-  node's JSON without its `type`, object keys sorted: ```` ```adf:blockCard ````. The JSON indents
-  two spaces a level for its first five levels, and a value nested deeper is compact on its line, so
-  the body's length stays linear in the JSON. A body indented at every level, as `0.3.1` wrote it,
-  reads too.
+  node's JSON without its `type`, object keys sorted: ```` ```adf:blockCard ````.
   A type no info string carries back, by the rule a `codeBlock`'s language follows, leaves the info
-  string `adf:` and keeps `type` in the body. A body holding `type` under a named type, or a fence
+  string `adf:` and keeps `type` in the body. The JSON indents two spaces a level for its first five
+  levels, and a value nested deeper is compact on its line, so the body's length stays linear in the
+  JSON. A body indented at every level, as `0.3.1` wrote it, reads too. A body holding `type` under a named type, or a fence
   whose info string is `adf:` alone while its body's `type` could be spelled in the info string, is
   a named error.
 - **Inline position**: `!adf:carry{json="…"}` — compact serialization (keys sorted, no whitespace),
