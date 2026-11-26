@@ -16,6 +16,23 @@ const { tree } = fc.letrec<{ tree: BlockText }>((tie) => ({
   ),
 }))
 
+function propertyReads(emptyLines: number): number {
+  let count = 0
+  let body = blockText(`a${'\n'.repeat(emptyLines)}`)
+  for (let depth = 0; depth < 3; depth += 1) {
+    body = new Proxy(prefixedText('- ', '  ', body), {
+      get(target, key, receiver) {
+        count += 1
+        return Reflect.get(target, key, receiver)
+      },
+    })
+  }
+  const text = quotedText(body)
+  count = 0
+  writtenText(text)
+  return count
+}
+
 test('measures a block text as the text it writes', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(tree, (text) => {
@@ -33,21 +50,5 @@ test('measures a block text as the text it writes', { timeout: propertyTimeout }
 })
 
 test('writes an empty line without reading the started prefixes inside its innermost quote', () => {
-  const reads = (emptyLines: number): number => {
-    let count = 0
-    let body = blockText(`a${'\n'.repeat(emptyLines)}`)
-    for (let depth = 0; depth < 3; depth += 1) {
-      body = new Proxy(prefixedText('- ', '  ', body), {
-        get(target, key, receiver) {
-          count += 1
-          return Reflect.get(target, key, receiver)
-        },
-      })
-    }
-    const text = quotedText(body)
-    count = 0
-    writtenText(text)
-    return count
-  }
-  assert.equal(reads(1000), reads(1))
+  assert.equal(propertyReads(1000), propertyReads(1))
 })

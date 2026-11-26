@@ -25,7 +25,7 @@ test('mints each task node a UUID v4 in document order, unique and the same ever
   const source = unminted()
   const ids = taskIds(mintTaskIds(source, '- [ ] a\n'))
   assert.equal(ids.length, 4)
-  for (const id of ids) assert.match(String(id), uuidV4)
+  assert.deepEqual(ids.filter((id) => !uuidV4.test(String(id))), [])
   assert.equal(new Set(ids).size, 4)
   assert.deepEqual(source, unminted())
   assert.deepEqual(taskIds(mintTaskIds(unminted(), '- [ ] a\n')), ids)

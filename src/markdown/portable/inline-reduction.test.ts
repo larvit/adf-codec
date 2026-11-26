@@ -35,21 +35,21 @@ test('reduces a line alike dropping every run a pass may or the first alone', { 
   )
 })
 
-test('refuses an opening-link fallback whose link run holds no code span', () => {
-  const link = { attrs: { href: 'u' }, type: 'link' }
-  const lines: AdfNode[][] = [
-    [{ marks: [link], text: 'a', type: 'text' }],
-    [{ marks: [link, { type: 'em' }], text: 'a', type: 'text' }],
-    [{ marks: [link], text: 'a', type: 'text' }, { marks: [{ type: 'code' }], text: 'c', type: 'text' }],
-  ]
-  for (const line of lines) {
+const link: AdfMark = { attrs: { href: 'u' }, type: 'link' }
+const linkRunsWithoutCode: [string, AdfNode[]][] = [
+  ['holds one text', [{ marks: [link], text: 'a', type: 'text' }]],
+  ['holds an emphasized text', [{ marks: [link, { type: 'em' }], text: 'a', type: 'text' }]],
+  ['stands before a code span', [{ marks: [link], text: 'a', type: 'text' }, { marks: [{ type: 'code' }], text: 'c', type: 'text' }]],
+]
+
+for (const [shape, line] of linkRunsWithoutCode) {
+  test(`refuses an opening-link fallback whose link run ${shape}`, () => {
     const refused = withoutFallback(line, { kind: 'opening-link' }, [])
     assert.equal(refused.ok ? 'kept' : refused.error.code, 'unsupported-node-shape')
-  }
-})
+  })
+}
 
 test('takes code off every node of an opening link\'s run that an opening-link fallback names', () => {
-  const link = { attrs: { href: 'u' }, type: 'link' }
   const line: AdfNode[] = [{ marks: [link, { type: 'code' }], text: 'a', type: 'text' }, { marks: [link], text: 'b', type: 'text' }]
   assert.deepEqual(withoutFallback(line, { kind: 'opening-link' }, []), success([{ marks: [link], text: 'a', type: 'text' }, { marks: [link], text: 'b', type: 'text' }]))
 })
@@ -60,7 +60,6 @@ test('refuses an unspellable-run fallback that takes no mark', () => {
 })
 
 const groupings: readonly RunGrouping[] = ['parted', 'spanned']
-const link: AdfMark = { attrs: { href: 'u' }, type: 'link' }
 const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
 const trimMarks = fc.oneof(
   fc.uniqueArray(fc.constantFrom<AdfMark>({ type: 'backgroundColor' }, { type: 'em' }, link, { attrs: { href: 'v' }, type: 'link' }, { type: 'strike' }, { type: 'strong' }), { maxLength: 3, selector: (held) => held.type }),

@@ -56,6 +56,12 @@ function row(...content: AdfNode[]): AdfNode {
   return { content, type: 'tableRow' }
 }
 
+function nestedIn<T>(levels: number, innermost: T, wrap: (inner: T) => T): T {
+  let node = innermost
+  for (let level = 0; level < levels; level += 1) node = wrap(node)
+  return node
+}
+
 function link(href: string, title?: string): AdfMark {
   return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
 }
@@ -63,12 +69,10 @@ function link(href: string, title?: string): AdfMark {
 test('refuses what the document guard refuses, and nothing else', () => {
   assert.equal(portableDocument({ type: 'doc', version: Number.NaN }), 'not-an-adf-document at /')
   assert.equal(portableDocument({ type: 'doc', version: 2 }), 'unsupported-document-version at /')
-  let deep: AdfNode = said('x')
-  for (let level = 0; level <= largestNesting; level += 1) deep = { content: [deep], type: 'layoutColumn' }
+  const deep = nestedIn<AdfNode>(largestNesting + 1, said('x'), (inner) => ({ content: [inner], type: 'layoutColumn' }))
   assert.match(portableDocument(document(deep)), /^unsupported-nesting-depth at \/content\/0(\/content\/0)+$/)
   assert.match(portableDocument(document(paragraph(text('a'), text('b')), text('c'), text('d'), deep)), /^unsupported-nesting-depth at \/content\/3(\/content\/0)+$/)
-  let deepInline: AdfNode = text('x')
-  for (let level = 0; level <= largestNesting; level += 1) deepInline = { content: [deepInline], type: 'unknownInline' }
+  const deepInline = nestedIn<AdfNode>(largestNesting + 1, text('x'), (inner) => ({ content: [inner], type: 'unknownInline' }))
   assert.match(portableDocument(document(paragraph(deepInline))), /^unsupported-nesting-depth at /)
   assert.match(portableDocument(document(paragraph(text('a'), text('b'), deepInline))), /^unsupported-nesting-depth at \/content\/0\/content\/2(\/content\/0)+$/)
 })
@@ -79,33 +83,31 @@ test('refuses a paragraph whose text would pass V8\'s longest string, joining no
   assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /')
 })
 
-test('refuses nesting past 500 levels wherever the reduction walks', () => {
-  const lowest = (bottom: AdfNode): string => {
-    let deep = bottom
-    for (let level = 0; level < largestNesting; level += 1) deep = { content: [deep], type: 'layoutColumn' }
-    return portableDocument(document(deep)).split(' ')[0] ?? ''
-  }
-  const wrapped: AdfNode = { content: [text('x')], type: 'unknownInline' }
-  const bottoms: AdfNode[] = [
-    bulletList(item(said('x'))),
-    node('taskList', {}, node('taskList', {}, node('taskItem', {}, text('x')))),
-    node('taskList', {}, node('taskItem', {}, wrapped)),
-    node('taskList', {}, node('blockTaskItem', {}, said('x'))),
-    node('panel', {}, said('x')),
-    node('expand', {}, said('x')),
-    node('decisionList', {}, node('decisionItem', {}, text('x'))),
-    node('table', {}, row(cell('tableCell', said('x')))),
-    node('mediaSingle', {}, node('caption', {}, text('x'))),
-    node('heading', { level: 1 }, wrapped),
-    node('codeBlock', {}, wrapped),
-    paragraph(wrapped),
-  ]
-  for (const bottom of bottoms) assert.equal(lowest(bottom), 'unsupported-nesting-depth', bottom.type)
-})
+const unknownInline: AdfNode = { content: [text('x')], type: 'unknownInline' }
+const deepBottoms: AdfNode[] = [
+  bulletList(item(said('x'))),
+  node('taskList', {}, node('taskList', {}, node('taskItem', {}, text('x')))),
+  node('taskList', {}, node('taskItem', {}, unknownInline)),
+  node('taskList', {}, node('blockTaskItem', {}, said('x'))),
+  node('panel', {}, said('x')),
+  node('expand', {}, said('x')),
+  node('decisionList', {}, node('decisionItem', {}, text('x'))),
+  node('table', {}, row(cell('tableCell', said('x')))),
+  node('mediaSingle', {}, node('caption', {}, text('x'))),
+  node('heading', { level: 1 }, unknownInline),
+  node('codeBlock', {}, unknownInline),
+  paragraph(unknownInline),
+]
+
+for (const bottom of deepBottoms) {
+  test(`refuses nesting past 500 levels above a ${bottom.type} holding a ${bottom.content?.[0]?.type}`, () => {
+    const deep = nestedIn(largestNesting, bottom, (inner) => ({ content: [inner], type: 'layoutColumn' }))
+    assert.equal(portableDocument(document(deep)).split(' ')[0], 'unsupported-nesting-depth')
+  })
+}
 
 test('names a list nested too deep for its spelling at its place in the caller\'s document', () => {
-  let deep: AdfNode = bulletList(item(said('x')))
-  for (let level = 0; level < largestNesting; level += 1) deep = bulletList(item(deep))
+  const deep = nestedIn<AdfNode>(largestNesting, bulletList(item(said('x'))), (inner) => bulletList(item(inner)))
   assert.match(portableDocument(document(said('a'), deep)), /^unsupported-nesting-depth at \/content\/1\/content\/0\/content\/0\//)
 })
 
@@ -443,12 +445,12 @@ test('gives up every highlight run whose own delimiter cannot flank in one fallb
   assert.deepEqual(portableLineFallback(line, 'paragraph', [], 'spanned'), { ok: true, value: { kind: 'unspellable-run', runs } })
 })
 
-test('refuses a portable line holding a node only the carry spells, at the line', () => {
-  for (const mark of [{ attrs: { a: 1 }, type: 'em' }, { type: 'odd' }]) {
+for (const mark of [{ attrs: { a: 1 }, type: 'em' }, { type: 'odd' }]) {
+  test(`refuses a portable line holding a text marked ${mark.type} as only the carry spells it, at the line`, () => {
     const refused = portableLineFallback([text('x', mark)], 'paragraph', ['content', 0], 'spanned')
     assert.deepEqual(refused.ok ? refused : [refused.error.code, refused.error.path], ['unsupported-node-shape', ['content', 0]])
-  }
-})
+  })
+}
 
 test('spells an emphasis once across the code spans and hard breaks between two leaves holding it, and a link across the hard breaks', () => {
   assert.equal(portable(paragraph(text('Run ', strong), text('npm ci', code), text(' first', strong))), '**Run `npm ci` first**\n')
@@ -523,8 +525,7 @@ test('writes a text node holding content the same in either order beside its nei
 test('writes a task list nested to the deepest level the reader carries, and refuses one more at the item holding it', () => {
   const task = (): AdfNode => node('taskItem', { state: 'TODO' }, text('a'))
   const nested = (levels: number): AdfNode => {
-    let list: AdfNode = { content: [task()], type: 'taskList' }
-    for (let level = 1; level < levels; level += 1) list = { content: [task(), list], type: 'taskList' }
+    const list = nestedIn<AdfNode>(levels - 1, { content: [task()], type: 'taskList' }, (inner) => ({ content: [task(), inner], type: 'taskList' }))
     return list
   }
   const written = portable(nested(largestNesting))
@@ -546,8 +547,7 @@ test('refuses a list that cannot be a markdown list at the depth a bullet chain 
   const tasks = node('taskList', {}, task('a'), node('taskList', {}, task('b'), node('taskList', {}, task('c'))))
   const bullets = bulletList(item(said('a'), bulletList(item(said('b'), bulletList(item(said('c')))))))
   const refusal = (chain: AdfNode, panels: number): string | undefined => {
-    let wrapped: AdfNode = bulletList(item(unspellable, chain))
-    for (let level = 0; level < panels; level += 1) wrapped = node('panel', { panelType: 'info' }, wrapped)
+    const wrapped = nestedIn<AdfNode>(panels, bulletList(item(unspellable, chain)), (inner) => node('panel', { panelType: 'info' }, inner))
     const result = adfToPortableMarkdown(document(wrapped))
     return result.ok ? undefined : result.error.code
   }

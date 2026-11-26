@@ -83,10 +83,20 @@ test('reads an Obsidian callout to a panel by what its word means, any other wor
     return typeof blocks === 'string' ? blocks : blocks[0]?.attrs
   }
   assert.deepEqual(alert('hint'), { panelType: 'tip' })
-  for (const word of ['success', 'check', 'Done']) assert.deepEqual(alert(word), { panelType: 'success' }, word)
+  assert.deepEqual(alert('success'), { panelType: 'success' })
+  assert.deepEqual(alert('check'), { panelType: 'success' })
+  assert.deepEqual(alert('Done'), { panelType: 'success' })
   assert.deepEqual(alert('attention'), { panelType: 'warning' })
-  for (const word of ['danger', 'error', 'failure', 'fail', 'missing', 'BUG']) assert.deepEqual(alert(word), { panelType: 'error' }, word)
-  for (const word of ['info', 'note', 'question', 'my-type']) assert.deepEqual(alert(word), { panelType: 'info' }, word)
+  assert.deepEqual(alert('danger'), { panelType: 'error' })
+  assert.deepEqual(alert('error'), { panelType: 'error' })
+  assert.deepEqual(alert('failure'), { panelType: 'error' })
+  assert.deepEqual(alert('fail'), { panelType: 'error' })
+  assert.deepEqual(alert('missing'), { panelType: 'error' })
+  assert.deepEqual(alert('BUG'), { panelType: 'error' })
+  assert.deepEqual(alert('info'), { panelType: 'info' })
+  assert.deepEqual(alert('note'), { panelType: 'info' })
+  assert.deepEqual(alert('question'), { panelType: 'info' })
+  assert.deepEqual(alert('my-type'), { panelType: 'info' })
 })
 
 test('reads the rest of an alert marker line as the panel first body paragraph, the lines after as the next', () => {
@@ -99,12 +109,12 @@ test('reads the rest of an alert marker line as the panel first body paragraph, 
   assert.deepEqual(read('> > [!WARNING]\n> > Inner.\n'), [bare('blockquote', panel('warning', said('Inner.')))])
 })
 
-test('leaves a quote plain where its first line is no alert marker', () => {
-  for (const markdown of ['> \\[!NOTE]\n> x\n', '> [!NOTE]x\n', '> **[!NOTE]**\n', '> See [!NOTE]\n', '> [!NOTE]**x**\n', '> [!]\n', '> ```\n> [!NOTE]\n> ```\n']) {
+for (const markdown of ['> \\[!NOTE]\n> x\n', '> [!NOTE]x\n', '> **[!NOTE]**\n', '> See [!NOTE]\n', '> [!NOTE]**x**\n', '> [!]\n', '> ```\n> [!NOTE]\n> ```\n']) {
+  test(`leaves a quote plain where its first line is no alert marker: ${JSON.stringify(markdown)}`, () => {
     const blocks = read(markdown)
     assert.equal(typeof blocks !== 'string' && blocks[0]?.type, 'blockquote', markdown)
-  }
-})
+  })
+}
 
 test('reads a folded callout to an expand titled by the rest of its marker line, whatever the word', () => {
   assert.deepEqual(read('> [!NOTE]- Build log\n>\n> Line.\n'), [node('expand', { title: 'Build log' }, said('Line.'))])
@@ -294,12 +304,15 @@ test('reads a task list beside a list of another bullet character as two lists',
   assert.deepEqual(read('- [x] a\n* [ ] b\n'), [tasks('DONE', 'a'), tasks('TODO', 'b')])
 })
 
-test('leaves mixed, ordered and unmarked lists plain', () => {
-  for (const markdown of ['- \\[x] a\n', '- [x] a\n- \\[ ] b\n', '- [x] a\n- b\n', '1. [x] a\n', '- [x]a\n', '- **[x]** a\n', '- [x]**a**\n', '- [-] a\n', '- > [x] a\n']) {
+for (const markdown of ['- \\[x] a\n', '- [x] a\n- \\[ ] b\n', '- [x] a\n- b\n', '1. [x] a\n', '- [x]a\n', '- **[x]** a\n', '- [x]**a**\n', '- [-] a\n', '- > [x] a\n']) {
+  test(`leaves mixed, ordered and unmarked lists plain: ${JSON.stringify(markdown)}`, () => {
     const blocks = read(markdown)
     assert.notEqual(typeof blocks !== 'string' && blocks[0]?.type, 'taskList', markdown)
     assert.equal(JSON.stringify(blocks).includes('taskItem'), false, markdown)
-  }
+  })
+}
+
+test('reads a task list nested in a plain list item', () => {
   assert.deepEqual(read('- plain\n  - [ ] nested\n'), [bare('bulletList', bare('listItem', said('plain'), bare('taskList', task('TODO', text('nested')))))])
 })
 
@@ -325,17 +338,19 @@ test('reads a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atl
   assert.deepEqual(read('==a==\\\n==b==\n'), [paragraph(text('a', highlight), { type: 'hardBreak' }, text('b', highlight))])
 })
 
-test('leaves a == no pair flanks as text', () => {
-  for (const markdown of ['\\==x==\n', '==x\\==\n', 'a == b == c\n', 'if a==b and c==d then\n', 'a==b== c\n', '==a==b\n', '====\n', '`==x==`\n', '==a\\\nb==\n', '**==a**==\n', '==a', '== a==\n', '==a ==\n']) {
+for (const markdown of ['\\==x==\n', '==x\\==\n', 'a == b == c\n', 'if a==b and c==d then\n', 'a==b== c\n', '==a==b\n', '====\n', '`==x==`\n', '==a\\\nb==\n', '**==a**==\n', '==a', '== a==\n', '==a ==\n']) {
+  test(`leaves a == no pair flanks as text: ${JSON.stringify(markdown)}`, () => {
     assert.equal(JSON.stringify(read(markdown)).includes('backgroundColor'), false, markdown)
-  }
-})
+  })
+}
 
 test('reads what the reduction wrote back to the node it reduced, less the attributes it drops', () => {
   const localId = '01a0d99b-1f59-7e2c-a3d4-62c1f0b8e7a1'
-  for (const panelType of ['info', 'note', 'tip', 'warning', 'error']) {
-    assert.deepEqual(roundTripped(node('panel', { localId, panelType }, said('Check.'))), [panel(panelType, said('Check.'))], panelType)
-  }
+  assert.deepEqual(roundTripped(node('panel', { localId, panelType: 'info' }, said('Check.'))), [panel('info', said('Check.'))])
+  assert.deepEqual(roundTripped(node('panel', { localId, panelType: 'note' }, said('Check.'))), [panel('note', said('Check.'))])
+  assert.deepEqual(roundTripped(node('panel', { localId, panelType: 'tip' }, said('Check.'))), [panel('tip', said('Check.'))])
+  assert.deepEqual(roundTripped(node('panel', { localId, panelType: 'warning' }, said('Check.'))), [panel('warning', said('Check.'))])
+  assert.deepEqual(roundTripped(node('panel', { localId, panelType: 'error' }, said('Check.'))), [panel('error', said('Check.'))])
   const expand = node('expand', { localId, title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))
   assert.deepEqual(roundTripped(node('panel', { panelType: 'tip' }, paragraph()), node('expand', { title: 'Empty' }, paragraph())), [panel('tip', paragraph()), node('expand', { title: 'Empty' }, paragraph())])
   assert.deepEqual(roundTripped(expand), [node('expand', { title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))])
@@ -412,10 +427,10 @@ test('reads GFM\'s short row padded with empty cells, a line holding no pipe as 
   assert.deepEqual(padded.ok ? undefined : [padded.error.code, padded.error.position], ['malformed-pipe-table', { line: 1, offset: 0 }])
   const amplified = portableMarkdownToAdf(`${'a|'.repeat(2000)}\n${'-|'.repeat(2000)}\n${'x\n'.repeat(2000)}`)
   assert.deepEqual(amplified.ok ? undefined : amplified.error.code, 'malformed-pipe-table')
-  for (const refused of ['a | b\n--- | ---\nc | d | e\n', '| a | b |\n| --- |\n']) {
-    const result = portableMarkdownToAdf(refused)
-    assert.deepEqual(result.ok ? undefined : result.error.code, 'malformed-pipe-table', refused)
-  }
+  const longRow = portableMarkdownToAdf('a | b\n--- | ---\nc | d | e\n')
+  assert.deepEqual(longRow.ok ? undefined : longRow.error.code, 'malformed-pipe-table')
+  const shortDelimiterRow = portableMarkdownToAdf('| a | b |\n| --- |\n')
+  assert.deepEqual(shortDelimiterRow.ok ? undefined : shortDelimiterRow.error.code, 'malformed-pipe-table')
 })
 
 test('reads what CommonMark reads where no row reads, a directive and a carry fence among it, an image sharing its paragraph with a marker among it', () => {
@@ -432,7 +447,5 @@ test('reads what CommonMark reads where no row reads, a directive and a carry fe
   assert.deepEqual(read('> [!NOTE]- ![a](u)\n'), [node('expand', { title: 'a (u)' }, paragraph())])
   assert.deepEqual(read('- [x] ![a](u)\n'), [bare('taskList', task('DONE', ...(linked.content ?? [])))])
   assert.deepEqual(read('- [x]\n  ![a](u)\n'), [bare('taskList', task('DONE', ...(linked.content ?? [])))])
-  let deep = 'x\n'
-  for (let level = 0; level < largestNesting; level += 1) deep = `> ${deep}`
-  assert.equal(typeof read(deep), 'object')
+  assert.equal(typeof read(`${'> '.repeat(largestNesting)}x\n`), 'object')
 })

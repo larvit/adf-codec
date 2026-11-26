@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
 import { adfToLosslessMarkdown, losslessMarkdownToAdf } from '../../index.ts'
@@ -41,8 +41,7 @@ test('names the node a refusal came from, and no source the emitter never read',
 })
 
 test('refuses a node whose carry nests too deep ahead of a later node in its line', () => {
-  let id: JsonValue = 'a'
-  for (let depth = 0; depth < largestNesting; depth += 1) id = { id }
+  const id = wrapped<JsonValue>(largestNesting, 'a', (inner) => ({ id: inner }))
   const twiceStrong: AdfNode = { marks: [{ type: 'strong' }, { type: 'strong' }], text: 'x', type: 'text' }
   const refused = adfToLosslessMarkdown(document(paragraph({ attrs: { id }, type: 'mention' }, twiceStrong)))
   assert.equal(code(refused), 'unsupported-nesting-depth')
@@ -52,8 +51,7 @@ test('refuses a node whose carry nests too deep ahead of a later node in its lin
 })
 
 test('refuses a carried run at the node whose carry nests too deep, among the run\'s own nodes', () => {
-  let deep: JsonValue = 'a'
-  for (let depth = 0; depth < largestNesting - 1; depth += 1) deep = { deep }
+  const deep = wrapped<JsonValue>(largestNesting - 1, 'a', (inner) => ({ deep: inner }))
   const carriedEm: AdfNode = { marks: [{ attrs: { deep }, type: 'em' }], text: 'x', type: 'text' }
   const twiceStrong: AdfNode = { marks: [{ type: 'strong' }, { type: 'strong' }], text: 'y', type: 'text' }
   const refused = adfToLosslessMarkdown(document(paragraph({ text: 'ok', type: 'text' }, carriedEm, twiceStrong)))
@@ -77,8 +75,7 @@ function nearlyHalfTheBound(): AdfNode {
 
 // About 556 million characters of carry JSON: past V8's longest string, short of JavaScriptCore's and SpiderMonkey's.
 test('refuses a carry whose JSON would run past V8\'s longest string, on every engine', () => {
-  let value: JsonValue = new Array<JsonValue>(560_000).fill(0)
-  for (let level = 0; level < 495; level += 1) value = [value]
+  const value = wrapped<JsonValue>(495, new Array<JsonValue>(560_000).fill(0), (inner) => [inner])
   const result = adfToLosslessMarkdown(document({ attrs: { value }, type: 'unknownBlock' }))
   assert.equal(pastTheBound(result), true)
 })
@@ -121,15 +118,12 @@ test('refuses a document version the markdown cannot carry', () => {
 })
 
 test('refuses a carried node nested deeper than the levels its position leaves', () => {
-  let node: AdfNode = { type: 'blockCard' }
-  for (let depth = 0; depth < 600; depth += 1) node = { content: [node], type: 'blockCard' }
+  const node = wrapped<AdfNode>(600, { type: 'blockCard' }, (inner) => ({ content: [inner], type: 'blockCard' }))
   assert.equal(code(adfToLosslessMarkdown(document(node))), 'unsupported-nesting-depth')
   assert.equal(code(adfToLosslessMarkdown(document(paragraph(node)))), 'unsupported-nesting-depth')
-  let shallow: AdfNode = { type: 'blockCard' }
-  for (let depth = 0; depth < 200; depth += 1) shallow = { content: [shallow], type: 'blockCard' }
+  const shallow = wrapped<AdfNode>(200, { type: 'blockCard' }, (inner) => ({ content: [inner], type: 'blockCard' }))
   assert.ok(adfToLosslessMarkdown(document(shallow)).ok)
-  let quoted: AdfNode = shallow
-  for (let depth = 0; depth < 150; depth += 1) quoted = { content: [quoted], type: 'blockquote' }
+  const quoted = wrapped<AdfNode>(150, shallow, (inner) => ({ content: [inner], type: 'blockquote' }))
   assert.equal(code(adfToLosslessMarkdown(document(quoted))), 'unsupported-nesting-depth')
 })
 
@@ -138,15 +132,10 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   assert.equal(code(adfToLosslessMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-nesting-depth')
   const deepest: AdfMark[] = Array.from({ length: 20_000 }, (_, index) => ({ type: index % 2 === 0 ? 'em' : 'strong' }))
   assert.equal(code(adfToLosslessMarkdown(document(paragraph({ marks: deepest, text: 'x', type: 'text' }, { type: 'hardBreak' }, { marks: deepest, text: 'y', type: 'text' })))), 'unsupported-nesting-depth')
-  let attrs: AdfMark['attrs'] = { depth: 'x' }
-  for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
+  const attrs = wrapped<AdfAttributes>(600, { depth: 'x' }, (inner) => ({ depth: inner }))
   const deeper = (key: string, type: string): string =>
     `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
-  const nested = (levels: number): JsonValue => {
-    let value: JsonValue = 1
-    for (let level = 0; level < levels; level += 1) value = [value]
-    return value
-  }
+  const nested = (levels: number): JsonValue => wrapped<JsonValue>(levels, 1, (inner) => [inner])
   const card = (levels: number): AdfNode => ({ attrs: { data: nested(levels), url: 'https://example.com/a' }, type: 'inlineCard' })
   const marked = (levels: number): AdfNode => ({
     attrs: { panelType: 'info' },
@@ -178,15 +167,12 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
 })
 
 test('refuses a document nested deeper than the emitter carries', () => {
-  let node: AdfNode = paragraph({ text: 'x', type: 'text' })
-  for (let depth = 0; depth < 600; depth += 1) node = { content: [node], type: 'blockquote' }
+  const node = wrapped<AdfNode>(600, paragraph({ text: 'x', type: 'text' }), (inner) => ({ content: [inner], type: 'blockquote' }))
   assert.equal(code(adfToLosslessMarkdown(document(node))), 'unsupported-nesting-depth')
-  let carried: AdfNode = paragraph({ text: 'x', type: 'text' })
-  for (let depth = 0; depth < 500; depth += 1) carried = { content: [carried], type: 'blockquote' }
+  const carried = wrapped<AdfNode>(500, paragraph({ text: 'x', type: 'text' }), (inner) => ({ content: [inner], type: 'blockquote' }))
   assert.ok(adfToLosslessMarkdown(document(carried)).ok)
   const listed = (levels: number, first: readonly AdfNode[]): AdfNode => {
-    let list: AdfNode = { content: [{ content: [...first], type: 'listItem' }], type: 'bulletList' }
-    for (let level = 1; level < levels; level += 1) list = { content: [{ content: [...first, list], type: 'listItem' }], type: 'bulletList' }
+    const list = wrapped<AdfNode>(levels - 1, { content: [{ content: [...first], type: 'listItem' }], type: 'bulletList' }, (inner) => ({ content: [{ content: [...first, inner], type: 'listItem' }], type: 'bulletList' }))
     return list
   }
   assert.ok(adfToLosslessMarkdown(document(listed(largestNesting, [paragraph({ text: 'x', type: 'text' })]))).ok)
@@ -197,11 +183,16 @@ test('refuses a document nested deeper than the emitter carries', () => {
   assert.equal(code(adfToLosslessMarkdown(document(listed(directiveLists + 1, [{ type: 'rule' }])))), 'unsupported-nesting-depth')
   assert.equal(code(adfToLosslessMarkdown(document({ content: [listed(directiveLists, [{ type: 'rule' }])], type: 'panel' }))), 'unsupported-nesting-depth')
   const chain = (levels: number): AdfNode => {
-    let card: AdfNode = { type: 'blockCard' }
-    for (let level = 0; level < levels; level += 1) card = { content: [card], type: 'blockCard' }
+    const card = wrapped<AdfNode>(levels, { type: 'blockCard' }, (inner) => ({ content: [inner], type: 'blockCard' }))
     return card
   }
   const carriedInItem = (levels: number): AdfDocument => document(listed(1, [{ type: 'rule' }, chain(levels)]))
   assert.deepEqual(losslessMarkdownToAdf(markdown(adfToLosslessMarkdown(carriedInItem(248)))), { ok: true, value: carriedInItem(248) })
   assert.equal(code(adfToLosslessMarkdown(carriedInItem(249))), 'unsupported-nesting-depth')
 })
+
+function wrapped<T>(levels: number, innermost: T, wrap: (inner: T) => T): T {
+  let value = innermost
+  for (let level = 0; level < levels; level += 1) value = wrap(value)
+  return value
+}
