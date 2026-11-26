@@ -6,6 +6,7 @@ import * as adfToMarkdown from "adf-to-markdown";
 import adfToMd from "adf-to-md";
 import * as atlaskitJson from "@atlaskit/editor-json-transformer";
 import * as atlaskitMarkdown from "@atlaskit/editor-markdown-transformer";
+import * as atlaskitWiki from "@atlaskit/editor-wikimarkup-transformer";
 import { createRequire } from "node:module";
 import * as extendedParser from "extended-markdown-adf-parser";
 import * as faulander from "@faulander/md2adf";
@@ -55,6 +56,8 @@ const markdown = "***bold italic*** and [a link](https://example.com) hi @Ann\n\
 const extended = new extendedParser.Parser();
 const json = new atlaskitJson.JSONTransformer();
 const atlaskit = new atlaskitMarkdown.MarkdownTransformer(defaultSchema);
+const atlaskitWikiTransformer = new atlaskitWiki.WikiMarkupTransformer(defaultSchema);
+const wiki = "*_bold italic_* and [a link|https://example.com] hi [~accountid:abc]\n\nbq. note\n\n* one\n* two\n";
 const adf4j = await loadAdf4j();
 const reported = (result) => {
   for (const diagnostic of result.diagnostics) console.log("diagnostic:", JSON.stringify(diagnostic));
@@ -67,48 +70,57 @@ const succeeded = (result) => {
 const converters = {
   "@atlaskit/editor-markdown-transformer": {
     toAdf: (md) => json.encode(atlaskit.parse(md)),
-    toMarkdown: (doc) => atlaskit.encode(json.parse(doc)),
+    fromAdf: (doc) => atlaskit.encode(json.parse(doc)),
+  },
+  "@atlaskit/editor-wikimarkup-transformer": {
+    format: "Jira wiki markup",
+    fromAdf: (doc) => atlaskitWikiTransformer.encode(defaultSchema.nodeFromJSON(doc)),
+    sample: wiki,
+    toAdf: (text) => json.encode(atlaskitWikiTransformer.parse(text)),
   },
   "@faulander/md2adf": {
     toAdf: (md) => faulander.markdownToAdf(md),
-    toMarkdown: (doc) => faulander.adfToMarkdown(doc),
+    fromAdf: (doc) => faulander.adfToMarkdown(doc),
   },
   "@larvit/adf-codec": {
     toAdf: (md) => adfCodec.losslessMarkdownToAdf(md).value,
-    toMarkdown: (doc) => adfCodec.adfToLosslessMarkdown(doc).value,
+    fromAdf: (doc) => adfCodec.adfToLosslessMarkdown(doc).value,
   },
-  "@nthings.dev/adf4j-wasm": { toMarkdown: (doc) => adf4j.convert(JSON.stringify(doc)) },
+  "@nthings.dev/adf4j-wasm": { fromAdf: (doc) => adf4j.convert(JSON.stringify(doc)) },
   "@wrtnlabs/markdown-to-adf": { toAdf: (md) => markdownToJiraBlock(md) },
-  "adf-converter": { toMarkdown: (doc) => adfConverter.processADF(doc, adfConverter.markdownFormatter) },
+  "adf-converter": { fromAdf: (doc) => adfConverter.processADF(doc, adfConverter.markdownFormatter) },
   "adf-md": {
     toAdf: (md) => succeeded(adfMd.markdownToAdf(md)),
-    toMarkdown: (doc) => succeeded(adfMd.adfToMarkdown(doc)),
+    fromAdf: (doc) => succeeded(adfMd.adfToMarkdown(doc)),
   },
-  "adf-to-markdown": { toMarkdown: (doc) => adfToMarkdown.convertADFToMarkdown(doc) },
-  "adf-to-md": { toMarkdown: (doc) => adfToMd.convert(doc).result },
-  adf2markdown: { toMarkdown: (doc) => adf2markdown.adf2markdown(doc) },
+  "adf-to-markdown": { fromAdf: (doc) => adfToMarkdown.convertADFToMarkdown(doc) },
+  "adf-to-md": { fromAdf: (doc) => adfToMd.convert(doc).result },
+  adf2markdown: { fromAdf: (doc) => adf2markdown.adf2markdown(doc) },
   "extended-markdown-adf-parser": {
     toAdf: (md) => extended.markdownToAdf(md),
-    toMarkdown: (doc) => extended.adfToMarkdown(doc),
+    fromAdf: (doc) => extended.adfToMarkdown(doc),
   },
   "github-markdown-adf": {
     toAdf: (md) => githubMarkdownAdf.mdToAdf(md),
-    toMarkdown: (doc) => githubMarkdownAdf.adfToMd(doc),
+    fromAdf: (doc) => githubMarkdownAdf.adfToMd(doc),
   },
   "markdown-to-adf": { toAdf: (md) => markdownToAdf.markdownToAdf(md) },
   marklassian: { toAdf: (md) => marklassian.markdownToAdf(md) },
   "md-adf": {
     toAdf: (md) => reported(mdAdf.markdownToAdf(md)),
-    toMarkdown: (doc) => reported(mdAdf.adfToMarkdown(doc)),
+    fromAdf: (doc) => reported(mdAdf.adfToMarkdown(doc)),
   },
   "md-to-adf": { toAdf: (md) => mdToAdf(md) },
-  "mdast-util-from-adf": { toMarkdown: (doc) => mdastToMarkdown(fromADF(doc)) },
+  "mdast-util-from-adf": { fromAdf: (doc) => mdastToMarkdown(fromADF(doc)) },
 };
 
 // The sizes a row's figure leaves out, which the README states beside it.
 const companions = {
   "@atlaskit/editor-markdown-transformer": {
     "minified and gzipped bytes with @atlaskit/editor-json-transformer": () => minifiedGzippedBytes(process.cwd(), ["@atlaskit/editor-markdown-transformer", "@atlaskit/editor-json-transformer"]),
+  },
+  "@atlaskit/editor-wikimarkup-transformer": {
+    "minified and gzipped bytes with @atlaskit/editor-json-transformer": () => minifiedGzippedBytes(process.cwd(), ["@atlaskit/editor-wikimarkup-transformer", "@atlaskit/editor-json-transformer"]),
   },
   "@nthings.dev/adf4j-wasm": {
     "bytes of its loaded JavaScript, minified and gzipped, and of its WebAssembly module, gzipped": async () => [
@@ -130,7 +142,7 @@ const show = (label, call) => {
     console.log(`${label} threw:`, error.message);
   }
 };
-for (const [name, { toAdf, toMarkdown }] of Object.entries(converters)) {
+for (const [name, { format = "markdown", fromAdf, sample = markdown, toAdf }] of Object.entries(converters)) {
   const manifest = JSON.parse(readFileSync(`node_modules/${name}/package.json`, "utf8"));
   console.log(`\n## ${name} ${manifest.version}`);
   console.log("direct runtime dependencies:", Object.keys(manifest.dependencies ?? {}).length);
@@ -140,12 +152,12 @@ for (const [name, { toAdf, toMarkdown }] of Object.entries(converters)) {
     console.log("bundling failed:", error.message.split("\n")[0]);
   }
   for (const [label, measure] of Object.entries(companions[name] ?? {})) console.log(`${label}:`, await measure());
-  const written = toMarkdown && show("ADF to markdown", () => toMarkdown(roundTripDoc));
+  const written = fromAdf && show(`ADF to ${format}`, () => fromAdf(roundTripDoc));
   if (written !== undefined && toAdf) {
     const readBack = show("read back", () => toAdf(written));
     if (readBack !== undefined) console.log("round-trip deep-equal:", isDeepStrictEqual(readBack, roundTripDoc));
   }
-  const unknown = toMarkdown && show("unknown node to markdown", () => toMarkdown(unknownNodeDoc));
+  const unknown = fromAdf && show(`unknown node to ${format}`, () => fromAdf(unknownNodeDoc));
   if (toAdf && unknown !== undefined) show("unknown node read back", () => toAdf(unknown));
-  if (toAdf) show("markdown to ADF", () => toAdf(markdown));
+  if (toAdf) show(`${format} to ADF`, () => toAdf(sample));
 }
