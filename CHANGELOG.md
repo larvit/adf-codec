@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The Jira wiki writers now write a hard break before a `{` or a backslash so Jira reads it as a break: the lossless writer carries it, the lossy one follows it with a space
 - The gate bundles the installed package with Bun, esbuild, Rollup and webpack, fails on any bundler warning, such as webpack's "Critical dependency", and round-trips a document through each bundle in Node. The README's package table names the four.
 - Document the Jira wiki calls `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
 - Read a Jira wiki link's `href` as Jira stores it, with `"`, `<`, `>`, a backtick and `^` as percent escapes, and carry in an `{adf}` macro a link whose `href` holds one of them.
