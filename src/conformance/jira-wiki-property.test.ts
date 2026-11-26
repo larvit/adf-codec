@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import fc from 'fast-check'
 import test from 'node:test'
 
-import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.ts'
+import { adfDocument, propertyRuns, propertyTimeout, spliced } from './property-harness.ts'
 import { adfToLosslessJiraWiki } from '../wiki/emit/adf-to-jira-wiki.ts'
 import { jiraWikiToAdf } from '../wiki/parse/jira-wiki-to-adf.ts'
 
@@ -42,9 +42,7 @@ test('Jira wiki markup edited anywhere reads, if at all, to a document whose mar
     fc.property(adfDocument, edits, (document, cuts) => {
       const written = adfToLosslessJiraWiki(document)
       assert.ok(written.ok)
-      let wiki = written.value
-      for (const [at, removed, piece] of cuts) wiki = `${wiki.slice(0, at % (wiki.length + 1))}${piece}${wiki.slice((at % (wiki.length + 1)) + removed)}`
-      assertReadsBack(wiki)
+      assertReadsBack(cuts.reduce(spliced, written.value))
     }),
     propertyRuns(gateRuns),
   )

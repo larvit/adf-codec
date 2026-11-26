@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
-import type { AdfDocument } from '../adf/document.ts'
+import type { AdfDocument, AdfNode } from '../adf/document.ts'
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
@@ -119,15 +119,21 @@ function roundTripFixtures(): { name: string; path: string }[] {
   )
 }
 
-test('no round-trip fixture repeats the document another holds', () => {
-  const documents = new Map<string, string>()
+function repeatedFixtures(): string[] {
+  const holders = new Map<string, string>()
+  const repeated: string[] = []
   for (const fixture of roundTripFixtures()) {
     const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
-    assert.ok(isJsonValue(parsed), `${fixture.name} does not hold a JSON value`)
-    const document = serializeCanonicalJson(parsed, 'compact')
-    assert.equal(documents.get(document), undefined, `${fixture.name} repeats the document ${documents.get(document)} holds`)
-    documents.set(document, fixture.name)
+    const document = isJsonValue(parsed) ? serializeCanonicalJson(parsed, 'compact') : `${fixture.name} does not hold a JSON value`
+    const holder = holders.get(document)
+    if (holder !== undefined) repeated.push(`${fixture.name} repeats the document ${holder} holds`)
+    holders.set(document, fixture.name)
   }
+  return repeated
+}
+
+test('no round-trip fixture repeats the document another holds', () => {
+  assert.deepEqual(repeatedFixtures(), [])
 })
 
 for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
@@ -178,16 +184,22 @@ for (const root of [realPayloadsRoot, realWorldRoot]) {
     test(`${basename(root)}/${name} writes each block holding only its id as its element`, () => {
       const payload = documentIn(JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8')), name)
       assert.ok(adfToHtml(payload).ok)
-      for (const block of payload.content ?? []) {
-        const opening = Object.hasOwn(blockElements, block.type) ? blockElements[block.type] : undefined
-        if (opening === undefined || block.marks !== undefined || Object.keys(block.attrs ?? {}).some((key) => !['level', 'localId', 'order'].includes(key))) continue
-        // A heading without `level` has no element to write: it rides the carry.
-        if (block.type === 'heading' && block.attrs?.['level'] === undefined) continue
-        const written = adfToHtml({ content: [block], type: 'doc', version: 1 })
-        assert.ok(written.ok && written.value.startsWith(opening), `${block.type} wrote ${written.ok ? written.value.slice(0, 80) : written.error.code}`)
-      }
+      assert.deepEqual((payload.content ?? []).filter(holdsOnlyItsId).flatMap(writtenAsAnotherElement), [])
     })
   }
+}
+
+function holdsOnlyItsId(block: AdfNode): boolean {
+  if (!Object.hasOwn(blockElements, block.type) || block.marks !== undefined) return false
+  // A heading without `level` has no element to write: it rides the carry.
+  if (block.type === 'heading' && block.attrs?.['level'] === undefined) return false
+  return Object.keys(block.attrs ?? {}).every((key) => ['level', 'localId', 'order'].includes(key))
+}
+
+function writtenAsAnotherElement(block: AdfNode): string[] {
+  const written = adfToHtml({ content: [block], type: 'doc', version: 1 })
+  if (written.ok && written.value.startsWith(blockElements[block.type] ?? 'no element')) return []
+  return [`${block.type} wrote ${written.ok ? written.value.slice(0, 80) : written.error.code}`]
 }
 
 function typesHeld(value: unknown, found: Set<string>): void {
@@ -202,7 +214,7 @@ function typesHeld(value: unknown, found: Set<string>): void {
 
 test('real-world holds every type the flavour spells except the ones no fetched document holds', () => {
   const found = new Set<string>()
-  for (const name of names(realWorldRoot, '.json')) typesHeld(JSON.parse(readFileSync(join(realWorldRoot, `${name}.json`), 'utf8')), found)
+  typesHeld(names(realWorldRoot, '.json').map((name): unknown => JSON.parse(readFileSync(join(realWorldRoot, `${name}.json`), 'utf8'))), found)
   const spelled = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...markVocabularies.keys()]
   assert.deepEqual(spelled.filter((type) => !found.has(type)).sort(), [...typesNoFetchedDocumentHolds].sort())
 })

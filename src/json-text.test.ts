@@ -51,13 +51,14 @@ test('refuses a number past the double range, which JSON.parse reads as Infinity
   assert.deepEqual(parseJsonText('[1e999,'), { refusal: 'syntax' })
 })
 
-test('refuses text JSON.parse refuses', () => {
-  const refused = ['', ' ', '{', '[', '[1', '[1,', '[1,]', '{"a"}', '{"a":}', '{"a":1,}', '{a:1}', '{"a" 1}', '{,}', '01', '1.', '.5', '-', '1e', '+1', '"a', '"\u0001"', '"\\x"', '"\\u12"', '"\\u12g4"', 'tru', 'nul', '1 2', '[1]]', '}', "'a'", 'NaN', '\u00a01']
-  for (const text of refused) {
+const refusedTexts = ['', ' ', '{', '[', '[1', '[1,', '[1,]', '{"a"}', '{"a":}', '{"a":1,}', '{a:1}', '{"a" 1}', '{,}', '01', '1.', '.5', '-', '1e', '+1', '"a', '"\u0001"', '"\\x"', '"\\u12"', '"\\u12g4"', 'tru', 'nul', '1 2', '[1]]', '}', "'a'", 'NaN', '\u00a01']
+
+for (const text of refusedTexts) {
+  test(`refuses text JSON.parse refuses: ${JSON.stringify(text)}`, () => {
     assert.throws(() => JSON.parse(text), SyntaxError, text)
     assert.deepEqual(parseJsonText(text), { refusal: 'syntax' }, text)
-  }
-})
+  })
+}
 
 test('reads a value nested far past the call stack without recursing', () => {
   const depth = 100_000

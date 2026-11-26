@@ -104,7 +104,10 @@ test('reads a line ending of CRLF as a line feed wherever the dialect has one, a
   assert.deepEqual(read(htmlToAdf(crlf(`${carry('div', bodied, '<p>Check the collation.</p>')}\n`))), document(bodied))
   assert.deepEqual(read(htmlToAdf(crlf(`${documentCarry}\n`))), { type: 'doc', version: 1 })
   assert.deepEqual(read(htmlToAdf('<hr data-style="a\r\nb">\n')), document({ attrs: { style: 'a\nb' }, type: 'rule' }))
-  for (const html of ['<p>a\r</p>\n', '<p>a</p>\r', '<p>a</p>\r\r\n', '<p>a\r\r\nb</p>\n']) assert.equal(refusal(htmlToAdf(html)).startsWith('unmappable-html'), true, JSON.stringify(html))
+  assert.equal(refusal(htmlToAdf('<p>a\r</p>\n')).startsWith('unmappable-html'), true)
+  assert.equal(refusal(htmlToAdf('<p>a</p>\r')).startsWith('unmappable-html'), true)
+  assert.equal(refusal(htmlToAdf('<p>a</p>\r\r\n')).startsWith('unmappable-html'), true)
+  assert.equal(refusal(htmlToAdf('<p>a\r\r\nb</p>\n')).startsWith('unmappable-html'), true)
 })
 
 test('places a refusal in HTML ending its lines in CRLF at the start of the line it stands on, counted in the HTML handed in', () => {
@@ -115,13 +118,13 @@ test('places a refusal in HTML ending its lines in CRLF at the start of the line
 
 test('reads a carry element showing what a browser spells it as, in any mix with the spelling adfToHtml writes', () => {
   const said: AdfNode = { attrs: { id: ids.mention, text: 'Say "hi" now' }, type: 'mention' }
-  for (const shown of ['Say &quot;hi&quot; now', 'Say "hi"&nbsp;now', 'Say "hi" now', 'Say &quot;hi&quot;&nbsp;now']) {
-    assert.deepEqual(read(htmlToAdf(`<p>${carry('span', said, shown)}</p>\n`)), document(paragraph(said)), shown)
-  }
+  assert.deepEqual(read(htmlToAdf(`<p>${carry('span', said, 'Say &quot;hi&quot; now')}</p>\n`)), document(paragraph(said)))
+  assert.deepEqual(read(htmlToAdf(`<p>${carry('span', said, 'Say "hi"&nbsp;now')}</p>\n`)), document(paragraph(said)))
+  assert.deepEqual(read(htmlToAdf(`<p>${carry('span', said, 'Say "hi" now')}</p>\n`)), document(paragraph(said)))
+  assert.deepEqual(read(htmlToAdf(`<p>${carry('span', said, 'Say &quot;hi&quot;&nbsp;now')}</p>\n`)), document(paragraph(said)))
   const underlined: AdfNode = text('a<b', { type: 'underline' }, { attrs: { href: 'https://x.test/?a<b&c>d', title: 'T" ' }, type: 'link' })
-  for (const opener of ['<a href="https://x.test/?a&lt;b&amp;c&gt;d" title="T&quot; ">', '<a href="https://x.test/?a<b&amp;c>d" title="T&quot;&nbsp;">']) {
-    assert.deepEqual(read(htmlToAdf(`<p>${carry('span', underlined, `${opener}a&lt;b</a>`)}</p>\n`)), document(paragraph(underlined)), opener)
-  }
+  assert.deepEqual(read(htmlToAdf(`<p>${carry('span', underlined, '<a href="https://x.test/?a&lt;b&amp;c&gt;d" title="T&quot; ">a&lt;b</a>')}</p>\n`)), document(paragraph(underlined)))
+  assert.deepEqual(read(htmlToAdf(`<p>${carry('span', underlined, '<a href="https://x.test/?a<b&amp;c>d" title="T&quot;&nbsp;">a&lt;b</a>')}</p>\n`)), document(paragraph(underlined)))
   const block: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('A "quote" here'))], type: 'bodiedExtension' }
   assert.deepEqual(read(htmlToAdf(`${carry('div', block, '<p>A "quote"&nbsp;here</p>')}\r\n`)), document(block))
 })
@@ -247,11 +250,11 @@ test('reads underline, subscript, superscript and the two colours from their ele
   assert.deepEqual(marked('a<span data-text-color="red">b</span>'), document(paragraph(text('a'), text('b', { attrs: { color: 'red' }, type: 'textColor' }))))
 })
 
-test('refuses a mark element the writer does not write', () => {
-  for (const inner of ['<span style="color:red">x</span>', '<mark style="background-color:red">x</mark>', '<span data-background-color="red">x</span>', '<mark data-text-color="red">x</mark>', '<mark>x</mark>', '<span data-text-color="red" class="c">x</span>', '<span data-text-color="red" data-background-color="red">x</span>', '<u class="c">x</u>', '<sub data-text-color="red">x</sub>', '<span data-text-color="red"><span data-text-color="blue">x</span></span>']) {
+for (const inner of ['<span style="color:red">x</span>', '<mark style="background-color:red">x</mark>', '<span data-background-color="red">x</span>', '<mark data-text-color="red">x</mark>', '<mark>x</mark>', '<span data-text-color="red" class="c">x</span>', '<span data-text-color="red" data-background-color="red">x</span>', '<u class="c">x</u>', '<sub data-text-color="red">x</sub>', '<span data-text-color="red"><span data-text-color="blue">x</span></span>']) {
+  test(`refuses a mark element the writer does not write: ${inner}`, () => {
     assert.notEqual(refusal(htmlToAdf(`<p>${inner}</p>\n`)), 'read', inner)
-  }
-})
+  })
+}
 
 test('reads a paragraph or heading with a data-indent-level attribute as indented', () => {
   const indentation = (level: number): AdfMark => ({ attrs: { level }, type: 'indentation' })
@@ -267,30 +270,41 @@ test('reads a paragraph or heading with a data-align attribute as aligned', () =
   assert.deepEqual(read(htmlToAdf('<h2 data-align="end">x</h2>\n')), document({ attrs: { level: 2 }, content: [text('x')], marks: [alignment('end')], type: 'heading' }))
   assert.deepEqual(read(htmlToAdf(`<p data-align="end" data-local-id="${ids.paragraph}"></p>\n`)), document({ attrs: { localId: ids.paragraph }, marks: [alignment('end')], type: 'paragraph' }))
   assert.deepEqual(read(htmlToAdf('<ul>\n<li><p data-align="center">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' })], type: 'bulletList' }))
-  for (const html of ['<p style="text-align:center">x</p>\n', '<p data-align="left">x</p>\n', '<p data-align="right">x</p>\n', '<p data-align="">x</p>\n', `<p data-local-id="${ids.paragraph}" data-align="center">x</p>\n`, '<p data-align="center" data-align="end">x</p>\n', '<figure class="adf-media-single" data-align="center"><img src="a"></figure>\n', '<blockquote data-align="center">\n<p>x</p>\n</blockquote>\n']) {
-    assert.notEqual(refusal(htmlToAdf(html)), 'read', html)
-  }
 })
 
-test('refuses a carry element holding an inline card a link marks, at any depth in the node it carries', () => {
-  const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
-  for (const html of [`<p>${carry('span', card, '')}</p>\n`, `${carry('div', { content: [{ content: [card], type: 'futureNode' }], type: 'futureBlock' }, '')}\n`]) {
+for (const html of ['<p style="text-align:center">x</p>\n', '<p data-align="left">x</p>\n', '<p data-align="right">x</p>\n', '<p data-align="">x</p>\n', `<p data-local-id="${ids.paragraph}" data-align="center">x</p>\n`, '<p data-align="center" data-align="end">x</p>\n', '<figure class="adf-media-single" data-align="center"><img src="a"></figure>\n', '<blockquote data-align="center">\n<p>x</p>\n</blockquote>\n']) {
+  test(`refuses an alignment the writer does not write: ${html}`, () => {
+    assert.notEqual(refusal(htmlToAdf(html)), 'read')
+  })
+}
+
+const linkedCard = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
+const linkedCardCarries: [string, string][] = [
+  ['itself', `<p>${carry('span', linkedCard, '')}</p>\n`],
+  ['two levels down', `${carry('div', { content: [{ content: [linkedCard], type: 'futureNode' }], type: 'futureBlock' }, '')}\n`],
+]
+
+for (const [depth, html] of linkedCardCarries) {
+  test(`refuses a carry element holding an inline card a link marks, ${depth} in the node it carries`, () => {
     names(htmlToAdf(html), 'data-adf', 'every writer refuses', 'inlineCard', 'link mark')
-  }
-})
+  })
+}
 
-test('refuses a carry element holding a shape every writer refuses, at any depth in the node it carries', () => {
-  const shapes = [
-    { facts: ['panel', 'no text key'], node: { text: 'x', type: 'panel' } },
-    { facts: ['rule', 'no content'], node: { content: [{ type: 'paragraph' }], type: 'rule' } },
-    { facts: ['status', 'neither content nor text', 'holds text'], node: { text: 'x', type: 'status' } },
-  ]
-  for (const { facts, node } of shapes) {
-    for (const carried of [node, { content: [node], type: 'futureBlock' }]) {
-      names(htmlToAdf(`${carry('div', carried, '')}\n`), 'data-adf', 'every writer refuses', ...facts)
-    }
-  }
-})
+const refusedShapes = [
+  { facts: ['panel', 'no text key'], node: { text: 'x', type: 'panel' } },
+  { facts: ['rule', 'no content'], node: { content: [{ type: 'paragraph' }], type: 'rule' } },
+  { facts: ['status', 'neither content nor text', 'holds text'], node: { text: 'x', type: 'status' } },
+]
+
+for (const { facts, node } of refusedShapes) {
+  test(`refuses a carry element of a shape every writer refuses: ${facts.join(', ')}`, () => {
+    names(htmlToAdf(`${carry('div', node, '')}\n`), 'data-adf', 'every writer refuses', ...facts)
+  })
+
+  test(`refuses a carry element holding a shape every writer refuses: ${facts.join(', ')}`, () => {
+    names(htmlToAdf(`${carry('div', { content: [node], type: 'futureBlock' }, '')}\n`), 'data-adf', 'every writer refuses', ...facts)
+  })
+}
 
 test('reads a table back, its rows, cells and attributes as adfToHtml writes them', () => {
   const row = (...content: AdfNode[]): AdfNode => ({ content, type: 'tableRow' })
@@ -382,24 +396,29 @@ test('reads a carry element holding a node HTML writes as its own element as tha
   assert.deepEqual(read(htmlToAdf(`<ul>\n<li>\n${carry('div', paragraph(text('x')), '<p>x</p>')}\n</li>\n</ul>\n`)), document({ content: [item(paragraph(text('x')))], type: 'bulletList' }))
 })
 
-test('reads an emoji, mention, status, date and card from their elements', () => {
-  const inline = (node: AdfNode): AdfDocument | string => read(htmlToAdf(adfToHtmlText(document(paragraph(text('See '), node)))))
-  const nodes: AdfNode[] = [
-    { attrs: { id: '1f389', localId: 'e1', shortName: ':tada:', text: '🎉' }, type: 'emoji' },
-    { attrs: { text: '<3 &' }, type: 'emoji' },
-    { attrs: { color: 'yellow', localId: 's1', style: 'bold', text: 'In "review"' }, type: 'status' },
-    { attrs: { localId: 'd1', timestamp: '1756080000000' }, type: 'date' },
-    { attrs: { localId: 'c1', url: 'https://example.com/spec?a=1&b=2' }, type: 'inlineCard' },
-    { attrs: { text: ' ' }, type: 'emoji' },
-    { attrs: { text: ' ' }, type: 'status' },
-    { attrs: { url: ' ' }, type: 'inlineCard' },
-    { attrs: { accessLevel: 'CONTAINER', id: ids.mention, localId: 'm1', text: '@Mikael', userType: 'DEFAULT' }, type: 'mention' },
-    { attrs: { text: ' ' }, type: 'mention' },
-    { attrs: { data: { name: 'Release plan', url: 'https://example.com/plan?a=1&b=2' }, localId: 'c2' }, type: 'inlineCard' },
-    { attrs: { data: { url: 'https://example.com/plan' } }, type: 'inlineCard' },
-    { attrs: { data: { name: 'https://example.com/plan', url: 'https://example.com/plan' } }, type: 'inlineCard' },
-  ]
-  for (const node of nodes) assert.deepEqual(inline(node), document(paragraph(text('See '), node)))
+const writtenInlineNodes: AdfNode[] = [
+  { attrs: { id: '1f389', localId: 'e1', shortName: ':tada:', text: '🎉' }, type: 'emoji' },
+  { attrs: { text: '<3 &' }, type: 'emoji' },
+  { attrs: { color: 'yellow', localId: 's1', style: 'bold', text: 'In "review"' }, type: 'status' },
+  { attrs: { localId: 'd1', timestamp: '1756080000000' }, type: 'date' },
+  { attrs: { localId: 'c1', url: 'https://example.com/spec?a=1&b=2' }, type: 'inlineCard' },
+  { attrs: { text: ' ' }, type: 'emoji' },
+  { attrs: { text: ' ' }, type: 'status' },
+  { attrs: { url: ' ' }, type: 'inlineCard' },
+  { attrs: { accessLevel: 'CONTAINER', id: ids.mention, localId: 'm1', text: '@Mikael', userType: 'DEFAULT' }, type: 'mention' },
+  { attrs: { text: ' ' }, type: 'mention' },
+  { attrs: { data: { name: 'Release plan', url: 'https://example.com/plan?a=1&b=2' }, localId: 'c2' }, type: 'inlineCard' },
+  { attrs: { data: { url: 'https://example.com/plan' } }, type: 'inlineCard' },
+  { attrs: { data: { name: 'https://example.com/plan', url: 'https://example.com/plan' } }, type: 'inlineCard' },
+]
+
+for (const node of writtenInlineNodes) {
+  test(`reads ${node.type} from its element: ${JSON.stringify(node.attrs)}`, () => {
+    assert.deepEqual(read(htmlToAdf(adfToHtmlText(document(paragraph(text('See '), node))))), document(paragraph(text('See '), node)))
+  })
+}
+
+test('reads an emoji whose element shows a no-break space and a quote', () => {
   assert.deepEqual(read(htmlToAdf('<p><span class="adf-emoji">a&nbsp;&quot;b</span></p>\n')), document(paragraph({ attrs: { text: 'a\u00a0"b' }, type: 'emoji' })))
 })
 
@@ -646,23 +665,26 @@ test('reads panels, expands and nested expands nested 500 levels, and refuses th
   const panels = (levels: number): string => `${'<div class="adf-panel">\n'.repeat(levels)}<p>x</p>${'\n</div>'.repeat(levels)}\n`
   const expands = (levels: number): string => `${'<details class="adf-expand">\n<summary>t</summary>\n'.repeat(levels)}<p>x</p>${'\n</details>'.repeat(levels)}\n`
   const bare = (levels: number): string => `${'<details class="adf-nested-expand">\n'.repeat(levels)}<p>x</p>${'\n</details>'.repeat(levels)}\n`
-  for (const build of [panels, expands, bare]) {
-    assert.equal(refusal(htmlToAdf(build(500))), 'read')
-    assert.equal(refusal(htmlToAdf(build(501))).startsWith('unsupported-nesting-depth'), true)
-  }
+  assert.equal(refusal(htmlToAdf(panels(500))), 'read')
+  assert.equal(refusal(htmlToAdf(panels(501))).startsWith('unsupported-nesting-depth'), true)
+  assert.equal(refusal(htmlToAdf(expands(500))), 'read')
+  assert.equal(refusal(htmlToAdf(expands(501))).startsWith('unsupported-nesting-depth'), true)
+  assert.equal(refusal(htmlToAdf(bare(500))), 'read')
+  assert.equal(refusal(htmlToAdf(bare(501))).startsWith('unsupported-nesting-depth'), true)
 })
 
-test('reads a task or decision list nested 499 levels, its items one level below it, and refuses the next level', () => {
-  const lists = [
-    '<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> x</li>\n</ul>',
-    '<ul class="adf-decision-list">\n<li class="adf-decision" data-state="DECIDED">x</li>\n</ul>',
-  ]
-  const panels = (levels: number, list: string): string => `${'<div class="adf-panel">\n'.repeat(levels)}${list}${'\n</div>'.repeat(levels)}\n`
-  for (const list of lists) {
+const nestedTaskLists = [
+  '<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> x</li>\n</ul>',
+  '<ul class="adf-decision-list">\n<li class="adf-decision" data-state="DECIDED">x</li>\n</ul>',
+]
+
+for (const list of nestedTaskLists) {
+  test(`reads a task or decision list nested 499 levels, its items one level below it, and refuses the next level: ${list.split("\\n")[0]}`, () => {
+    const panels = (levels: number, list: string): string => `${'<div class="adf-panel">\n'.repeat(levels)}${list}${'\n</div>'.repeat(levels)}\n`
     assert.equal(refusal(htmlToAdf(panels(499, list))), 'read')
     assert.equal(refusal(htmlToAdf(panels(500, list))).startsWith('unsupported-nesting-depth'), true)
-  }
-})
+  })
+}
 
 test('reads a media of no url as an <img> of class adf-media', () => {
   const single = htmlToAdf('<figure class="adf-media-single"><img class="adf-media" data-type="external"></figure>\n')

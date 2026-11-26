@@ -231,7 +231,9 @@ test('names a marker spelled outside its one canonical form', () => {
   refused('!adf:{localId=p b=1}\nPart.\n', 'malformed-directive', { line: 1, offset: 0 }, 'alphabetical')
   refused('!adf:{localId=p} Part.\n', 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
   refused('> !adf:{localId=p} Part.\n', 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
-  for (const item of ['- !adf:{localId=i}Part\n', '- !adf:{localId=i}  Part\n', '- !adf:{localId=i} \tPart\n']) refused(item, 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
+  refused('- !adf:{localId=i}Part\n', 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
+  refused('- !adf:{localId=i}  Part\n', 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
+  refused('- !adf:{localId=i} \tPart\n', 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
   refused('- !adf:{localId=i Part\n', 'malformed-directive', { line: 1, offset: 0 }, 'key=value')
   refused('!adf:{a=1 localId=p}\nPart.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'holds a;')
 })
@@ -267,13 +269,16 @@ test('reads no trailing marker from inside a link destination, and reads one sta
   assert.deepEqual(read(losslessMarkdownToAdf('# Title !adf:{localId="[a](b)"}')), [node('heading', { level: 1, localId: '[a](b)' }, text('Title'))])
 })
 
-test('writes an id after text that would join its marker to a link as the directive form, which reads back', () => {
-  const held = '[a](<u'
-  const heading = node('heading', { level: 2, localId: '>)' }, text(held))
-  const quoted = node('blockquote', {}, node('paragraph', { localId: '>)' }, text(held)))
-  const listed = node('bulletList', {}, node('listItem', {}, node('paragraph', { localId: '>)' }, text(held))))
-  for (const block of [heading, quoted, listed]) {
+const linkJoiningText = '[a](<u'
+const linkJoiningBlocks: [string, AdfNode][] = [
+  ['a heading', node('heading', { level: 2, localId: '>)' }, text(linkJoiningText))],
+  ['a quoted paragraph', node('blockquote', {}, node('paragraph', { localId: '>)' }, text(linkJoiningText)))],
+  ['a listed paragraph', node('bulletList', {}, node('listItem', {}, node('paragraph', { localId: '>)' }, text(linkJoiningText))))],
+]
+
+for (const [where, block] of linkJoiningBlocks) {
+  test(`writes the id of ${where} after text that would join its marker to a link as the directive form, which reads back`, () => {
     const markdown = written(adfToLosslessMarkdown(document(block)))
     assert.deepEqual(read(losslessMarkdownToAdf(markdown)), [block], markdown)
-  }
-})
+  })
+}

@@ -80,16 +80,14 @@ test('the CommonMark spec suite is 0.31.2, vendored byte-exact', () => {
 
 test('every exception is unique, names a parsing example, and files no fixpoint divergence', () => {
   assert.equal(exceptionIndex.size, exceptions.length, 'one exception repeats an example and check another holds')
-  for (const entry of exceptions) {
-    assert.ok(spec.some((candidate) => candidate.example === entry.example), `exception ${entry.example} names no example in the suite`)
-    assert.equal(exampleToRefusal.get(entry.example), undefined, `exception ${entry.example} is on the refusal list, not an exception`)
-    assert.notEqual(entry.check, 'fixpoint', `exception ${entry.example} files a fixpoint divergence; the emitter spells every document the parser builds`)
-  }
+  assert.deepEqual(exceptions.filter((entry) => !spec.some((candidate) => candidate.example === entry.example)), [], 'exceptions naming no example in the suite')
+  assert.deepEqual(exceptions.filter((entry) => exampleToRefusal.get(entry.example) !== undefined), [], 'exceptions on the refusal list')
+  assert.deepEqual(exceptions.filter((entry) => entry.check === 'fixpoint'), [], 'the emitter spells every document the parser builds')
 })
 
 test('the refusal list is unique per example and names real examples', () => {
   assert.equal(exampleToRefusal.size, refusals.length, 'one refusal repeats an example another holds')
-  for (const example of exampleToRefusal.keys()) assert.ok(spec.some((entry) => entry.example === example), `refusal ${example} names no example in the suite`)
+  assert.deepEqual([...exampleToRefusal.keys()].filter((example) => !spec.some((entry) => entry.example === example)), [], 'refusals naming no example in the suite')
 })
 
 // A mark counts once per node carrying it: ADF marks each node where HTML nests one element (docs/decisions.md §No schema validation).
@@ -181,11 +179,8 @@ function decodeHtmlEntity(text: string, index: number): { length: number; text: 
 }
 
 test('the oracle decodes every entity the reference HTML holds', () => {
-  for (const example of spec) {
-    for (const [reference] of example.html.matchAll(/&#?[0-9A-Za-z]+;/g)) {
-      assert.ok(decodeHtmlEntity(reference, 0) !== undefined, `example ${example.example} holds ${reference}, which the oracle would leave literal`)
-    }
-  }
+  const literal = spec.flatMap((example) => [...example.html.matchAll(/&#?[0-9A-Za-z]+;/g)].filter(([reference]) => decodeHtmlEntity(reference, 0) === undefined).map(([reference]) => `example ${example.example}: ${reference}`))
+  assert.deepEqual(literal, [])
 })
 
 function referenceText(html: string): string {
@@ -309,31 +304,21 @@ function countMismatch(example: SpecExample, document: AdfDocument): string | un
   return names.length === 0 ? undefined : names.map((name) => `${name} ${expected[name]}/${actual[name]}`).join(' ')
 }
 
-for (const example of spec) {
-  test(`CommonMark example ${example.example} => ${example.section}`, () => {
-    const parse = commonMarkToAdf(example.markdown)
-    const refused = exampleToRefusal.get(example.example)
-    if (refused !== undefined) {
-      assert.ok(!parse.ok, `example ${example.example} was expected to refuse with ${refused} but parsed`)
-      assert.equal(parse.error.code, refused, `example ${example.example} refused with a different code`)
-      return
-    }
-    if (!parse.ok) assert.fail(`example ${example.example} was expected to parse but refused with ${parse.error.code}`)
+const divergenceOf: Record<Check, (example: SpecExample, document: AdfDocument) => string | undefined> = { count: countMismatch, fixpoint: fixpointRefused, text: textMismatch }
 
-    const divergences: Record<Check, string | undefined> = {
-      count: countMismatch(example, parse.value),
-      fixpoint: fixpointRefused(example, parse.value),
-      text: textMismatch(example, parse.value),
-    }
-    for (const check of checks) {
-      const entry = exceptionIndex.get(`${example.example}:${check}`)
-      const divergence = divergences[check]
-      if (divergence === undefined) {
-        assert.equal(entry, undefined, `example ${example.example} passes its ${check} check but files an exception`)
-      } else {
-        assert.ok(entry !== undefined, `example ${example.example} ${check} check fails: ${divergence}`)
-        assert.equal(entry.divergence, divergence, `example ${example.example} ${check} diverged differently than filed`)
-      }
-    }
+for (const example of spec.filter((entry) => exampleToRefusal.has(entry.example))) {
+  test(`CommonMark example ${example.example} => ${example.section}: refused`, () => {
+    const parse = commonMarkToAdf(example.markdown)
+    assert.equal(parse.ok ? 'parsed' : parse.error.code, exampleToRefusal.get(example.example))
   })
+}
+
+for (const example of spec.filter((entry) => !exampleToRefusal.has(entry.example))) {
+  for (const check of checks) {
+    test(`CommonMark example ${example.example} => ${example.section}: ${check}`, () => {
+      const parse = commonMarkToAdf(example.markdown)
+      assert.ok(parse.ok, parse.ok ? '' : `refused with ${parse.error.code}`)
+      assert.equal(divergenceOf[check](example, parse.value), exceptionIndex.get(`${example.example}:${check}`)?.divergence)
+    })
+  }
 }
