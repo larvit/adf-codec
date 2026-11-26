@@ -25,7 +25,7 @@ type TextPiece = { marks: AdfMark[]; text: string }
 // `run`: the piece the next plain character joins.
 type Scan = { end: number; inCell: boolean; link: Link | undefined; opened: Opened[]; pieces: Piece[]; run: TextPiece | undefined; start: number; wiki: string }
 
-const address = /https?:\/\/[^\s)'"`>!|[\]{}\\]*/y
+const address = /https?:\/\/[^\s"`>|[\]{}\\]*/y
 const anchorMacro = /\{anchor(?::[^{}\n]*)?\}/y
 const characterMarks: ReadonlyMap<string, AdfMark> = new Map([
   ['*', { type: 'strong' }],
@@ -259,12 +259,23 @@ function bareAddress(scan: Scan, at: number): number {
   address.lastIndex = at
   const found = scan.link === undefined ? address.exec(scan.wiki)?.[0] : undefined
   if (found === undefined) return plainCharacter(scan, at)
-  let end = found.length
-  while ('.,;?'.includes(found.charAt(end - 1))) end -= 1
-  const spelled = found.slice(0, end)
+  const spelled = found.slice(0, linkedLength(found))
   if (spelled.endsWith('://') || !wellFormedAddress(spelled)) return plainCharacter(scan, at)
   push(scan, { marks: [{ attrs: { href: storedHref(spelled) }, type: 'link' }], text: spelled })
   return at + spelled.length
+}
+
+// Jira leaves a trailing run of `.,;?!')` out of the link, but keeps a `?` that a `,`, `;`, `'` or `)` follows.
+function linkedLength(found: string): number {
+  let end = found.length
+  let closed = false
+  while (end > 0) {
+    const last = found.charAt(end - 1)
+    if (!".,;?!')".includes(last) || (last === '?' && closed)) break
+    closed ||= ",;')".includes(last)
+    end -= 1
+  }
+  return end
 }
 
 function nodesOf(pieces: readonly Piece[]): AdfNode[] {
