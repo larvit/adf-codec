@@ -86,8 +86,9 @@ test('carries a lone surrogate no text directive spells', () => {
 })
 
 const linked = (attrs: Record<string, string>): AdfDocument => document(paragraph({ marks: [{ attrs, type: 'link' }], text: 'x', type: 'text' }))
-const image = (attrs: Record<string, string>, marks: AdfNode['marks'] = []): AdfDocument =>
-  document({ attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', ...attrs }, marks, type: 'media' }], type: 'mediaSingle' })
+const image = (attrs: Record<string, string>, marks?: AdfNode['marks']): AdfDocument =>
+  document({ attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', ...attrs }, ...(marks === undefined ? {} : { marks }), type: 'media' }], type: 'mediaSingle' })
+const extension = (extensionKey: string): AdfDocument => document({ attrs: { extensionKey, extensionType: 't' }, type: 'extension' })
 
 const surrogateOutsideText: Record<string, AdfDocument> = {
   'a code block language': document({ attrs: { language: 'a\ud800' }, content: [{ text: 'x', type: 'text' }], type: 'codeBlock' }),
@@ -105,10 +106,19 @@ for (const [place, doc] of Object.entries(surrogateOutsideText)) {
   })
 }
 
+test('reads a raw lone surrogate in a link destination, as 0.3.1 wrote it', () => {
+  const read = losslessMarkdownToAdf('[x](https://example.com/\ud800)\n')
+  assert.deepEqual(read.ok ? read.value : read.error, linked({ href: 'https://example.com/\ud800' }))
+})
+
 const portableWithoutSurrogate: Record<string, [AdfDocument, string]> = {
   'a code block': [document({ content: [{ text: 'a\udc00b', type: 'text' }], type: 'codeBlock' }), '```\nab\n```\n'],
   'a code block language': [document({ attrs: { language: 'a\ud800' }, content: [{ text: 'x', type: 'text' }], type: 'codeBlock' }), '```\nx\n```\n'],
   'a link href': [linked({ href: 'https://example.com/\ud800' }), '[x](https://example.com/%EF%BF%BD)\n'],
+  'a mention text holding nothing else': [document(paragraph({ attrs: { id: 'a', text: '\ud800' }, type: 'mention' })), '@a\n'],
+  'an emoji text holding nothing else': [document(paragraph({ attrs: { id: 'y', shortName: ':a:', text: '\ud800' }, type: 'emoji' })), ':a:\n'],
+  'an extension key': [extension('k\ud800y'), '_(ky not included)_\n'],
+  'an extension key holding nothing else': [extension('\ud800'), '_(extension not included)_\n'],
   'a link title': [linked({ href: 'https://example.com/', title: 'a\udc00b' }), '[x](https://example.com/ "ab")\n'],
   'an expand title': [document({ attrs: { title: ' \t\ud800 a\udc00b' }, type: 'expand' }), '> [!NOTE]- ab\n'],
   'an image alt text': [image({ alt: 'a\ud800', url: 'https://example.com/a.png' }), '![a](https://example.com/a.png)\n'],

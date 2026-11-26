@@ -36,7 +36,6 @@ const nullCharacters = new RegExp(nullCharacterSource, 'g')
 const loneSurrogateSource = '[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\ud800-\\udbff])[\\udc00-\\udfff]'
 export const loneSurrogates = `(?:${loneSurrogateSource})+`
 const loneSurrogate = new RegExp(loneSurrogateSource)
-const everyLoneSurrogate = new RegExp(loneSurrogateSource, 'g')
 const tagName = new RegExp(`^</?(${tagNameSource})[\\s\\S]*$`)
 // The opener's own match ends with the terminator where the construct is complete on its own (`<!-->`).
 const inlineHtmlConstructs = [
@@ -147,10 +146,6 @@ export function holdsNullCharacter(text: string): boolean {
 // UTF-8 cannot encode one: stored as UTF-8, it reads back as U+FFFD.
 export function holdsLoneSurrogate(text: string): boolean {
   return loneSurrogate.test(text)
-}
-
-export function replaceLoneSurrogates(text: string, replacement: string): string {
-  return text.replace(everyLoneSurrogate, replacement)
 }
 
 export function replaceNullCharacters(text: string): string {
