@@ -19,8 +19,12 @@ export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling)
 
 // Stops at the first piece, passed through `respell`, that does not match `text`: built whole, the 'two-space' spelling of a short compact text can pass the engine's longest string.
 export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string, respell = (canonical: string): string => canonical): boolean {
+  let length = 0
   let offset = 0
   for (const canonical of canonicalJsonPieces(value, spelling)) {
+    // An engine whose strings outgrow the bound can hold a text that matches the unspelled pieces of a string past it.
+    length += canonical.length
+    if (length > longestOutput) return false
     const piece = respell(canonical)
     if (!text.startsWith(piece, offset)) return false
     offset += piece.length
