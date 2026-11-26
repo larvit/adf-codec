@@ -141,6 +141,15 @@ test('throws V8\'s error for a string past the bound, as on every engine', () =>
   assert.throws(() => serializeCanonicalJson('a'.repeat(longestOutput - 1), 'compact'), new RangeError('Invalid string length'))
 })
 
+test('finds that a text of exactly the bound spells a string', () => {
+  const text = 'a'.repeat(longestOutput - 2)
+  assert.ok(spellsCanonicalJson(text, 'compact', `"${text}"`))
+})
+
+test('finds that no text spells a string past the bound, whatever its pieces are respelled to', () => {
+  assert.ok(!spellsCanonicalJson('a'.repeat(longestOutput - 1), 'compact', '', () => ''))
+})
+
 test('finds that no text spells a string past the bound', () => {
   assert.ok(!spellsCanonicalJson('a'.repeat(longestOutput - 1), 'compact', ''))
 })
