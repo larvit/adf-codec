@@ -4,6 +4,7 @@ import test from 'node:test'
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { Result } from '../../result.ts'
 import { adfToLosslessJiraWiki, adfToLossyJiraWiki } from '../../index.ts'
+import { inlineCarry } from '../carry.ts'
 import { largestNesting } from '../../nesting.ts'
 import { smileys } from '../spellings.ts'
 
@@ -48,6 +49,12 @@ function marked(...marks: AdfMark[]): string {
 
 function block(json: string): string {
   return `{adf:display=block}\n${json}\n{adf}`
+}
+
+function carriedBreak(node: AdfNode): string {
+  const carry = inlineCarry([node], [])
+  assert.equal(carry.ok, true)
+  return carry.ok ? carry.value : ''
 }
 
 function inline(json: string): string {
@@ -203,25 +210,35 @@ test('writes a hard break as two backslashes', () => {
 })
 
 const hardBreak = { type: 'hardBreak' }
-const breakCarry = inline('{"type":"hardBreak"}')
-const hardBreakBeforeBrace: [string, AdfNode[], string][] = [
-  ['an escaped character', [text('_a')], `${breakCarry}\\_a`],
-  ['an escaped brace', [text('{b')], `${breakCarry}\\{b`],
-  ['a colour', [text('x', { attrs: { color: '#ff0000' }, type: 'textColor' })], `${breakCarry}{color:#ff0000}x{color}`],
-  ['a code mark', [text('x', { type: 'code' })], `${breakCarry}{{x}}`],
-  ['a hard break', [hardBreak, text('b')], `${breakCarry}\\\\b`],
-  ['a carry', [{ attrs: { text: 'x' }, type: 'status' }], `${breakCarry}${inline('{"attrs":{"text":"x"},"type":"status"}')}`],
+const unreadBreakFollowers: [string, AdfNode[], string][] = [
+  ['a carry', [{ attrs: { text: 'x' }, type: 'status' }], `${carriedBreak(hardBreak)}${inline('{"attrs":{"text":"x"},"type":"status"}')}`],
+  ['a code mark', [text('x', { type: 'code' })], `${carriedBreak(hardBreak)}{{x}}`],
+  ['a colour', [text('x', { attrs: { color: '#ff0000' }, type: 'textColor' })], `${carriedBreak(hardBreak)}{color:#ff0000}x{color}`],
+  ['a hard break', [hardBreak, text('b')], `${carriedBreak(hardBreak)}\\\\b`],
+  ['an escaped brace', [text('{b')], `${carriedBreak(hardBreak)}\\{b`],
+  ['an escaped character', [text('_a')], `${carriedBreak(hardBreak)}\\_a`],
 ]
-for (const [name, following, expected] of hardBreakBeforeBrace) {
+for (const [name, following, expected] of unreadBreakFollowers) {
   test(`carries a hard break before ${name}, since Jira reads no break where a brace or a backslash follows`, () => {
     assert.equal(wiki(paragraph(text('a'), hardBreak, ...following)), `a${expected}`)
   })
 }
 
-test('carries a hard break that holds a mark or an attribute, and the text before a brace stays', () => {
-  assert.equal(wiki(paragraph(text('a'), { attrs: { x: 1 }, type: 'hardBreak' }, text('b'))), `a${inline('{"attrs":{"x":1},"type":"hardBreak"}')}b`)
-  assert.equal(wiki(paragraph(text('a'), { marks: [{ type: 'strong' }], type: 'hardBreak' }, text('_a'))), `a${inline('{"marks":[{"type":"strong"}],"type":"hardBreak"}')}\\_a`)
+test('carries a hard break that holds an attribute, which no spelling stands for', () => {
+  const attributed = { attrs: { x: 1 }, type: 'hardBreak' }
+  assert.equal(wiki(paragraph(text('a'), attributed, text('b'))), `a${carriedBreak(attributed)}b`)
+})
+
+test('carries a hard break that holds a mark, whatever follows it', () => {
+  const marked = { marks: [{ type: 'strong' }], type: 'hardBreak' }
+  assert.equal(wiki(paragraph(text('a'), marked, text('_a'))), `a${carriedBreak(marked)}\\_a`)
+})
+
+test('writes a spelling that starts with a brace as it stands after text', () => {
   assert.equal(wiki(paragraph(text('a '), text('x', { type: 'code' }))), 'a {{x}}')
+})
+
+test('writes a hard break as two backslashes before text that holds a brace past its start', () => {
   assert.equal(wiki(paragraph(text('a'), hardBreak, text('b{c'))), 'a\\\\b\\{c')
 })
 
@@ -229,7 +246,7 @@ test('carries a heading holding a hard break before an escaped character', () =>
   assert.equal(wiki({ attrs: { level: 1 }, content: [text('a'), hardBreak, text('_a')], type: 'heading' }).startsWith('{adf:display=block}'), true)
 })
 
-test('writes a hard break as two backslashes where a letter, a delimiter or a mark follows', () => {
+test('writes a hard break as two backslashes before a letter or a mark', () => {
   assert.equal(wiki(paragraph(text('a'), hardBreak, text('b', { type: 'strong' }), hardBreak, text('c'))), 'a\\\\*b*\\\\c')
 })
 
@@ -521,7 +538,7 @@ test('carries a text that whitespace ends at the line end, or that holds http://
   assert.equal(line('see http://example.com'), inline('{"text":"see http://example.com","type":"text"}'))
 })
 
-test('escapes a delimiter between punctuation, and one a node edge meets inside the line', () => {
+test('escapes a delimiter between punctuation', () => {
   assert.equal(line('a "-" b'), 'a "\\-" b')
 })
 
