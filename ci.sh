@@ -31,6 +31,11 @@ built_and_bundle_size_installed() {
   bundle_size_installed
 }
 
+packed_and_bundle_size_installed() {
+  packed &&
+  bundle_size_installed
+}
+
 needs() {
   local prerequisite=$1 &&
   shift &&
@@ -146,5 +151,12 @@ leg "bundle size tests ($node_image)" needs bundle_size_installed in_image "$nod
 leg "README's size figures are current ($node_image)" needs built_and_bundle_size_installed in_image "$node_image" node bundle-size/run.mjs --check
 leg "typecheck the consumer ($node_image)" needs packed in_image "$node_image" npx tsc -p package-tests
 leg "round-trip on the engines floor ($floor_image)" needs packed in_image "$floor_image" node package-tests/node-floor.js
+
+bundles_round_trip() {
+  in_image "$bun_image" bun package-tests/bundle-round-trip.mjs &&
+  in_image "$node_image" node package-tests/bundle-round-trip.mjs
+}
+
+leg "bundle with Bun, esbuild, Rollup and webpack, failing on a warning, and round-trip each bundle ($bun_image, $node_image)" needs packed_and_bundle_size_installed bundles_round_trip
 
 leg "browser ($firefox_image)" needs built with_firefox in_image "$node_image" node browser-tests/run.js

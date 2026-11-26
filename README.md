@@ -920,6 +920,7 @@ Serves [Goals](#goals) 8.
 
 | Aspect | Contract |
 | --- | --- |
+| Bundlers | webpack, esbuild, Rollup and Bun each bundle it without a warning, and the bundle converts |
 | Dependencies | none at runtime |
 | Engines | any ES2022 engine; `engines.node` is `>=18`. The test suite runs under Node, Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint |
 | Host APIs | none: pure ECMAScript, no DOM, no `node:` import |

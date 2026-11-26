@@ -917,6 +917,10 @@ would resolve against. `consumer.ts` typechecks the emitted `.d.ts` from outside
 `rewriteRelativeImportExtensions` rewrites in the JavaScript, and this is what says a consumer's
 resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` stays unproven.
 `node-floor.js` round-trips the installed package under a Node pinned to `engines.node`'s floor.
+`bundle-round-trip.mjs` bundles `bundle-entry.js` against the installed package with webpack, esbuild,
+Rollup and Bun, each in its default configuration, fails on any warning, as webpack's "Critical
+dependency" is, and round-trips a document through each bundle in Node. The bundlers are
+`bundle-size/`'s, as §Stryker in its own package has it.
 
 ## Firefox reads the build
 
