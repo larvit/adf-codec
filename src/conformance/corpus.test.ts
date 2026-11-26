@@ -124,7 +124,11 @@ function repeatedFixtures(): string[] {
   const repeated: string[] = []
   for (const fixture of roundTripFixtures()) {
     const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
-    const document = isJsonValue(parsed) ? serializeCanonicalJson(parsed, 'compact') : `${fixture.name} does not hold a JSON value`
+    if (!isJsonValue(parsed)) {
+      repeated.push(`${fixture.name} does not hold a JSON value`)
+      continue
+    }
+    const document = serializeCanonicalJson(parsed, 'compact')
     const holder = holders.get(document)
     if (holder !== undefined) repeated.push(`${fixture.name} repeats the document ${holder} holds`)
     holders.set(document, fixture.name)
@@ -132,7 +136,7 @@ function repeatedFixtures(): string[] {
   return repeated
 }
 
-test('no round-trip fixture repeats the document another holds', () => {
+test('every round-trip fixture holds a JSON value, and none repeats the document another holds', () => {
   assert.deepEqual(repeatedFixtures(), [])
 })
 

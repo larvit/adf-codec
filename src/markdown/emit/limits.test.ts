@@ -172,8 +172,7 @@ test('refuses a document nested deeper than the emitter carries', () => {
   const carried = wrapped<AdfNode>(500, paragraph({ text: 'x', type: 'text' }), (inner) => ({ content: [inner], type: 'blockquote' }))
   assert.ok(adfToLosslessMarkdown(document(carried)).ok)
   const listed = (levels: number, first: readonly AdfNode[]): AdfNode => {
-    const list = wrapped<AdfNode>(levels - 1, { content: [{ content: [...first], type: 'listItem' }], type: 'bulletList' }, (inner) => ({ content: [{ content: [...first, inner], type: 'listItem' }], type: 'bulletList' }))
-    return list
+    return wrapped<AdfNode>(levels - 1, { content: [{ content: [...first], type: 'listItem' }], type: 'bulletList' }, (inner) => ({ content: [{ content: [...first, inner], type: 'listItem' }], type: 'bulletList' }))
   }
   assert.ok(adfToLosslessMarkdown(document(listed(largestNesting, [paragraph({ text: 'x', type: 'text' })]))).ok)
   assert.equal(code(adfToLosslessMarkdown(document(listed(largestNesting + 1, [paragraph({ text: 'x', type: 'text' })])))), 'unsupported-nesting-depth')
@@ -183,8 +182,7 @@ test('refuses a document nested deeper than the emitter carries', () => {
   assert.equal(code(adfToLosslessMarkdown(document(listed(directiveLists + 1, [{ type: 'rule' }])))), 'unsupported-nesting-depth')
   assert.equal(code(adfToLosslessMarkdown(document({ content: [listed(directiveLists, [{ type: 'rule' }])], type: 'panel' }))), 'unsupported-nesting-depth')
   const chain = (levels: number): AdfNode => {
-    const card = wrapped<AdfNode>(levels, { type: 'blockCard' }, (inner) => ({ content: [inner], type: 'blockCard' }))
-    return card
+    return wrapped<AdfNode>(levels, { type: 'blockCard' }, (inner) => ({ content: [inner], type: 'blockCard' }))
   }
   const carriedInItem = (levels: number): AdfDocument => document(listed(1, [{ type: 'rule' }, chain(levels)]))
   assert.deepEqual(losslessMarkdownToAdf(markdown(adfToLosslessMarkdown(carriedInItem(248)))), { ok: true, value: carriedInItem(248) })

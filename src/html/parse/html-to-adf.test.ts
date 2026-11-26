@@ -273,19 +273,19 @@ test('reads a paragraph or heading with a data-align attribute as aligned', () =
 })
 
 for (const html of ['<p style="text-align:center">x</p>\n', '<p data-align="left">x</p>\n', '<p data-align="right">x</p>\n', '<p data-align="">x</p>\n', `<p data-local-id="${ids.paragraph}" data-align="center">x</p>\n`, '<p data-align="center" data-align="end">x</p>\n', '<figure class="adf-media-single" data-align="center"><img src="a"></figure>\n', '<blockquote data-align="center">\n<p>x</p>\n</blockquote>\n']) {
-  test(`refuses an alignment the writer does not write: ${html}`, () => {
+  test(`refuses an alignment the writer does not write: ${JSON.stringify(html)}`, () => {
     assert.notEqual(refusal(htmlToAdf(html)), 'read')
   })
 }
 
 const linkedCard = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
 const linkedCardCarries: [string, string][] = [
-  ['itself', `<p>${carry('span', linkedCard, '')}</p>\n`],
+  ['as the node it carries', `<p>${carry('span', linkedCard, '')}</p>\n`],
   ['two levels down', `${carry('div', { content: [{ content: [linkedCard], type: 'futureNode' }], type: 'futureBlock' }, '')}\n`],
 ]
 
 for (const [depth, html] of linkedCardCarries) {
-  test(`refuses a carry element holding an inline card a link marks, ${depth} in the node it carries`, () => {
+  test(`refuses a carry element holding an inline card a link marks, ${depth}`, () => {
     names(htmlToAdf(html), 'data-adf', 'every writer refuses', 'inlineCard', 'link mark')
   })
 }
@@ -301,7 +301,7 @@ for (const { facts, node } of refusedShapes) {
     names(htmlToAdf(`${carry('div', node, '')}\n`), 'data-adf', 'every writer refuses', ...facts)
   })
 
-  test(`refuses a carry element holding a shape every writer refuses: ${facts.join(', ')}`, () => {
+  test(`refuses a carry element whose node holds, one level down, a shape every writer refuses: ${facts.join(', ')}`, () => {
     names(htmlToAdf(`${carry('div', { content: [node], type: 'futureBlock' }, '')}\n`), 'data-adf', 'every writer refuses', ...facts)
   })
 }
@@ -679,7 +679,7 @@ const nestedTaskLists = [
 ]
 
 for (const list of nestedTaskLists) {
-  test(`reads a task or decision list nested 499 levels, its items one level below it, and refuses the next level: ${list.split("\\n")[0]}`, () => {
+  test(`reads a task or decision list nested 499 levels, its items one level below it, and refuses the next level: ${list.split('\n')[0]}`, () => {
     const panels = (levels: number, list: string): string => `${'<div class="adf-panel">\n'.repeat(levels)}${list}${'\n</div>'.repeat(levels)}\n`
     assert.equal(refusal(htmlToAdf(panels(499, list))), 'read')
     assert.equal(refusal(htmlToAdf(panels(500, list))).startsWith('unsupported-nesting-depth'), true)
