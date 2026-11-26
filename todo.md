@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 215 | 0.4.0 |  | defect | **Return a result, never an engine abort, from the writers where one key or one link `href` is a string of 2^28 characters.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
-| 216 | 0.4.0 |  |  | **List the commit that converted the source to tabs in `.git-blame-ignore-revs`, so `git blame` skips it.** | 1 | 2 | 1 | 2 | 1 | code health by 1 | 6.2 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
@@ -48,14 +47,6 @@ Touches:
 - `src/markdown/commonmark/link-syntax.ts`: `escapeUnbalanced`, `spellTitle` (small)
 - `src/canonical-json.test.ts`
 - `src/markdown/emit/limits.test.ts`
-
-### 216. List the commit that converted the source to tabs in `.git-blame-ignore-revs`, so `git blame` skips it.
-
-Item 213's chunk converted the indentation in one commit, titled `Indent the TypeScript, JavaScript and shell source with hard tabs`. The pull request merges by rebase, which gives that commit a new hash, so the file could not name it before the merge. Add `.git-blame-ignore-revs` at the root holding the hash that commit has on `main`, found with `git log --format=%H --grep='^Indent the TypeScript, JavaScript and shell source with hard tabs$' origin/main`. Check it with `git blame --ignore-revs-file .git-blame-ignore-revs src/index.ts`, which must name no line as that commit's. Found by the stability review of item 213, 2026-11-26.
-
-Touches:
-
-- `.git-blame-ignore-revs`
 
 ### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
 
