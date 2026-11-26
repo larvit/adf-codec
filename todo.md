@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
-| 208 | 0.4.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 2 | 7.8 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
@@ -59,17 +58,6 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
-
-### 208. Lower the reading cost of the files a chunk reads most before its first commit.
-
-The last 5 chunks' median is 76109 new input tokens before their first commit, the 5 before them 74831 (`~/.claude/bin/reading-cost`, `docs/reading-cost.md`).
-
-Read most over the last 5 chunks (opens and searches): `ci.sh` 13, `docs/decisions.md` 13, `spec/flavour.md` 11, `src/markdown/portable/inline-reduction.test.ts` 10, `src/markdown/emit/inline-line.ts` 6, `src/markdown/portable/inline-reduction.ts` 6, `src/conformance/adf-property.test.ts` 5, `docker-runner.sh` 4, `package.json` 4, `src/markdown/directive/syntax.ts` 4.
-
-Cut what a chunk reads of those files: split or index the parts it reads whole, and run `~/.claude/bin/reading-cost --reset` in the chunk that ships this. Where the change touches `src/markdown/emit/inline-line.ts`, make `settledLine`, a place the comprehension seats found hard, easier to read.
-
-Touches:
-- `AGENTS.md`: `## 7. The working loop` (small)
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
