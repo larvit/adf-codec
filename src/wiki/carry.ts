@@ -25,7 +25,7 @@ export function inlineCarry(nodes: readonly AdfNode[], path: ConvertErrorPath): 
 }
 
 // A `{` inside a JSON string is `\u007b`, so the closing `{adf}` is the only one the macro holds.
-// A scan by index, since a regex over a string of 2^28 characters overflows V8's stack.
+// A loop, since a regex matching a JSON string of 2^28 characters overflows V8's stack.
 function closingMacroEscaped(json: string): string {
 	let escaped = ''
 	let kept = 0

@@ -877,13 +877,13 @@ test('the lossy writer writes 200,000 marked texts parted by spaces', { timeout:
 	assert.equal(result.ok ? result.value.length : result.error.code, wide * 4 - 1)
 })
 
-for (const [name, write, length] of [['lossless', adfToLosslessJiraWiki, 2 ** 28 + 64], ['lossy', adfToLossyJiraWiki, 0]] as const) {
-	test(`the ${name} writer writes a carry holding one key of 2^28 characters`, { timeout: 120000 }, () => {
+for (const [name, write, length] of [['the lossless writer carries a node', adfToLosslessJiraWiki, 2 ** 28 + 64], ['the lossy writer drops a node', adfToLossyJiraWiki, 0]] as const) {
+	test(`${name} holding one key of 2^28 characters`, { timeout: 120000 }, () => {
 		const result = write(document({ attrs: { ['a'.repeat(2 ** 28)]: 1 }, type: 'unknownBlock' }))
 		assert.equal(result.ok ? result.value.length : result.error.code, length)
 	})
 }
 
-test('a carry holding a brace in a string escapes it, and leaves a brace outside every string', () => {
+test('a carry escapes a brace in a key and in a value after an escaped quote, and leaves the braces that open its objects', () => {
 	assert.equal(wiki({ attrs: { 'a{': 'b\\"{' }, type: 'unknownBlock' }), '{adf:display=block}\n{"attrs":{"a\\u007b":"b\\\\\\"\\u007b"},"type":"unknownBlock"}\n{adf}')
 })
