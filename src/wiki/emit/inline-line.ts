@@ -27,11 +27,9 @@ const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], [
 export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, inCell: boolean, lossy: boolean): Result<Line> {
   const atoms = nodes.map((node, index) => atom(node, nodes, index, inCell, lossy))
   const groups = markedGroups(atoms)
-  let line = ''
+  const spellings: string[] = []
   let before: string | undefined
   let carried = false
-  // Where in `line` the hard break that the last group wrote as `\\` starts.
-  let held: number | undefined
   for (const [position, { first, last }] of groups.entries()) {
     const next = groups[position + 1]
     // A group that opens with a delimiter or a carry opens with punctuation, which reads as the line's edge does.
@@ -39,24 +37,22 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, in
     const after = following?.marks.length === 0 ? following.spelled?.text : undefined
     const afterCharacter = after === undefined ? undefined : firstCharacter(after)
     const group = atoms.slice(first, last + 1)
-    const written = groupSpelling(group, before, afterCharacter) ?? (lossy ? groupSpelling(group.map(withoutCheckedMarks), before, afterCharacter) : undefined)
-    let spelling = written
+    let spelling = groupSpelling(group, before, afterCharacter) ?? (lossy ? groupSpelling(group.map(withoutCheckedMarks), before, afterCharacter) : undefined)
     if (spelling === undefined) {
       const carry = inlineCarry(nodes.slice(first, last + 1), [...path, 'content', first])
       if (!carry.ok) return carry
       spelling = carry.value
       carried = true
     }
-    // Jira reads `\\` as a line break only where no `{` or `\` follows: the lossless writer carries the break then, the lossy writer follows it with a space.
-    if (held !== undefined && /^[{\\]/.test(spelling)) {
-      line = line.slice(0, held) + (lossy ? `${hardBreakSpelling} ` : carriedHardBreak)
+    // Jira shows `\\` as text where a `{` or `\` follows it.
+    if (spellings.at(-1) === hardBreakSpelling && /^[{\\]/.test(spelling)) {
+      spellings[spellings.length - 1] = lossy ? `${hardBreakSpelling} ` : carriedHardBreak
       carried ||= !lossy
     }
-    held = written === hardBreakSpelling ? line.length : undefined
-    line += spelling
+    spellings.push(spelling)
     before = lastCharacter(spelling) ?? before
   }
-  return success({ carried, line })
+  return success({ carried, line: spellings.join('') })
 }
 
 function atom(node: AdfNode, nodes: readonly AdfNode[], index: number, inCell: boolean, lossy: boolean): Atom {
