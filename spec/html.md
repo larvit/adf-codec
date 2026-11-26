@@ -203,19 +203,67 @@ A refusal's position counts the HTML as handed in. `htmlToAdf` reads a carry ele
 `data-adf`, and what the element shows, through its closing tag, must be what `adfToHtml` shows for
 that node in either spelling: an edit there would be lost, so it is `unmappable-html`.
 
-- Any other HTML is `unmappable-html`: another element, attribute or escape, attributes in another
-  order, a block on the line of another, a carriage return not followed by a line feed, or
-  non-empty HTML not ending in a line feed.
+HTML that is not the HTML above, in either spelling, reads as [Other HTML](#other-html) says. The
+HTML above without its final line feed is such HTML, and so loses each `data-*` attribute outside
+an element that claims the dialect. An element claims the dialect by a `data-adf` attribute or a
+class starting `adf-`: the element, with all it holds, reads only as the HTML above. Each refusal
+below applies inside such an element; the last, of nesting, applies to all HTML.
+
+- An element claiming the dialect that is not written as above is `unmappable-html`: an element the
+  dialect does not hold, another attribute or escape, attributes in another order, or a block on
+  the line of another.
 - An emoji, mention, status, date or card element with empty text, a date whose `datetime` or text
   is not the day its `data-timestamp` names, a card without `data-data` whose `href` and text are
   not one URL, and a card with `data-data` whose `href` is not the URL its `data` holds or whose
   text is not its name, else that URL, are `unmappable-html`.
 - A task item whose checkbox is checked where its `data-state` is `TODO`, or not where it is `DONE`,
   and one whose `data-state` is neither, are `unmappable-html`.
-- A `data-*` attribute that its element does not take, such as `data-level` on `<h1>`, or that holds
+- A `data-*` attribute that its element does not take, such as `data-extra` on
+  `<ul class="adf-task-list">`, or that holds
   a value outside its attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
 - A carry element's `data-adf` holding invalid JSON is `unmappable-html`. JSON that is no ADF node,
   is not compact with its keys sorted, or holds a number JSON cannot spell is
   `unsupported-node-shape`, and so is the document's own carry element beside another block.
 - Blocks nest at most 500 levels, and a carried node's JSON at most as many as its position leaves,
   as in writing; past that is `unsupported-nesting-depth`.
+
+### Other HTML
+
+HTML from an email, a CMS or an editor reads best effort. It is refused only for blocks nested past 500 levels and for an element that
+claims the dialect. Tags and
+attribute names read in any case, an end tag may be missing, and a character reference reads as
+its character. White space reads as a browser shows it: a run is one space, and a line holds none
+at its edges.
+
+| HTML | Reads as |
+| --- | --- |
+| `<p>`, and text or inline elements standing in no block | `paragraph` |
+| `<h1>` to `<h6>` | `heading` |
+| `<blockquote>` | `blockquote` |
+| `<ul>`, `<ol>`, `<li>` | `bulletList`, `orderedList` with its `start` as `order`, `listItem` |
+| `<pre>` | `codeBlock` of its text, each `<br>` a line feed, its `language` from the first `language-…` class of a `<code>` inside it |
+| `<hr>` | `rule` |
+| `<table>`, `<tr>`, `<td>`, `<th>` | `table`, `tableRow`, `tableCell`, `tableHeader` |
+| `<details>`, its first `<summary>` | `expand`, a `nestedExpand` inside another, titled by the summary's text |
+| `<br>` | `hardBreak`; one ending a block is dropped |
+| `<a href>` | a `link` mark, with its `title` |
+| `<b>`, `<strong>` | `strong` |
+| `<i>`, `<em>`, `<cite>`, `<dfn>`, `<var>` | `em` |
+| `<s>`, `<strike>`, `<del>` | `strike` |
+| `<u>`, `<ins>` | `underline` |
+| `<code>`, `<kbd>`, `<samp>`, `<tt>` | `code` |
+| `<sub>`, `<sup>` | `subsup` |
+| `<img src>` alone in its paragraph | a centered `mediaSingle` of an external `media`, its `title` a `caption`, a link around it a `link` mark |
+| `<img src>` anywhere else | its `alt`, or its URL where it has none, linked to the image; inside a link, the link's text, then ` (image)` linked to the image after the link, unless the link leads to the image |
+| `<img>` without `src` | its `alt` as text |
+| `<script>`, `<style>`, a comment, a doctype, a processing instruction, an element with `hidden`, and `<area>`, `<base>`, `<basefont>`, `<datalist>`, `<head>`, `<link>`, `<meta>`, `<noembed>`, `<noframes>`, `<param>`, `<rp>`, `<template>`, `<title>` | nothing, with all they hold |
+| any other element | what it holds; one a browser shows as a block parts the text around it into paragraphs, or into lines of the paragraph or heading it stands in |
+
+Every other attribute is dropped, `style` included. A paragraph, heading, quote, list, table or row
+holding nothing is dropped; an item, cell or expand holding nothing holds an empty paragraph. An
+item outside a list, a row or cell outside a table, and a second `<summary>` read as what they hold.
+In a list, what stands between two items joins the item before it. In a table, what stands outside
+a cell is a cell of its own.
+
+Blocks nest at most 500 levels here too; past that is `unsupported-nesting-depth`. A node is placed
+where the HTML places it, also where Atlassian's schema does not allow it there.

@@ -1,4 +1,4 @@
-import { holdsEntityReference, readEntityReference, replacementCharacter } from './entity-references.ts'
+import { holdsEntityReference, readEntityReference, replacementCharacter } from '../../entity-references.ts'
 
 export type LinePosition = 'first' | 'later'
 

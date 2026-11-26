@@ -28,7 +28,7 @@ const causes: Record<ConvertErrorCode, () => Result<unknown>> = {
 	'not-a-string': () => Reflect.apply(losslessMarkdownToAdf, undefined, [null]),
 	'not-an-adf-document': () => readAdfDocument(null),
 	'unknown-directive-name': () => losslessMarkdownToAdf('!adf:widget[a]\n'),
-	'unmappable-html': () => htmlToAdf('<table><tr></tr></table>\n'),
+	'unmappable-html': () => htmlToAdf('<p><span class="adf-carry">a</span></p>'),
 	'unsupported-document-version': () => adfToLosslessMarkdown({ type: 'doc', version: 2 }),
 	'unsupported-nesting-depth': () => adfToLosslessMarkdown(nestedAttribute(largestNesting + 1)),
 	'unsupported-node-shape': () => adfToLosslessMarkdown(duplicateMarks),
