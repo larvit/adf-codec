@@ -1,11 +1,12 @@
 import type { JsonValue } from './json-value.ts'
+import { longestOutput } from './length-bound.ts'
 
 // 'five-level' is the block carry's (docs/decisions.md §The block carry indents five levels in two spaces and writes deeper values compact): indenting every level makes the length quadratic in the nesting.
 export type JsonSpelling = 'compact' | 'five-level' | 'two-space'
 
 const indentedLevels: Record<JsonSpelling, number> = { compact: 0, 'five-level': 5, 'two-space': Infinity }
 
-type Member = { label: string; value: JsonValue }
+type Member = { key: string | undefined; value: JsonValue }
 
 type Pending = string | { depth: number; value: JsonValue }
 
@@ -27,34 +28,50 @@ export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, te
 export function* canonicalJsonPieces(value: JsonValue, spelling: JsonSpelling): Generator<string> {
   const levels = indentedLevels[spelling]
   const pending: Pending[] = [{ depth: 0, value }]
+  let length = 0
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     if (typeof next === 'string') {
+      length += next.length
       yield next
       continue
     }
     const { depth, value: held } = next
     const indent = depth < levels ? '  ' : ''
-    if (Array.isArray(held)) schedule(pending, '[', held.map((item) => ({ label: '', value: item })), ']', indent, depth)
-    else if (held !== null && typeof held === 'object') schedule(pending, '{', objectMembers(held, indent), '}', indent, depth)
-    else yield Object.is(held, -0) ? '-0' : JSON.stringify(held)
+    if (Array.isArray(held)) schedule(pending, '[', held.map((item) => ({ key: undefined, value: item })), ']', indent, depth)
+    else if (held !== null && typeof held === 'object') schedule(pending, '{', objectMembers(held), '}', indent, depth)
+    else if (typeof held === 'string' && length + held.length + 2 > longestOutput) {
+      // Spelling a string that passes the bound can abort the engine: yield it unspelled, with the two characters its quotes add, so every consumer sees the total pass the bound.
+      yield held
+      yield '""'
+      return
+    } else {
+      const spelled = Object.is(held, -0) ? '-0' : JSON.stringify(held)
+      length += spelled.length
+      yield spelled
+    }
   }
 }
 
-function objectMembers(value: { [key: string]: JsonValue }, indent: string): Member[] {
-  const separator = indent === '' ? ':' : ': '
+function objectMembers(value: { [key: string]: JsonValue }): Member[] {
   return Object.keys(value)
     .sort()
-    .map((key) => ({ label: `${JSON.stringify(key)}${separator}`, value: value[key] ?? null }))
+    .map((key) => ({ key, value: value[key] ?? null }))
 }
 
+// A key is scheduled as a string value, so it is measured before it is spelled, as every value is.
 function schedule(pending: Pending[], open: string, members: readonly Member[], close: string, indent: string, depth: number): void {
   if (members.length === 0) {
     pending.push(`${open}${close}`)
     return
   }
+  const colon = indent === '' ? ':' : ': '
   const inner = indent === '' ? '' : `\n${indent.repeat(depth + 1)}`
   const scheduled: Pending[] = []
-  for (const [index, member] of members.entries()) scheduled.push(`${index === 0 ? open : ','}${inner}${member.label}`, { depth: depth + 1, value: member.value })
+  for (const [index, member] of members.entries()) {
+    scheduled.push(`${index === 0 ? open : ','}${inner}`)
+    if (member.key !== undefined) scheduled.push({ depth: depth + 1, value: member.key }, colon)
+    scheduled.push({ depth: depth + 1, value: member.value })
+  }
   scheduled.push(indent === '' ? close : `\n${indent.repeat(depth)}${close}`)
   for (const item of scheduled.reverse()) pending.push(item)
 }

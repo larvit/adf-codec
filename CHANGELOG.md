@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `adfToLosslessMarkdown` refuses a carried node whose JSON passes V8's longest string as `unsupported-node-shape`, where two strings of 2^28 characters in an `unknownBlock`'s `attrs` ended Node with `FATAL ERROR: Zone Allocation failed`.
 - Read `-- ` and longer dash runs in Jira wiki markup as nested bullets while a list is open, as Jira does, where the reader read them as dashes
 - **Breaking:** `adfToLosslessMarkdown` indents the JSON in a carry fence two spaces a level for its first five levels and writes a value nested deeper compact on its line, where `0.3.1` indented every level. A carried node of deeply nested JSON, which `0.3.1` refused as `unsupported-node-shape`, now converts. `losslessMarkdownToAdf` still reads the carry `0.3.1` wrote, but `0.3.1` refuses a carry nested deeper than five levels that `0.4.0` wrote, so upgrade every reader before the writer (`MIGRATION.md`).
 - The Jira wiki writers now write a hard break before a `{` or a backslash so Jira reads it as a break: the lossless writer carries it, the lossy one follows it with a space

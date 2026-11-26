@@ -90,6 +90,12 @@ test('refuses a carry whose JSON alone would run past V8\'s longest string', () 
   assert.equal(pastTheBound(adfToLosslessMarkdown(document({ attrs, type: 'unknownBlock' }))), true)
 })
 
+// The second JSON.stringify of a 2^28-character string aborts Node, so the refusal comes before it spells one that, with what is spelled, passes the bound.
+test('refuses a carry of two strings that alone pass V8\'s longest string, before spelling the second', { timeout: 60000 }, () => {
+  const long = 'a'.repeat(2 ** 28)
+  assert.equal(pastTheBound(adfToLosslessMarkdown(document({ attrs: { first: long, second: long }, type: 'unknownBlock' }))), true)
+})
+
 test('refuses a quote whose prefixed lines would pass V8\'s longest string', { timeout: 60000 }, () => {
   const code = nearlyHalfTheBound()
   assert.equal(pastTheBound(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), true)
