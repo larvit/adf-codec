@@ -9,21 +9,21 @@ import { readEntityReference } from './commonmark/entity-references.ts'
 
 // `directive` and `html` carry no `width`: a directive reads by its own grammar, and the reader refuses HTML.
 export type InlineToken =
-  | { email: boolean; kind: 'autolink'; width: number }
-  | { image: boolean; kind: 'bracket'; width: number }
-  | { kind: 'bracket-close' | 'entity' | 'escape' | 'hard-break' | 'line-ending' | 'text'; width: number }
-  | { kind: 'code-span'; opener: number; width: number }
-  | { canClose: boolean; canOpen: boolean; kind: 'delimiter-run'; width: number }
-  | { kind: 'directive'; prefix: ClaimedPrefix }
-  | { closes: boolean; kind: 'highlight'; opens: boolean; width: number }
-  | { construct: string; kind: 'html' }
+	| { email: boolean; kind: 'autolink'; width: number }
+	| { image: boolean; kind: 'bracket'; width: number }
+	| { kind: 'bracket-close' | 'entity' | 'escape' | 'hard-break' | 'line-ending' | 'text'; width: number }
+	| { kind: 'code-span'; opener: number; width: number }
+	| { canClose: boolean; canOpen: boolean; kind: 'delimiter-run'; width: number }
+	| { kind: 'directive'; prefix: ClaimedPrefix }
+	| { closes: boolean; kind: 'highlight'; opens: boolean; width: number }
+	| { construct: string; kind: 'html' }
 
 // Build one per text and pass it to every `readInlineToken` call on that text, so a walk stays linear in the text's length.
 export type InlineSource = {
-  readonly codeSpanCloser: CodeSpanCloser
-  // Where each HTML terminator last starts in the text, -1 for none; filled the first time an opener asks.
-  readonly terminators: Map<string, number>
-  readonly text: string
+	readonly codeSpanCloser: CodeSpanCloser
+	// Where each HTML terminator last starts in the text, -1 for none; filled the first time an opener asks.
+	readonly terminators: Map<string, number>
+	readonly text: string
 }
 
 // ー, ｰ and the kana voicing marks sit outside the kana scripts; Script_Extensions would also take Latin combining marks.
@@ -32,93 +32,93 @@ const boundingScript = /^[\u3099\u309a\u30fc\uff70\uff9e\uff9f\p{Script=Han}\p{S
 export const highlightDelimiter = '=='
 
 export function inlineSource(text: string): InlineSource {
-  return { codeSpanCloser: backtickCloser(text), terminators: new Map(), text }
+	return { codeSpanCloser: backtickCloser(text), terminators: new Map(), text }
 }
 
 export function readInlineToken(inline: InlineSource, index: number, claims: Claims): InlineToken {
-  const source = inline.text
-  switch (source.charAt(index)) {
-    case '<':
-      return angleToken(inline, index)
-    case '!': {
-      const prefix = claims.directives ? claimDirectivePrefix(source, index) : undefined
-      if (prefix !== undefined) return { kind: 'directive', prefix }
-      return source.charAt(index + 1) === '[' ? { image: true, kind: 'bracket', width: 2 } : text(1)
-    }
-    case '[':
-      return { image: false, kind: 'bracket', width: 1 }
-    case ']':
-      return { kind: 'bracket-close', width: 1 }
-    case '\\':
-      if (source.charAt(index + 1) === '\n') return { kind: 'hard-break', width: 2 }
-      return backslashEscape(source, index) === undefined ? text(1) : { kind: 'escape', width: 2 }
-    case '\n':
-      return { kind: 'line-ending', width: 1 }
-    case '&': {
-      const reference = readEntityReference(source, index)
-      return reference === undefined ? text(1) : { kind: 'entity', width: reference.length }
-    }
-    case '`':
-      return backtickToken(inline, index)
-    case '*':
-    case '_':
-    case '~':
-      return delimiterRunToken(source, index, runLength(source, index), claims)
-    case '=':
-      return claims.highlights && source.startsWith(highlightDelimiter, index) ? { ...highlightFlanking(source, index), kind: 'highlight', width: highlightDelimiter.length } : text(1)
-    default:
-      return text(1)
-  }
+	const source = inline.text
+	switch (source.charAt(index)) {
+		case '<':
+			return angleToken(inline, index)
+		case '!': {
+			const prefix = claims.directives ? claimDirectivePrefix(source, index) : undefined
+			if (prefix !== undefined) return { kind: 'directive', prefix }
+			return source.charAt(index + 1) === '[' ? { image: true, kind: 'bracket', width: 2 } : text(1)
+		}
+		case '[':
+			return { image: false, kind: 'bracket', width: 1 }
+		case ']':
+			return { kind: 'bracket-close', width: 1 }
+		case '\\':
+			if (source.charAt(index + 1) === '\n') return { kind: 'hard-break', width: 2 }
+			return backslashEscape(source, index) === undefined ? text(1) : { kind: 'escape', width: 2 }
+		case '\n':
+			return { kind: 'line-ending', width: 1 }
+		case '&': {
+			const reference = readEntityReference(source, index)
+			return reference === undefined ? text(1) : { kind: 'entity', width: reference.length }
+		}
+		case '`':
+			return backtickToken(inline, index)
+		case '*':
+		case '_':
+		case '~':
+			return delimiterRunToken(source, index, runLength(source, index), claims)
+		case '=':
+			return claims.highlights && source.startsWith(highlightDelimiter, index) ? { ...highlightFlanking(source, index), kind: 'highlight', width: highlightDelimiter.length } : text(1)
+		default:
+			return text(1)
+	}
 }
 
 // The run of `length` delimiters from `index`, which a caller knowing the run's end reads without rescanning it.
 export function delimiterRunToken(source: string, index: number, length: number, claims: Claims): InlineToken {
-  const character = source.charAt(index)
-  if (character === '~' && (!claims.strikethrough || length !== 2)) return text(length)
-  const flags = delimiterFlags(character, source.charAt(index - 1), source.charAt(index + length))
-  return flags.canOpen || flags.canClose ? { ...flags, kind: 'delimiter-run', width: length } : text(length)
+	const character = source.charAt(index)
+	if (character === '~' && (!claims.strikethrough || length !== 2)) return text(length)
+	const flags = delimiterFlags(character, source.charAt(index - 1), source.charAt(index + length))
+	return flags.canOpen || flags.canClose ? { ...flags, kind: 'delimiter-run', width: length } : text(length)
 }
 
 function angleToken(inline: InlineSource, index: number): InlineToken {
-  const source = inline.text
-  const bracketed = readBracketedAutolink(source, index)
-  if (bracketed !== undefined) return { email: false, kind: 'autolink', width: bracketed }
-  const email = readEmailAutolink(source, index)
-  if (email !== undefined) return { email: true, kind: 'autolink', width: email }
-  const construct = inlineHtmlConstruct(source, index, (terminator, from) => lastStart(inline, terminator) >= from)
-  return construct === undefined ? text(1) : { construct, kind: 'html' }
+	const source = inline.text
+	const bracketed = readBracketedAutolink(source, index)
+	if (bracketed !== undefined) return { email: false, kind: 'autolink', width: bracketed }
+	const email = readEmailAutolink(source, index)
+	if (email !== undefined) return { email: true, kind: 'autolink', width: email }
+	const construct = inlineHtmlConstruct(source, index, (terminator, from) => lastStart(inline, terminator) >= from)
+	return construct === undefined ? text(1) : { construct, kind: 'html' }
 }
 
 function backtickToken(inline: InlineSource, index: number): InlineToken {
-  const opener = backtickRun(inline.text, index)
-  const closer = inline.codeSpanCloser(index + opener, opener)
-  return closer === undefined ? text(opener) : { kind: 'code-span', opener, width: closer + opener - index }
+	const opener = backtickRun(inline.text, index)
+	const closer = inline.codeSpanCloser(index + opener, opener)
+	return closer === undefined ? text(opener) : { kind: 'code-span', opener, width: closer + opener - index }
 }
 
 function lastStart(inline: InlineSource, terminator: string): number {
-  const known = inline.terminators.get(terminator)
-  if (known !== undefined) return known
-  const last = inline.text.lastIndexOf(terminator)
-  inline.terminators.set(terminator, last)
-  return last
+	const known = inline.terminators.get(terminator)
+	if (known !== undefined) return known
+	const last = inline.text.lastIndexOf(terminator)
+	inline.terminators.set(terminator, last)
+	return last
 }
 
 function text(width: number): InlineToken {
-  return { kind: 'text', width }
+	return { kind: 'text', width }
 }
 
 // A delimiter is bounded outside by the code point beyond it, and flanks by the character inside it.
 export function highlightFlanking(source: string, index: number): { closes: boolean; opens: boolean } {
-  const end = index + highlightDelimiter.length
-  const before = Array.from(source.slice(Math.max(0, index - 2), index)).at(-1) ?? ''
-  const after = Array.from(source.slice(end, end + 2))[0] ?? ''
-  return { closes: flanks(before) && bounds(after, before), opens: flanks(after) && bounds(before, after) }
+	const end = index + highlightDelimiter.length
+	const before = Array.from(source.slice(Math.max(0, index - 2), index)).at(-1) ?? ''
+	const after = Array.from(source.slice(end, end + 2))[0] ?? ''
+	return { closes: flanks(before) && bounds(after, before), opens: flanks(after) && bounds(before, after) }
 }
 
 function bounds(outside: string, inside: string): boolean {
-  return !isWordCharacter(outside) || boundingScript.test(outside) || boundingScript.test(inside)
+	return !isWordCharacter(outside) || boundingScript.test(outside) || boundingScript.test(inside)
 }
 
 function flanks(character: string): boolean {
-  return character !== '' && !/\s/.test(character)
+	return character !== '' && !/\s/.test(character)
 }

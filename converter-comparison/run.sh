@@ -5,27 +5,27 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 node_image=node:26.13.1-alpine3.24
 docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$here:/comparison:ro" -v "$here/../bundle-size:/bundle-size:ro" -w /tmp \
-  "$node_image" sh -c '
-    npm install --before=2026-11-06 --ignore-scripts --no-audit --no-fund --silent \
-      @atlaskit/editor-json-transformer@10.0.0 \
-      @atlaskit/editor-markdown-transformer@6.3.1 \
-      @atlaskit/editor-wikimarkup-transformer@12.2.3 \
-      @faulander/md2adf@1.0.0 \
-      @larvit/adf-codec@0.3.0 \
-      @nthings.dev/adf4j-wasm@1.0.2 \
-      @wrtnlabs/markdown-to-adf@1.0.2 \
-      adf-converter@0.1.0 \
-      adf-md@0.2.0 \
-      adf-to-markdown@1.0.1 \
-      adf-to-md@1.2.1 \
-      adf2markdown@1.2.0 \
-      esbuild@$(node -p "require(\"/bundle-size/package.json\").devDependencies.esbuild") \
-      extended-markdown-adf-parser@2.4.0 \
-      github-markdown-adf@1.3.0 \
-      markdown-to-adf@0.2.20 \
-      marklassian@1.2.1 \
-      md-adf@0.2.2 \
-      md-to-adf@0.6.4 \
-      mdast-util-from-adf@2.3.0 \
-      mdast-util-to-markdown@2.2.2 &&
-    cp /comparison/compare.mjs /bundle-size/figures.mjs . && node compare.mjs'
+	"$node_image" sh -c '
+		npm install --before=2026-11-06 --ignore-scripts --no-audit --no-fund --silent \
+			@atlaskit/editor-json-transformer@10.0.0 \
+			@atlaskit/editor-markdown-transformer@6.3.1 \
+			@atlaskit/editor-wikimarkup-transformer@12.2.3 \
+			@faulander/md2adf@1.0.0 \
+			@larvit/adf-codec@0.3.0 \
+			@nthings.dev/adf4j-wasm@1.0.2 \
+			@wrtnlabs/markdown-to-adf@1.0.2 \
+			adf-converter@0.1.0 \
+			adf-md@0.2.0 \
+			adf-to-markdown@1.0.1 \
+			adf-to-md@1.2.1 \
+			adf2markdown@1.2.0 \
+			esbuild@$(node -p "require(\"/bundle-size/package.json\").devDependencies.esbuild") \
+			extended-markdown-adf-parser@2.4.0 \
+			github-markdown-adf@1.3.0 \
+			markdown-to-adf@0.2.20 \
+			marklassian@1.2.1 \
+			md-adf@0.2.2 \
+			md-to-adf@0.6.4 \
+			mdast-util-from-adf@2.3.0 \
+			mdast-util-to-markdown@2.2.2 &&
+		cp /comparison/compare.mjs /bundle-size/figures.mjs . && node compare.mjs'

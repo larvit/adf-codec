@@ -6,65 +6,65 @@ const delimiterCell = /^-+$/
 
 // spec/flavour.md, Tables: the cells of a row no leading `|` claimed — GFM's form without the outer pipes; a closing `|` after one cell makes a one-column row.
 export function barePipeCells(line: string): string[] | undefined {
-  const cells = splitPipeCells(line, 0)
-  return cells.length > 1 ? withoutClosingCell(cells) : undefined
+	const cells = splitPipeCells(line, 0)
+	return cells.length > 1 ? withoutClosingCell(cells) : undefined
 }
 
 // A one-cell row is no delimiter here: the hard break before it leaves its header line ending in `\`, which splits into two cells.
 export function isBareDelimiterRow(line: string): boolean {
-  const cells = barePipeCells(line)
-  return cells !== undefined && cells.length > 1 && isDelimiterRow(cells)
+	const cells = barePipeCells(line)
+	return cells !== undefined && cells.length > 1 && isDelimiterRow(cells)
 }
 
 export function isDelimiterRow(cells: readonly string[]): boolean {
-  return cells.every((cell) => isPipeDelimiter(cell) || isPipeAlignment(cell))
+	return cells.every((cell) => isPipeDelimiter(cell) || isPipeAlignment(cell))
 }
 
 export function isPipeAlignment(cell: string): boolean {
-  return alignmentCell.test(cell)
+	return alignmentCell.test(cell)
 }
 
 function isPipeDelimiter(cell: string): boolean {
-  return delimiterCell.test(cell)
+	return delimiterCell.test(cell)
 }
 
 export function malformedPipeTable(message: string): ConvertFault {
-  return { code: 'malformed-pipe-table', message }
+	return { code: 'malformed-pipe-table', message }
 }
 
 // spec/flavour.md, Tables: the cells of a claimed row, the closing `|` the spelling writes optional here.
 export function pipeCells(line: string): string[] | undefined {
-  return claimsPipeLine(line) ? withoutClosingCell(splitPipeCells(line, 1)) : undefined
+	return claimsPipeLine(line) ? withoutClosingCell(splitPipeCells(line, 1)) : undefined
 }
 
 export function spellPipeDelimiter(columns: number): string {
-  return spellPipeRow(Array.from({ length: columns }, () => '---'))
+	return spellPipeRow(Array.from({ length: columns }, () => '---'))
 }
 
 export function spellPipeRow(cells: readonly string[]): string {
-  return `| ${cells.join(' | ')} |`
+	return `| ${cells.join(' | ')} |`
 }
 
 function splitPipeCells(line: string, start: number): string[] {
-  const cells: string[] = []
-  let cellStart = start
-  let index = start
-  while (index < line.length) {
-    if (backslashEscape(line, index) !== undefined) {
-      index += 2
-      continue
-    }
-    if (line.charAt(index) === '|') {
-      cells.push(trimSpace(line.slice(cellStart, index)))
-      cellStart = index + 1
-    }
-    index += 1
-  }
-  cells.push(trimSpace(line.slice(cellStart)))
-  return cells
+	const cells: string[] = []
+	let cellStart = start
+	let index = start
+	while (index < line.length) {
+		if (backslashEscape(line, index) !== undefined) {
+			index += 2
+			continue
+		}
+		if (line.charAt(index) === '|') {
+			cells.push(trimSpace(line.slice(cellStart, index)))
+			cellStart = index + 1
+		}
+		index += 1
+	}
+	cells.push(trimSpace(line.slice(cellStart)))
+	return cells
 }
 
 function withoutClosingCell(cells: string[]): string[] {
-  if (cells.length > 1 && cells.at(-1) === '') cells.pop()
-  return cells
+	if (cells.length > 1 && cells.at(-1) === '') cells.pop()
+	return cells
 }

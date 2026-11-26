@@ -5,42 +5,42 @@ source ./docker-runner.sh
 
 # A leg builds what it reads, through `needs` and the prerequisites below, so a leg run on its own tests the current tree.
 installed() {
-  in_image "$node_image" npm ci
+	in_image "$node_image" npm ci
 }
 
 # tsc leaves the output of a deleted or renamed source in place.
 built() {
-  installed &&
-  in_image "$node_image" sh -c 'rm -rf dist && npm run build'
+	installed &&
+	in_image "$node_image" sh -c 'rm -rf dist && npm run build'
 }
 
 packed() {
-  built &&
-  in_image "$node_image" sh -c 'set -e
-    rm -rf package-tests/node_modules
-    npm pack --pack-destination /tmp
-    npm install --no-audit --no-fund --no-package-lock --no-save --offline --prefix package-tests /tmp/*.tgz'
+	built &&
+	in_image "$node_image" sh -c 'set -e
+		rm -rf package-tests/node_modules
+		npm pack --pack-destination /tmp
+		npm install --no-audit --no-fund --no-package-lock --no-save --offline --prefix package-tests /tmp/*.tgz'
 }
 
 bundle_size_installed() {
-  in_image "$node_image" npm ci --no-audit --no-fund --prefix bundle-size
+	in_image "$node_image" npm ci --no-audit --no-fund --prefix bundle-size
 }
 
 built_and_bundle_size_installed() {
-  built &&
-  bundle_size_installed
+	built &&
+	bundle_size_installed
 }
 
 packed_and_bundle_size_installed() {
-  packed &&
-  bundle_size_installed
+	packed &&
+	bundle_size_installed
 }
 
 needs() {
-  local prerequisite=$1 &&
-  shift &&
-  leg "needs: ${prerequisite//_/ } ($node_image)" "$prerequisite" &&
-  "$@"
+	local prerequisite=$1 &&
+	shift &&
+	leg "needs: ${prerequisite//_/ } ($node_image)" "$prerequisite" &&
+	"$@"
 }
 
 leg "typecheck ($node_image)" needs installed in_image "$node_image" npm run typecheck
@@ -74,69 +74,69 @@ src/wiki/parse/boundary-probe.ts ../emit/inline-line.ts
 src/wiki/parse/boundary-probe-markdown.ts ../../markdown/flavour.ts"
 
 boundaries_fire() {
-  local allowed=src/markdown/parse/boundary-probe-allowed.ts lint_log probe probes target
-  probes=$(cut -d ' ' -f 1 <<< "$boundary_probes" | tr '\n' ' ') &&
-  lint_log=$(mktemp) &&
-  # The paths are baked in: the trap fires after this function's locals are gone.
-  trap "rm -f $allowed $probes $lint_log" EXIT &&
-  trap 'exit 130' INT &&
-  trap 'exit 143' TERM &&
-  echo "import '../emit/spelling-questions.ts';" > "$allowed" &&
-  in_image "$node_image" npm run lint &&
-  while read -r probe target; do
-    echo "import '$target';" > "$probe" || return 1
-  done <<< "$boundary_probes" &&
-  ! in_image "$node_image" npm run lint -- --format unix 2>&1 | tee "$lint_log" &&
-  for probe in $probes; do
-    grep -q "^$probe:.*eslint(no-restricted-imports)" "$lint_log" || return 1
-  done &&
-  rm -f "$allowed" $probes "$lint_log"
+	local allowed=src/markdown/parse/boundary-probe-allowed.ts lint_log probe probes target
+	probes=$(cut -d ' ' -f 1 <<< "$boundary_probes" | tr '\n' ' ') &&
+	lint_log=$(mktemp) &&
+	# The paths are baked in: the trap fires after this function's locals are gone.
+	trap "rm -f $allowed $probes $lint_log" EXIT &&
+	trap 'exit 130' INT &&
+	trap 'exit 143' TERM &&
+	echo "import '../emit/spelling-questions.ts';" > "$allowed" &&
+	in_image "$node_image" npm run lint &&
+	while read -r probe target; do
+		echo "import '$target';" > "$probe" || return 1
+	done <<< "$boundary_probes" &&
+	! in_image "$node_image" npm run lint -- --format unix 2>&1 | tee "$lint_log" &&
+	for probe in $probes; do
+		grep -q "^$probe:.*eslint(no-restricted-imports)" "$lint_log" || return 1
+	done &&
+	rm -f "$allowed" $probes "$lint_log"
 }
 
 leg "import boundaries fire ($node_image)" needs installed boundaries_fire
 
 interrupt_stops_container() {
-  local pid ready status=0 waited=0
-  ready=$(mktemp) || return 1
-  in_image "$node_image" sh -c 'echo ready; sleep 60' > "$ready" &
-  pid=$!
-  until grep -q ready "$ready"; do
-    waited=$((waited + 1))
-    [ "$waited" -le 300 ] || { kill -INT "$pid"; rm -f "$ready"; return 1; }
-    sleep 0.2
-  done
-  kill -INT "$pid" && wait "$pid" || status=$?
-  rm -f "$ready"
-  [ "$status" -eq 130 ]
+	local pid ready status=0 waited=0
+	ready=$(mktemp) || return 1
+	in_image "$node_image" sh -c 'echo ready; sleep 60' > "$ready" &
+	pid=$!
+	until grep -q ready "$ready"; do
+		waited=$((waited + 1))
+		[ "$waited" -le 300 ] || { kill -INT "$pid"; rm -f "$ready"; return 1; }
+		sleep 0.2
+	done
+	kill -INT "$pid" && wait "$pid" || status=$?
+	rm -f "$ready"
+	[ "$status" -eq 130 ]
 }
 
 leg "Ctrl-C stops an in_image container ($node_image)" interrupt_stops_container
 
 # Equal --memory-swap leaves cgroup v2 a swap.max of 0; cgroup v1 reports it as the memory-plus-swap limit.
 container_is_limited() {
-  local limits
-  limits=$(in_image "$node_image" sh -c 'cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.swap.max 2>/dev/null || cat /sys/fs/cgroup/memory/memory.limit_in_bytes /sys/fs/cgroup/memory/memory.memsw.limit_in_bytes' | tr '\n' ' ') &&
-  { [ "$limits" = '8589934592 0 ' ] || [ "$limits" = '8589934592 8589934592 ' ]; }
+	local limits
+	limits=$(in_image "$node_image" sh -c 'cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.swap.max 2>/dev/null || cat /sys/fs/cgroup/memory/memory.limit_in_bytes /sys/fs/cgroup/memory/memory.memsw.limit_in_bytes' | tr '\n' ' ') &&
+	{ [ "$limits" = '8589934592 0 ' ] || [ "$limits" = '8589934592 8589934592 ' ]; }
 }
 
 leg "an in_image container is capped at 8g with no swap ($node_image)" container_is_limited
 
 # with_firefox and publish.sh start containers no leg here can inspect.
 every_docker_run_is_limited() {
-  ! grep -h 'docker run' docker-runner.sh publish.sh | grep -v -e '--memory "[^"]*" --memory-swap "[^"]*"'
+	! grep -h 'docker run' docker-runner.sh publish.sh | grep -v -e '--memory "[^"]*" --memory-swap "[^"]*"'
 }
 
 leg "every docker run in docker-runner.sh and publish.sh names a memory and a swap limit" every_docker_run_is_limited
 
 test_log=$(mktemp)
 node_tests() {
-  in_image "$node_image" npm test 2>&1 | tee "$test_log"
+	in_image "$node_image" npm test 2>&1 | tee "$test_log"
 }
 
 leg "tests ($node_image)" needs installed node_tests
 if grep -q 'ℹ tests 0' "$test_log"; then
-  echo 'the gate ran zero tests — failing instead of a vacuous green'
-  exit 1
+	echo 'the gate ran zero tests — failing instead of a vacuous green'
+	exit 1
 fi
 rm -f "$test_log"
 
@@ -153,8 +153,8 @@ leg "typecheck the consumer ($node_image)" needs packed in_image "$node_image" n
 leg "round-trip on the engines floor ($floor_image)" needs packed in_image "$floor_image" node package-tests/node-floor.js
 
 bundles_round_trip() {
-  in_image "$bun_image" bun package-tests/bundle-round-trip.mjs &&
-  in_image "$node_image" node package-tests/bundle-round-trip.mjs
+	in_image "$bun_image" bun package-tests/bundle-round-trip.mjs &&
+	in_image "$node_image" node package-tests/bundle-round-trip.mjs
 }
 
 leg "bundle with Bun, esbuild, Rollup and webpack, failing on a warning, and round-trip each bundle ($bun_image, $node_image)" needs packed_and_bundle_size_installed bundles_round_trip

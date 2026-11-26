@@ -8,8 +8,8 @@ export type FirstParagraphForm = 'bare' | 'block' | 'element'
 
 // As the writer panels picked (docs/decisions.md §The HTML dialect); a paragraph holding neither content nor an attribute, written bare, would read back as no paragraph.
 export function firstParagraphForm(paragraph: AdfNode): FirstParagraphForm {
-  const attributes = textBlockAttributes(paragraph, blockNodes.paragraph.attributes, [])
-  if (attributes === undefined) return 'block'
-  if (attributes !== '') return 'element'
-  return nodeContent(paragraph).length === 0 ? 'block' : 'bare'
+	const attributes = textBlockAttributes(paragraph, blockNodes.paragraph.attributes, [])
+	if (attributes === undefined) return 'block'
+	if (attributes !== '') return 'element'
+	return nodeContent(paragraph).length === 0 ? 'block' : 'bare'
 }

@@ -8,14 +8,14 @@ fejkdata_image=larvit/fejkdata:0.8.0
 node_image=node:26.13.1-alpine3.24
 
 in_node() {
-  repo_mount=$1
-  shift
-  docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$here/..:/repo:$repo_mount" -v "$raw:/raw" -w /repo "$node_image" "$@"
+	repo_mount=$1
+	shift
+	docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$here/..:/repo:$repo_mount" -v "$raw:/raw" -w /repo "$node_image" "$@"
 }
 
 # Takes a draws file's name, the number of lines and the template of a line.
 draw() {
-  printf '%s\n' "$3" | docker run --rm -i --memory 256m --memory-swap 256m "$fejkdata_image" --seed 163 --repeat "$2" > "$raw/draws/$1.txt"
+	printf '%s\n' "$3" | docker run --rm -i --memory 256m --memory-swap 256m "$fejkdata_image" --seed 163 --repeat "$2" > "$raw/draws/$1.txt"
 }
 
 # The fetch's file names come from the sites' answers, so it gets the repo read-only.

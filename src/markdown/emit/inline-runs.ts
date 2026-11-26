@@ -16,42 +16,42 @@ export type RunGrouping = 'parted' | 'spanned'
 export type RunNode = { carried: boolean; node: AdfNode; outer: number }
 
 export function inlineRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping): InlineRun[] {
-  const runs: InlineRun[] = []
-  let end = 0
-  for (const [offset, { carried, node, outer }] of nodes.entries()) {
-    if (offset < end) continue
-    const index = firstIndex + offset
-    // A carried node spells its marks inside the carry.
-    const mark = carried ? undefined : nodeMarks(node)[outer]
-    if (mark === undefined) {
-      runs.push({ carried, index, kind: 'plain', node })
-      continue
-    }
-    end = runEnd(nodes, offset, mark, grouping)
-    runs.push({ index, kind: 'marked', mark, nodes: [{ carried, node, outer: outer + 1 }, ...nodes.slice(offset + 1, end).map((runNode) => insideRun(runNode, mark) ?? runNode)] })
-  }
-  return runs
+	const runs: InlineRun[] = []
+	let end = 0
+	for (const [offset, { carried, node, outer }] of nodes.entries()) {
+		if (offset < end) continue
+		const index = firstIndex + offset
+		// A carried node spells its marks inside the carry.
+		const mark = carried ? undefined : nodeMarks(node)[outer]
+		if (mark === undefined) {
+			runs.push({ carried, index, kind: 'plain', node })
+			continue
+		}
+		end = runEnd(nodes, offset, mark, grouping)
+		runs.push({ index, kind: 'marked', mark, nodes: [{ carried, node, outer: outer + 1 }, ...nodes.slice(offset + 1, end).map((runNode) => insideRun(runNode, mark) ?? runNode)] })
+	}
+	return runs
 }
 
 // A run opens and closes at a node holding its mark, so a node it would cross past the last such node stays outside.
 function runEnd(nodes: readonly RunNode[], first: number, mark: AdfMark, grouping: RunGrouping): number {
-  let end = first + 1
-  for (let offset = end; offset < nodes.length; offset += 1) {
-    const runNode = nodes[offset]
-    if (runNode === undefined || runNode.carried) break
-    if (insideRun(runNode, mark) !== undefined) end = offset + 1
-    else if (grouping === 'parted' || !runCrosses(runNode.node, mark)) break
-  }
-  return end
+	let end = first + 1
+	for (let offset = end; offset < nodes.length; offset += 1) {
+		const runNode = nodes[offset]
+		if (runNode === undefined || runNode.carried) break
+		if (insideRun(runNode, mark) !== undefined) end = offset + 1
+		else if (grouping === 'parted' || !runCrosses(runNode.node, mark)) break
+	}
+	return end
 }
 
 export function insideRun(runNode: RunNode, mark: AdfMark): RunNode | undefined {
-  const held = nodeMarks(runNode.node)[runNode.outer]
-  return held !== undefined && identicalMark(held, mark) ? { ...runNode, outer: runNode.outer + 1 } : undefined
+	const held = nodeMarks(runNode.node)[runNode.outer]
+	return held !== undefined && identicalMark(held, mark) ? { ...runNode, outer: runNode.outer + 1 } : undefined
 }
 
 // The readers refuse `marks=empty` inside a mark's spelling.
 function runCrosses(node: AdfNode, mark: AdfMark): boolean {
-  const kind = markSpelling(mark.type)?.kind
-  return (kind === 'emphasis' || kind === 'link') && !takesMark(node, mark.type) && node.marks?.length !== 0
+	const kind = markSpelling(mark.type)?.kind
+	return (kind === 'emphasis' || kind === 'link') && !takesMark(node, mark.type) && node.marks?.length !== 0
 }

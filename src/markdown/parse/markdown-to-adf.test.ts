@@ -15,1413 +15,1413 @@ const strong: AdfMark = { type: 'strong' }
 const underline: AdfMark = { type: 'underline' }
 
 function code(result: Result<AdfDocument>): string {
-  return result.ok ? `built ${JSON.stringify(result.value)}` : result.error.code
+	return result.ok ? `built ${JSON.stringify(result.value)}` : result.error.code
 }
 
 function content(result: Result<AdfDocument>): AdfNode[] | string {
-  return result.ok ? (result.value.content ?? []) : `${result.error.code}: ${result.error.message}`
+	return result.ok ? (result.value.content ?? []) : `${result.error.code}: ${result.error.message}`
 }
 
 function path(result: Result<AdfDocument>): readonly (number | string)[] {
-  return result.ok ? ['built'] : result.error.path
+	return result.ok ? ['built'] : result.error.path
 }
 
 function position(result: Result<AdfDocument, ParseError>): SourcePosition | string {
-  return result.ok ? 'built' : result.error.position
+	return result.ok ? 'built' : result.error.position
 }
 
 function refused(result: Result<AdfDocument>, errorCode: ConvertErrorCode, ...facts: string[]): void {
-  assert.equal(code(result), errorCode)
-  const message = result.ok ? '' : result.error.message
-  for (const fact of facts) assert.ok(message.includes(fact), `${JSON.stringify(message)} names ${fact}`)
+	assert.equal(code(result), errorCode)
+	const message = result.ok ? '' : result.error.message
+	for (const fact of facts) assert.ok(message.includes(fact), `${JSON.stringify(message)} names ${fact}`)
 }
 
 function text(value: string): AdfNode {
-  return { text: value, type: 'text' }
+	return { text: value, type: 'text' }
 }
 
 function paragraph(value: string): AdfNode {
-  return { content: [text(value)], type: 'paragraph' }
+	return { content: [text(value)], type: 'paragraph' }
 }
 
 function codeSpan(value: string): AdfNode {
-  return { marks: [{ type: 'code' }], text: value, type: 'text' }
+	return { marks: [{ type: 'code' }], text: value, type: 'text' }
 }
 
 function hardBreak(): AdfNode {
-  return { type: 'hardBreak' }
+	return { type: 'hardBreak' }
 }
 
 function item(...content: AdfNode[]): AdfNode {
-  return content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' }
+	return content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' }
 }
 
 function bulletList(...content: AdfNode[]): AdfNode {
-  return { content, type: 'bulletList' }
+	return { content, type: 'bulletList' }
 }
 
 function orderedList(order: number, ...content: AdfNode[]): AdfNode {
-  return { attrs: { order }, content, type: 'orderedList' }
+	return { attrs: { order }, content, type: 'orderedList' }
 }
 
 function quote(...content: AdfNode[]): AdfNode {
-  return content.length === 0 ? { type: 'blockquote' } : { content, type: 'blockquote' }
+	return content.length === 0 ? { type: 'blockquote' } : { content, type: 'blockquote' }
 }
 
 function marked(value: string, ...marks: AdfMark[]): AdfNode {
-  return { marks, text: value, type: 'text' }
+	return { marks, text: value, type: 'text' }
 }
 
 function link(href: string, title?: string): AdfMark {
-  return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
+	return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
 }
 
 function firstContent(markdown: string): unknown {
-  const [block] = content(losslessMarkdownToAdf(markdown))
-  return typeof block === 'object' ? block.content : block
+	const [block] = content(losslessMarkdownToAdf(markdown))
+	return typeof block === 'object' ? block.content : block
 }
 
 function image(url: string, alt?: string): AdfNode {
-  const media: AdfNode = { attrs: alt === undefined ? { type: 'external', url } : { alt, type: 'external', url }, type: 'media' }
-  return { attrs: { layout: 'center' }, content: [media], type: 'mediaSingle' }
+	const media: AdfNode = { attrs: alt === undefined ? { type: 'external', url } : { alt, type: 'external', url }, type: 'media' }
+	return { attrs: { layout: 'center' }, content: [media], type: 'mediaSingle' }
 }
 
 function cell(type: string, ...content: AdfNode[]): AdfNode {
-  return { content: [content.length === 0 ? { type: 'paragraph' } : { content, type: 'paragraph' }], type }
+	return { content: [content.length === 0 ? { type: 'paragraph' } : { content, type: 'paragraph' }], type }
 }
 
 function row(...cells: AdfNode[]): AdfNode {
-  return { content: cells, type: 'tableRow' }
+	return { content: cells, type: 'tableRow' }
 }
 
 function table(...rows: AdfNode[]): AdfNode {
-  return { content: rows, type: 'table' }
+	return { content: rows, type: 'table' }
 }
 
 function revokedProxy(): object {
-  const revoked = Proxy.revocable({}, {})
-  revoked.revoke()
-  return revoked.proxy
+	const revoked = Proxy.revocable({}, {})
+	revoked.revoke()
+	return revoked.proxy
 }
 
 const nonStrings: [string, unknown, string][] = [
-  ['null', null, 'null'],
-  ['undefined', undefined, 'undefined'],
-  ['a number', 42, 'a number'],
-  ['a bigint', 10n, 'a bigint'],
-  ['an array', ['x'], 'an object'],
-  ['a revoked proxy', revokedProxy(), 'an object'],
+	['null', null, 'null'],
+	['undefined', undefined, 'undefined'],
+	['a number', 42, 'a number'],
+	['a bigint', 10n, 'a bigint'],
+	['an array', ['x'], 'an object'],
+	['a revoked proxy', revokedProxy(), 'an object'],
 ]
 
 for (const read of readers) {
-  for (const [name, value, described] of nonStrings) {
-    test(`${read.name} refuses ${name}, which is not a string, at the start of the input`, () => {
-      const result = Reflect.apply(read, undefined, [value])
-      refused(result, 'not-a-string', 'a string', `found ${described}`)
-      assert.deepEqual([path(result), position(result)], [[], { line: 1, offset: 0 }])
-    })
-  }
+	for (const [name, value, described] of nonStrings) {
+		test(`${read.name} refuses ${name}, which is not a string, at the start of the input`, () => {
+			const result = Reflect.apply(read, undefined, [value])
+			refused(result, 'not-a-string', 'a string', `found ${described}`)
+			assert.deepEqual([path(result), position(result)], [[], { line: 1, offset: 0 }])
+		})
+	}
 
-  test(`${read.name} gives each refusal of a value that is not a string a position of its own`, () => {
-    assert.notStrictEqual(position(Reflect.apply(read, undefined, [null])), position(Reflect.apply(read, undefined, [null])))
-  })
+	test(`${read.name} gives each refusal of a value that is not a string a position of its own`, () => {
+		assert.notStrictEqual(position(Reflect.apply(read, undefined, [null])), position(Reflect.apply(read, undefined, [null])))
+	})
 }
 
 const highlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 
 const flavourShapes: readonly [string, AdfNode[], AdfNode[], AdfNode[]][] = [
-  ['!adf:panel info\nx\n!adf:/panel\n', [paragraph('!adf:panel info x !adf:/panel')], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }], [paragraph('!adf:panel info x !adf:/panel')]],
-  ['a!adf:textBreak{}a\n', [paragraph('a!adf:textBreak{}a')], [{ content: [text('a'), text('a')], type: 'paragraph' }], [paragraph('a!adf:textBreak{}a')]],
-  ['!adf:doc {content=none}\n', [paragraph('!adf:doc {content=none}')], [], [paragraph('!adf:doc {content=none}')]],
-  ['| a |\n| --- |\n| b |\n', [paragraph('| a | | --- | | b |')], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))]],
-  ['~~x~~\n', [paragraph('~~x~~')], [{ content: [marked('x', strike)], type: 'paragraph' }], [{ content: [marked('x', strike)], type: 'paragraph' }]],
-  ['==x==\n', [paragraph('==x==')], [paragraph('==x==')], [{ content: [marked('x', highlight)], type: 'paragraph' }]],
-  ['> [!NOTE]\n> x\n', [quote(paragraph('[!NOTE] x'))], [quote(paragraph('[!NOTE] x'))], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }]],
-  ['- [x] a\n', [bulletList(item(paragraph('[x] a')))], [bulletList(item(paragraph('[x] a')))], [{ content: [{ attrs: { state: 'DONE' }, content: [text('a')], type: 'taskItem' }], type: 'taskList' }]],
-  ['```adf:futureBlock\n{}\n```\n', [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }], [{ type: 'futureBlock' }], [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }]],
+	['!adf:panel info\nx\n!adf:/panel\n', [paragraph('!adf:panel info x !adf:/panel')], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }], [paragraph('!adf:panel info x !adf:/panel')]],
+	['a!adf:textBreak{}a\n', [paragraph('a!adf:textBreak{}a')], [{ content: [text('a'), text('a')], type: 'paragraph' }], [paragraph('a!adf:textBreak{}a')]],
+	['!adf:doc {content=none}\n', [paragraph('!adf:doc {content=none}')], [], [paragraph('!adf:doc {content=none}')]],
+	['| a |\n| --- |\n| b |\n', [paragraph('| a | | --- | | b |')], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))]],
+	['~~x~~\n', [paragraph('~~x~~')], [{ content: [marked('x', strike)], type: 'paragraph' }], [{ content: [marked('x', strike)], type: 'paragraph' }]],
+	['==x==\n', [paragraph('==x==')], [paragraph('==x==')], [{ content: [marked('x', highlight)], type: 'paragraph' }]],
+	['> [!NOTE]\n> x\n', [quote(paragraph('[!NOTE] x'))], [quote(paragraph('[!NOTE] x'))], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }]],
+	['- [x] a\n', [bulletList(item(paragraph('[x] a')))], [bulletList(item(paragraph('[x] a')))], [{ content: [{ attrs: { state: 'DONE' }, content: [text('a')], type: 'taskItem' }], type: 'taskList' }]],
+	['```adf:futureBlock\n{}\n```\n', [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }], [{ type: 'futureBlock' }], [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }]],
 ]
 
 for (const [markdown, commonMark, lossless, portable] of flavourShapes) {
-  test(`reads a shape a flavour claims as the flavour of the reader it reaches: ${JSON.stringify(markdown)}`, () => {
-    const withoutIds = (result: Result<AdfDocument>): AdfNode[] | string => JSON.parse(JSON.stringify(content(result)), (key, value: unknown) => (key === 'localId' || (key === 'attrs' && JSON.stringify(value) === '{}') ? undefined : value))
-    assert.deepEqual(content(commonMarkToAdf(markdown)), commonMark)
-    assert.deepEqual(content(losslessMarkdownToAdf(markdown)), lossless)
-    assert.deepEqual(withoutIds(portableMarkdownToAdf(markdown)), portable)
-  })
+	test(`reads a shape a flavour claims as the flavour of the reader it reaches: ${JSON.stringify(markdown)}`, () => {
+		const withoutIds = (result: Result<AdfDocument>): AdfNode[] | string => JSON.parse(JSON.stringify(content(result)), (key, value: unknown) => (key === 'localId' || (key === 'attrs' && JSON.stringify(value) === '{}') ? undefined : value))
+		assert.deepEqual(content(commonMarkToAdf(markdown)), commonMark)
+		assert.deepEqual(content(losslessMarkdownToAdf(markdown)), lossless)
+		assert.deepEqual(withoutIds(portableMarkdownToAdf(markdown)), portable)
+	})
 }
 
 test('builds an empty document from input holding no block, and one holding no content key from the doc directive alone', () => {
-  assert.deepEqual(losslessMarkdownToAdf(''), { ok: true, value: { content: [], type: 'doc', version: 1 } })
-  assert.deepEqual(losslessMarkdownToAdf('\n \n\t\n'), { ok: true, value: { content: [], type: 'doc', version: 1 } })
-  assert.deepEqual(losslessMarkdownToAdf('!adf:doc {content=none}\n'), { ok: true, value: { type: 'doc', version: 1 } })
-  assert.deepEqual(losslessMarkdownToAdf('\n!adf:doc {content=none}\n\n'), { ok: true, value: { type: 'doc', version: 1 } })
-  const form = ['!adf:doc {content=none}', 'spells another']
-  refused(losslessMarkdownToAdf('!adf:doc\n'), 'unsupported-node-shape', ...form)
-  refused(losslessMarkdownToAdf('!adf:doc x {content=none}\n'), 'unsupported-node-shape', ...form)
-  refused(losslessMarkdownToAdf('!adf:doc {content=empty}\n'), 'unsupported-node-shape', 'empty markdown', '!adf:doc {content=none}', 'content=empty')
-  refused(losslessMarkdownToAdf('!adf:doc {content="none"}\n'), 'unsupported-node-shape', ...form)
-  const alone = ['delete the !adf:doc {content=none} line', 'whole document']
-  refused(losslessMarkdownToAdf('x\n\n!adf:doc {content=none}\n'), 'unsupported-node-shape', ...alone)
-  refused(losslessMarkdownToAdf('!adf:panel info\n!adf:doc {content=none}\n!adf:/panel\n'), 'unsupported-node-shape', ...alone)
-  refused(losslessMarkdownToAdf('!adf:doc\n!adf:/doc\n'), 'malformed-directive', 'takes no body', '!adf:/doc', '\\!adf:')
-  refused(losslessMarkdownToAdf('a !adf:doc{content=none}\n'), 'unsupported-node-shape', '!adf:doc', 'inline form')
+	assert.deepEqual(losslessMarkdownToAdf(''), { ok: true, value: { content: [], type: 'doc', version: 1 } })
+	assert.deepEqual(losslessMarkdownToAdf('\n \n\t\n'), { ok: true, value: { content: [], type: 'doc', version: 1 } })
+	assert.deepEqual(losslessMarkdownToAdf('!adf:doc {content=none}\n'), { ok: true, value: { type: 'doc', version: 1 } })
+	assert.deepEqual(losslessMarkdownToAdf('\n!adf:doc {content=none}\n\n'), { ok: true, value: { type: 'doc', version: 1 } })
+	const form = ['!adf:doc {content=none}', 'spells another']
+	refused(losslessMarkdownToAdf('!adf:doc\n'), 'unsupported-node-shape', ...form)
+	refused(losslessMarkdownToAdf('!adf:doc x {content=none}\n'), 'unsupported-node-shape', ...form)
+	refused(losslessMarkdownToAdf('!adf:doc {content=empty}\n'), 'unsupported-node-shape', 'empty markdown', '!adf:doc {content=none}', 'content=empty')
+	refused(losslessMarkdownToAdf('!adf:doc {content="none"}\n'), 'unsupported-node-shape', ...form)
+	const alone = ['delete the !adf:doc {content=none} line', 'whole document']
+	refused(losslessMarkdownToAdf('x\n\n!adf:doc {content=none}\n'), 'unsupported-node-shape', ...alone)
+	refused(losslessMarkdownToAdf('!adf:panel info\n!adf:doc {content=none}\n!adf:/panel\n'), 'unsupported-node-shape', ...alone)
+	refused(losslessMarkdownToAdf('!adf:doc\n!adf:/doc\n'), 'malformed-directive', 'takes no body', '!adf:/doc', '\\!adf:')
+	refused(losslessMarkdownToAdf('a !adf:doc{content=none}\n'), 'unsupported-node-shape', '!adf:doc', 'inline form')
 })
 
 test('builds one paragraph from the lines a blank line does not part', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('One\ntwo.\n\nThree.\n')), [paragraph('One two.'), paragraph('Three.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('One\ntwo.\n\nThree.\n')), [paragraph('One two.'), paragraph('Three.')])
 })
 
 test('reads an ATX heading and its level', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('# Assembly\n')), [{ attrs: { level: 1 }, content: [text('Assembly')], type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('###### M8\n')), [{ attrs: { level: 6 }, content: [text('M8')], type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('  ## Parts ##\n')), [{ attrs: { level: 2 }, content: [text('Parts')], type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('#\n')), [{ attrs: { level: 1 }, type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('####### Seven\n')), [paragraph('####### Seven')])
-  assert.deepEqual(content(losslessMarkdownToAdf('#hashtag\n')), [paragraph('#hashtag')])
+	assert.deepEqual(content(losslessMarkdownToAdf('# Assembly\n')), [{ attrs: { level: 1 }, content: [text('Assembly')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('###### M8\n')), [{ attrs: { level: 6 }, content: [text('M8')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('  ## Parts ##\n')), [{ attrs: { level: 2 }, content: [text('Parts')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('#\n')), [{ attrs: { level: 1 }, type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('####### Seven\n')), [paragraph('####### Seven')])
+	assert.deepEqual(content(losslessMarkdownToAdf('#hashtag\n')), [paragraph('#hashtag')])
 })
 
 test('reads a setext underline as the heading level it spells', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('Assembly\n===\n')), [{ attrs: { level: 1 }, content: [text('Assembly')], type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('One\ntwo\n-\n')), [{ attrs: { level: 2 }, content: [text('One two')], type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('===\n')), [paragraph('===')])
+	assert.deepEqual(content(losslessMarkdownToAdf('Assembly\n===\n')), [{ attrs: { level: 1 }, content: [text('Assembly')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('One\ntwo\n-\n')), [{ attrs: { level: 2 }, content: [text('One two')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('===\n')), [paragraph('===')])
 })
 
 test('reads a thematic break, the dashed one only where no paragraph is open', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('---\n')), [{ type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n\n * * *\n')), [paragraph('Part.'), { type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('___\n')), [{ type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n***\n')), [paragraph('Part.'), { type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n---\n')), [{ attrs: { level: 2 }, content: [text('Part.')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('---\n')), [{ type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n\n * * *\n')), [paragraph('Part.'), { type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('___\n')), [{ type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n***\n')), [paragraph('Part.'), { type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n---\n')), [{ attrs: { level: 2 }, content: [text('Part.')], type: 'heading' }])
 })
 
 test('reads a fenced code block, its info string the language', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('```sql\nSELECT id\nFROM part\n```\n')), [
-    { attrs: { language: 'sql' }, content: [text('SELECT id\nFROM part')], type: 'codeBlock' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('```\nx\n```\n')), [{ content: [text('x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('```   rust  \nx\n```\n')), [{ attrs: { language: 'rust' }, content: [text('x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('```\n```\n')), [{ type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('```\nx\n')), [{ content: [text('x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('````\n```\n````\n')), [{ content: [text('```')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('~~~ a`b\n```\n~~~\n')), [{ attrs: { language: 'a`b' }, content: [text('```')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('``` a`b\n')), [paragraph('``` a`b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('```\n``` x\n```\n')), [{ content: [text('``` x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('```\n- x\n> y\n```\n')), [{ content: [text('- x\n> y')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('```sql\nSELECT id\nFROM part\n```\n')), [
+		{ attrs: { language: 'sql' }, content: [text('SELECT id\nFROM part')], type: 'codeBlock' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('```\nx\n```\n')), [{ content: [text('x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('```   rust  \nx\n```\n')), [{ attrs: { language: 'rust' }, content: [text('x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('```\n```\n')), [{ type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('```\nx\n')), [{ content: [text('x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('````\n```\n````\n')), [{ content: [text('```')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('~~~ a`b\n```\n~~~\n')), [{ attrs: { language: 'a`b' }, content: [text('```')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('``` a`b\n')), [paragraph('``` a`b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('```\n``` x\n```\n')), [{ content: [text('``` x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('```\n- x\n> y\n```\n')), [{ content: [text('- x\n> y')], type: 'codeBlock' }])
 })
 
 test('reads the codeBlock directive body as the node content, the info string its language', () => {
-  const fenced = '!adf:codeBlock {wrap=true}\n```rust\nfn main() {}\n```\n!adf:/codeBlock\n'
-  assert.deepEqual(content(losslessMarkdownToAdf(fenced)), [
-    { attrs: { language: 'rust', wrap: true }, content: [text('fn main() {}')], type: 'codeBlock' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```\n```\n!adf:/codeBlock\n')), [{ attrs: { wrap: true }, type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {language=""}\n```\nx\n```\n!adf:/codeBlock\n')), [
-    { attrs: { language: '' }, content: [text('x')], type: 'codeBlock' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n    fn()\n!adf:/codeBlock\n')), [
-    { attrs: { wrap: true }, content: [text('fn()')], type: 'codeBlock' },
-  ])
-  // The body is a CommonMark fence, so its info string decodes escapes the way any other fence's does.
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```\\#c\nx\n```\n!adf:/codeBlock\n')), [
-    { attrs: { language: '#c', wrap: true }, content: [text('x')], type: 'codeBlock' },
-  ])
+	const fenced = '!adf:codeBlock {wrap=true}\n```rust\nfn main() {}\n```\n!adf:/codeBlock\n'
+	assert.deepEqual(content(losslessMarkdownToAdf(fenced)), [
+		{ attrs: { language: 'rust', wrap: true }, content: [text('fn main() {}')], type: 'codeBlock' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```\n```\n!adf:/codeBlock\n')), [{ attrs: { wrap: true }, type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {language=""}\n```\nx\n```\n!adf:/codeBlock\n')), [
+		{ attrs: { language: '' }, content: [text('x')], type: 'codeBlock' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n    fn()\n!adf:/codeBlock\n')), [
+		{ attrs: { wrap: true }, content: [text('fn()')], type: 'codeBlock' },
+	])
+	// The body is a CommonMark fence, so its info string decodes escapes the way any other fence's does.
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```\\#c\nx\n```\n!adf:/codeBlock\n')), [
+		{ attrs: { language: '#c', wrap: true }, content: [text('x')], type: 'codeBlock' },
+	])
 })
 
 test('names the slot a codeBlock spells its language outside of', () => {
-  const slot = ['codeBlock', 'info string']
-  refused(losslessMarkdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'language=rust', 'info strings')
-  refused(losslessMarkdownToAdf('!adf:codeBlock {language="c sharp"}\n```\nx\n```\n```\ny\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'language="c sharp"', 'info strings')
-  refused(losslessMarkdownToAdf('!adf:codeBlock {language=rust}\n```sql\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
-  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```adf:x\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
-  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```a\\b\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
+	const slot = ['codeBlock', 'info string']
+	refused(losslessMarkdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'language=rust', 'info strings')
+	refused(losslessMarkdownToAdf('!adf:codeBlock {language="c sharp"}\n```\nx\n```\n```\ny\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'language="c sharp"', 'info strings')
+	refused(losslessMarkdownToAdf('!adf:codeBlock {language=rust}\n```sql\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
+	refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```adf:x\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
+	refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```a\\b\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
 })
 
 test('reads a pipe table into the header row and the body rows under it', () => {
-  const pipes = '| Part | Note |\n| --- | --- |\n| Nut \\| washer | `8.8` |\n| Spare |  |\n'
-  assert.deepEqual(content(losslessMarkdownToAdf(pipes)), [
-    table(
-      row(cell('tableHeader', text('Part')), cell('tableHeader', text('Note'))),
-      row(cell('tableCell', text('Nut | washer')), cell('tableCell', codeSpan('8.8'))),
-      row(cell('tableCell', text('Spare')), cell('tableCell')),
-    ),
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('| Part\n| -\n')), [table(row(cell('tableHeader', text('Part'))))])
-  assert.deepEqual(content(losslessMarkdownToAdf('   | Part |\n   | --- |\n')), [table(row(cell('tableHeader', text('Part'))))])
+	const pipes = '| Part | Note |\n| --- | --- |\n| Nut \\| washer | `8.8` |\n| Spare |  |\n'
+	assert.deepEqual(content(losslessMarkdownToAdf(pipes)), [
+		table(
+			row(cell('tableHeader', text('Part')), cell('tableHeader', text('Note'))),
+			row(cell('tableCell', text('Nut | washer')), cell('tableCell', codeSpan('8.8'))),
+			row(cell('tableCell', text('Spare')), cell('tableCell')),
+		),
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('| Part\n| -\n')), [table(row(cell('tableHeader', text('Part'))))])
+	assert.deepEqual(content(losslessMarkdownToAdf('   | Part |\n   | --- |\n')), [table(row(cell('tableHeader', text('Part'))))])
 })
 
 test('claims the line a pipe opens and gives the rest back to the block walk', () => {
-  const header = table(row(cell('tableHeader', text('a'))))
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n| a |\n| --- |\n')), [paragraph('Part.'), header])
-  assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\nPart.\n')), [header, paragraph('Part.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('> | a |\n> | --- |\n')), [quote(header)])
-  assert.deepEqual(content(losslessMarkdownToAdf('- | a |\n  | --- |\n')), [bulletList(item(header))])
-  assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\n    x\n')), [header, { content: [text('x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\nc | d\n')), [table(row(cell('tableHeader', text('a')), cell('tableHeader', text('b')))), paragraph('c | d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('\\| a |\n')), [paragraph('| a |')])
+	const header = table(row(cell('tableHeader', text('a'))))
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n| a |\n| --- |\n')), [paragraph('Part.'), header])
+	assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\nPart.\n')), [header, paragraph('Part.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('> | a |\n> | --- |\n')), [quote(header)])
+	assert.deepEqual(content(losslessMarkdownToAdf('- | a |\n  | --- |\n')), [bulletList(item(header))])
+	assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\n    x\n')), [header, { content: [text('x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\nc | d\n')), [table(row(cell('tableHeader', text('a')), cell('tableHeader', text('b')))), paragraph('c | d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('\\| a |\n')), [paragraph('| a |')])
 })
 
 test('names the pipe table a claimed line does not spell', () => {
-  refused(losslessMarkdownToAdf('| a | b |\n'), 'malformed-pipe-table', '`-`', '\\|')
-  refused(losslessMarkdownToAdf('| a |\n| x |\n'), 'malformed-pipe-table', '`-`', '\\|')
-  refused(losslessMarkdownToAdf('| a | b |\n| :--- | ---: |\n'), 'malformed-pipe-table', 'alignment colon')
-  refused(losslessMarkdownToAdf('| a | b |\n| --- |\n'), 'malformed-pipe-table', 'row holds 1 cell', 'header holds 2 cells')
-  refused(losslessMarkdownToAdf('| a |\n| --- |\n| b | c |\n'), 'malformed-pipe-table', 'row holds 2 cells', 'header holds 1 cell')
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n| a |\n')), ['content', 1])
+	refused(losslessMarkdownToAdf('| a | b |\n'), 'malformed-pipe-table', '`-`', '\\|')
+	refused(losslessMarkdownToAdf('| a |\n| x |\n'), 'malformed-pipe-table', '`-`', '\\|')
+	refused(losslessMarkdownToAdf('| a | b |\n| :--- | ---: |\n'), 'malformed-pipe-table', 'alignment colon')
+	refused(losslessMarkdownToAdf('| a | b |\n| --- |\n'), 'malformed-pipe-table', 'row holds 1 cell', 'header holds 2 cells')
+	refused(losslessMarkdownToAdf('| a |\n| --- |\n| b | c |\n'), 'malformed-pipe-table', 'row holds 2 cells', 'header holds 1 cell')
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n| a |\n')), ['content', 1])
 })
 
 test('names the pipe table whose rows open with no pipe', () => {
-  const bare = ['`|`', '\\|']
-  refused(losslessMarkdownToAdf('a | b\n--- | ---\n'), 'malformed-pipe-table', ...bare)
-  refused(losslessMarkdownToAdf('Intro.\na | b\n--- | ---\n'), 'malformed-pipe-table', ...bare)
-  refused(losslessMarkdownToAdf('a | b\n--- | ---\n===\n'), 'malformed-pipe-table', ...bare)
-  refused(losslessMarkdownToAdf('a | b\n:--- | ---:\n'), 'malformed-pipe-table', ...bare)
-  refused(losslessMarkdownToAdf('a |\n--- |\n'), 'malformed-pipe-table', ...bare)
-  assert.deepEqual(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\nc\n')), [table(row(cell('tableHeader', text('a')), cell('tableHeader', text('b')))), paragraph('c')])
-  refused(losslessMarkdownToAdf('| a | b |\n| --- | --- |\n| c |\n'), 'malformed-pipe-table', 'row holds 1 cell', 'header holds 2 cells')
-  assert.deepEqual(content(losslessMarkdownToAdf('a | b\nc | d\n')), [paragraph('a | b c | d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a | b\n--- | --- | ---\n')), [paragraph('a | b --- | --- | ---')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a \\| b\n--- | ---\n')), [paragraph('a | b --- | ---')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a\n---\n')), [{ attrs: { level: 2 }, content: [text('a')], type: 'heading' }])
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\na | b\n--- | ---\n')), ['content', 1])
+	const bare = ['`|`', '\\|']
+	refused(losslessMarkdownToAdf('a | b\n--- | ---\n'), 'malformed-pipe-table', ...bare)
+	refused(losslessMarkdownToAdf('Intro.\na | b\n--- | ---\n'), 'malformed-pipe-table', ...bare)
+	refused(losslessMarkdownToAdf('a | b\n--- | ---\n===\n'), 'malformed-pipe-table', ...bare)
+	refused(losslessMarkdownToAdf('a | b\n:--- | ---:\n'), 'malformed-pipe-table', ...bare)
+	refused(losslessMarkdownToAdf('a |\n--- |\n'), 'malformed-pipe-table', ...bare)
+	assert.deepEqual(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\nc\n')), [table(row(cell('tableHeader', text('a')), cell('tableHeader', text('b')))), paragraph('c')])
+	refused(losslessMarkdownToAdf('| a | b |\n| --- | --- |\n| c |\n'), 'malformed-pipe-table', 'row holds 1 cell', 'header holds 2 cells')
+	assert.deepEqual(content(losslessMarkdownToAdf('a | b\nc | d\n')), [paragraph('a | b c | d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a | b\n--- | --- | ---\n')), [paragraph('a | b --- | --- | ---')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a \\| b\n--- | ---\n')), [paragraph('a | b --- | ---')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a\n---\n')), [{ attrs: { level: 2 }, content: [text('a')], type: 'heading' }])
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\na | b\n--- | ---\n')), ['content', 1])
 })
 
 test('gives back the refusal an inline body holds, never the shape check above it', () => {
-  const bare = ['`|`', '\\|']
-  refused(losslessMarkdownToAdf('!adf:caption\na | b\n--- | ---\n!adf:/caption\n'), 'malformed-pipe-table', ...bare)
-  assert.deepEqual(position(losslessMarkdownToAdf('!adf:caption\na | b\n--- | ---\n!adf:/caption\n')), { line: 2, offset: 13 })
-  assert.equal(code(losslessMarkdownToAdf('!adf:caption\n| a |\n!adf:/caption\n')), 'malformed-pipe-table')
-  refused(losslessMarkdownToAdf('!adf:caption\n- a\n!adf:/caption\n'), 'unsupported-node-shape', 'caption', 'one paragraph')
+	const bare = ['`|`', '\\|']
+	refused(losslessMarkdownToAdf('!adf:caption\na | b\n--- | ---\n!adf:/caption\n'), 'malformed-pipe-table', ...bare)
+	assert.deepEqual(position(losslessMarkdownToAdf('!adf:caption\na | b\n--- | ---\n!adf:/caption\n')), { line: 2, offset: 13 })
+	assert.equal(code(losslessMarkdownToAdf('!adf:caption\n| a |\n!adf:/caption\n')), 'malformed-pipe-table')
+	refused(losslessMarkdownToAdf('!adf:caption\n- a\n!adf:/caption\n'), 'unsupported-node-shape', 'caption', 'one paragraph')
 })
 
 for (const read of readers) {
-  test(`reads a change of bullet character or ordered delimiter as a second list in ${read.name}`, () => {
-    const parted = [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))]
-    assert.deepEqual(content(read('- a\n* b\n')), parted)
-    assert.deepEqual(content(read('- a\n\n+ b\n')), parted)
-    assert.deepEqual(content(read('- a\n-\n\n* b\n')), [bulletList(item(paragraph('a')), item()), bulletList(item(paragraph('b')))])
-    assert.deepEqual(content(read('- a\n* b\n- c\n')), [...parted, bulletList(item(paragraph('c')))])
-    assert.deepEqual(content(read('1. a\n1) b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
-    assert.deepEqual(content(read('> - a\n> * b\n')), [quote(...parted)])
-    assert.deepEqual(content(read('- - a\n  * b\n')), [bulletList(item(...parted))])
-  })
+	test(`reads a change of bullet character or ordered delimiter as a second list in ${read.name}`, () => {
+		const parted = [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))]
+		assert.deepEqual(content(read('- a\n* b\n')), parted)
+		assert.deepEqual(content(read('- a\n\n+ b\n')), parted)
+		assert.deepEqual(content(read('- a\n-\n\n* b\n')), [bulletList(item(paragraph('a')), item()), bulletList(item(paragraph('b')))])
+		assert.deepEqual(content(read('- a\n* b\n- c\n')), [...parted, bulletList(item(paragraph('c')))])
+		assert.deepEqual(content(read('1. a\n1) b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+		assert.deepEqual(content(read('> - a\n> * b\n')), [quote(...parted)])
+		assert.deepEqual(content(read('- - a\n  * b\n')), [bulletList(item(...parted))])
+	})
 }
 
 test('counts a second list of another bullet character in the path of the block after it', () => {
-  assert.deepEqual(path(losslessMarkdownToAdf('- a\n\n* b\n\n| x |\n')), ['content', 2])
+	assert.deepEqual(path(losslessMarkdownToAdf('- a\n\n* b\n\n| x |\n')), ['content', 2])
 })
 
 test('reads the image a pipe cell holds as its linked alt text', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), [
-    { content: [{ content: [cell('tableHeader', text('a'))], type: 'tableRow' }, { content: [cell('tableCell', marked('x', link('/u')))], type: 'tableRow' }], type: 'table' },
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), [
+		{ content: [{ content: [cell('tableHeader', text('a'))], type: 'tableRow' }, { content: [cell('tableCell', marked('x', link('/u')))], type: 'tableRow' }], type: 'table' },
+	])
 })
 
 test('strips the opening fence indentation from the content lines it holds', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('   ```\n    x\n  y\n   ```\n')), [{ content: [text(' x\ny')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('  ```\n\tx\n  ```\n')), [{ content: [text('  x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('   ```\n    x\n  y\n   ```\n')), [{ content: [text(' x\ny')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('  ```\n\tx\n  ```\n')), [{ content: [text('  x')], type: 'codeBlock' }])
 })
 
 test('reads an indented code block where no paragraph is open', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('    SELECT id\n')), [{ content: [text('SELECT id')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('\tSELECT id\n')), [{ content: [text('SELECT id')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('      x\n')), [{ content: [text('  x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('    a\n\n    b\n\nPart.\n')), [{ content: [text('a\n\nb')], type: 'codeBlock' }, paragraph('Part.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n    more\n')), [paragraph('Part. more')])
+	assert.deepEqual(content(losslessMarkdownToAdf('    SELECT id\n')), [{ content: [text('SELECT id')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('\tSELECT id\n')), [{ content: [text('SELECT id')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('      x\n')), [{ content: [text('  x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('    a\n\n    b\n\nPart.\n')), [{ content: [text('a\n\nb')], type: 'codeBlock' }, paragraph('Part.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n    more\n')), [paragraph('Part. more')])
 })
 
 test('claims a block line the prefix opens with no directive to parse it', () => {
-  assert.equal(code(losslessMarkdownToAdf('!adf:/panel\n')), 'malformed-directive')
-  assert.equal(code(losslessMarkdownToAdf('!adf:panel  info\n')), 'malformed-directive')
-  assert.equal(code(losslessMarkdownToAdf('!adf:panel {a=1 a=2}\n!adf:/panel\n')), 'malformed-directive')
-  refused(losslessMarkdownToAdf('!adf:Panel\n'), 'malformed-directive', 'no directive', '\\!adf:')
-  assert.deepEqual(content(losslessMarkdownToAdf(':::panel info\nPart.\n:::\n')), [paragraph(':::panel info Part. :::')])
-  assert.deepEqual(content(losslessMarkdownToAdf('::rule\n')), [paragraph('::rule')])
+	assert.equal(code(losslessMarkdownToAdf('!adf:/panel\n')), 'malformed-directive')
+	assert.equal(code(losslessMarkdownToAdf('!adf:panel  info\n')), 'malformed-directive')
+	assert.equal(code(losslessMarkdownToAdf('!adf:panel {a=1 a=2}\n!adf:/panel\n')), 'malformed-directive')
+	refused(losslessMarkdownToAdf('!adf:Panel\n'), 'malformed-directive', 'no directive', '\\!adf:')
+	assert.deepEqual(content(losslessMarkdownToAdf(':::panel info\nPart.\n:::\n')), [paragraph(':::panel info Part. :::')])
+	assert.deepEqual(content(losslessMarkdownToAdf('::rule\n')), [paragraph('::rule')])
 })
 
 test('reads the three directive forms into the nodes the tables name', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n')), [{ attrs: { localId: 'a-1' }, type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:paragraph\n!adf:/paragraph\n')), [{ type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:/bulletList\n')), [{ type: 'bulletList' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('   !adf:panel info\nPart.\n   !adf:/panel\n')), [
-    { attrs: { panelType: 'info' }, content: [paragraph('Part.')], type: 'panel' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:blockquote {localId=a-1}\n!adf:/blockquote\n')), [{ attrs: { localId: 'a-1' }, type: 'blockquote' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:heading {level=2 localId=a-1}\nPart.\n!adf:/heading\n')), [
-    { attrs: { level: 2, localId: 'a-1' }, content: [text('Part.')], type: 'heading' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part!adf:hardBreak{}.\n')), [{ content: [text('Part'), hardBreak(), text('.')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n')), [{ attrs: { localId: 'a-1' }, type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:paragraph\n!adf:/paragraph\n')), [{ type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:/bulletList\n')), [{ type: 'bulletList' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('   !adf:panel info\nPart.\n   !adf:/panel\n')), [
+		{ attrs: { panelType: 'info' }, content: [paragraph('Part.')], type: 'panel' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:blockquote {localId=a-1}\n!adf:/blockquote\n')), [{ attrs: { localId: 'a-1' }, type: 'blockquote' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:heading {level=2 localId=a-1}\nPart.\n!adf:/heading\n')), [
+		{ attrs: { level: 2, localId: 'a-1' }, content: [text('Part.')], type: 'heading' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part!adf:hardBreak{}.\n')), [{ content: [text('Part'), hardBreak(), text('.')], type: 'paragraph' }])
 })
 
 test('names the CommonMark spelling to write for the directive form a node CommonMark spells', () => {
-  refused(losslessMarkdownToAdf('!adf:rule\n'), 'unsupported-node-shape', 'rule', '`---`')
-  refused(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n'), 'unsupported-node-shape', 'blockquote', 'each line behind `> `')
-  refused(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n'), 'unsupported-node-shape', 'heading', '`## Title`')
-  refused(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'its text alone')
-  refused(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n'), 'unsupported-node-shape', 'bulletList', 'behind `- `', 'behind `* `')
-  refused(losslessMarkdownToAdf('!adf:orderedList {order=5}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n'), 'unsupported-node-shape', 'orderedList', '`5. `', '`5) `')
-  refused(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'fence')
-  refused(losslessMarkdownToAdf('!adf:mediaSingle {layout=center}\n!adf:media {alt=a type=external url=u}\n!adf:/mediaSingle\n'), 'unsupported-node-shape', 'mediaSingle', '`![alt](url)`', '`[![alt](url)](href)`')
-  refused(losslessMarkdownToAdf('!adf:table\n!adf:tableRow\n!adf:tableHeader\nPart.\n!adf:/tableHeader\n!adf:/tableRow\n!adf:/table\n'), 'unsupported-node-shape', 'table', 'a pipe table')
-  // The item whose first line reads back as a thematic break keeps the directive form the emitter falls back to.
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n')), [bulletList(item({ type: 'rule' }))])
+	refused(losslessMarkdownToAdf('!adf:rule\n'), 'unsupported-node-shape', 'rule', '`---`')
+	refused(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n'), 'unsupported-node-shape', 'blockquote', 'each line behind `> `')
+	refused(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n'), 'unsupported-node-shape', 'heading', '`## Title`')
+	refused(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'its text alone')
+	refused(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n'), 'unsupported-node-shape', 'bulletList', 'behind `- `', 'behind `* `')
+	refused(losslessMarkdownToAdf('!adf:orderedList {order=5}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n'), 'unsupported-node-shape', 'orderedList', '`5. `', '`5) `')
+	refused(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'fence')
+	refused(losslessMarkdownToAdf('!adf:mediaSingle {layout=center}\n!adf:media {alt=a type=external url=u}\n!adf:/mediaSingle\n'), 'unsupported-node-shape', 'mediaSingle', '`![alt](url)`', '`[![alt](url)](href)`')
+	refused(losslessMarkdownToAdf('!adf:table\n!adf:tableRow\n!adf:tableHeader\nPart.\n!adf:/tableHeader\n!adf:/tableRow\n!adf:/table\n'), 'unsupported-node-shape', 'table', 'a pipe table')
+	// The item whose first line reads back as a thematic break keeps the directive form the emitter falls back to.
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n')), [bulletList(item({ type: 'rule' }))])
 })
 
 test('refuses the directive form of a blockquote opening with a code span', () => {
-  refused(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n'), 'unsupported-node-shape', 'blockquote', 'each line behind `> `')
+	refused(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n'), 'unsupported-node-shape', 'blockquote', 'each line behind `> `')
 })
 
 // The input is some 1000 characters short of V8's longest string; the `> ` the quote adds to each of its 600 lines passes it. Reading this much outlasts Bun's 5 s default timeout.
 test('refuses a blockquote directive whose CommonMark spelling would pass V8\'s longest string', { timeout: 120_000 }, () => {
-  const fence = `\`\`\`\n${`${'a'.repeat(894_782)}\n`.repeat(300)}\`\`\`\n`
-  refused(losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`), 'unsupported-node-shape', '536870888')
+	const fence = `\`\`\`\n${`${'a'.repeat(894_782)}\n`.repeat(300)}\`\`\`\n`
+	refused(losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`), 'unsupported-node-shape', '536870888')
 })
 
 test('names the directive name no node reads back to', () => {
-  assert.equal(code(losslessMarkdownToAdf('!adf:widget info\nx\n!adf:/widget\n')), 'unknown-directive-name')
-  refused(losslessMarkdownToAdf('!adf:widget\n'), 'unknown-directive-name', 'widget', '\\!adf:')
-  refused(losslessMarkdownToAdf('!adf:widget[x]\n'), 'unknown-directive-name', 'widget', '\\!adf:')
-  refused(losslessMarkdownToAdf('ratio a!adf:b[c]{d}\n'), 'malformed-directive', 'key=value', '\\!adf:')
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:widget\n')), ['content', 1])
+	assert.equal(code(losslessMarkdownToAdf('!adf:widget info\nx\n!adf:/widget\n')), 'unknown-directive-name')
+	refused(losslessMarkdownToAdf('!adf:widget\n'), 'unknown-directive-name', 'widget', '\\!adf:')
+	refused(losslessMarkdownToAdf('!adf:widget[x]\n'), 'unknown-directive-name', 'widget', '\\!adf:')
+	refused(losslessMarkdownToAdf('ratio a!adf:b[c]{d}\n'), 'malformed-directive', 'key=value', '\\!adf:')
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:widget\n')), ['content', 1])
 })
 
 test('names the container no closer closes inside the block holding it', () => {
-  const unclosed = (name: string): string[] => [`${name} container is unclosed`, `!adf:/${name}`, '\\!adf:']
-  refused(losslessMarkdownToAdf('Part.\n!adf:expand\n'), 'malformed-directive', ...unclosed('expand'))
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n!adf:expand\n')), ['content', 1])
-  refused(losslessMarkdownToAdf('!adf:bulletList\n'), 'malformed-directive', ...unclosed('bulletList'))
-  refused(losslessMarkdownToAdf('- !adf:panel info\n  Part.\n!adf:/panel\n'), 'malformed-directive', ...unclosed('panel'))
-  refused(losslessMarkdownToAdf('> !adf:panel info\n> - a\n>   !adf:/panel\n'), 'malformed-directive', ...unclosed('panel'))
-  refused(losslessMarkdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n'), 'malformed-directive', ...unclosed('expand'))
-  assert.deepEqual(path(losslessMarkdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n')), ['content', 0, 'content', 0])
+	const unclosed = (name: string): string[] => [`${name} container is unclosed`, `!adf:/${name}`, '\\!adf:']
+	refused(losslessMarkdownToAdf('Part.\n!adf:expand\n'), 'malformed-directive', ...unclosed('expand'))
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n!adf:expand\n')), ['content', 1])
+	refused(losslessMarkdownToAdf('!adf:bulletList\n'), 'malformed-directive', ...unclosed('bulletList'))
+	refused(losslessMarkdownToAdf('- !adf:panel info\n  Part.\n!adf:/panel\n'), 'malformed-directive', ...unclosed('panel'))
+	refused(losslessMarkdownToAdf('> !adf:panel info\n> - a\n>   !adf:/panel\n'), 'malformed-directive', ...unclosed('panel'))
+	refused(losslessMarkdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n'), 'malformed-directive', ...unclosed('expand'))
+	assert.deepEqual(path(losslessMarkdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n')), ['content', 0, 'content', 0])
 })
 
 test('names the closer that finds no container open where it stands', () => {
-  const unopened = (name: string): string[] => [`!adf:/${name} closes no ${name}`, '\\!adf:']
-  refused(losslessMarkdownToAdf('Part.\n\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
-  refused(losslessMarkdownToAdf('!adf:panel info\n> !adf:/panel\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
-  refused(losslessMarkdownToAdf('!adf:panel info\n- !adf:/panel\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
-  refused(losslessMarkdownToAdf('!adf:panel info\nPart.\n!adf:/expand\n!adf:/panel\n'), 'malformed-directive', ...unopened('expand'))
+	const unopened = (name: string): string[] => [`!adf:/${name} closes no ${name}`, '\\!adf:']
+	refused(losslessMarkdownToAdf('Part.\n\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
+	refused(losslessMarkdownToAdf('!adf:panel info\n> !adf:/panel\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
+	refused(losslessMarkdownToAdf('!adf:panel info\n- !adf:/panel\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
+	refused(losslessMarkdownToAdf('!adf:panel info\nPart.\n!adf:/expand\n!adf:/panel\n'), 'malformed-directive', ...unopened('expand'))
 })
 
 test('names the leaf given a body at its opener, ahead of any refusal the leaf holds itself', () => {
-  refused(losslessMarkdownToAdf('!adf:rule\nPart.\n!adf:/rule\n'), 'malformed-directive', 'takes no body', '!adf:/rule', '\\!adf:')
-  assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n!adf:rule\nPart.\n!adf:/rule\n')), { line: 3, offset: 7 })
-  assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:rule {localId=a-2}\nPart.\n!adf:/rule\n')), ['content', 1])
-  assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n')), ['content', 0])
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:/rule\n')), ['content', 1])
-  assert.deepEqual(path(losslessMarkdownToAdf('!adf:panel info\n!adf:rule {localId=a-1}\n!adf:/panel\n!adf:/rule\n')), ['content', 1])
+	refused(losslessMarkdownToAdf('!adf:rule\nPart.\n!adf:/rule\n'), 'malformed-directive', 'takes no body', '!adf:/rule', '\\!adf:')
+	assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n!adf:rule\nPart.\n!adf:/rule\n')), { line: 3, offset: 7 })
+	assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:rule {localId=a-2}\nPart.\n!adf:/rule\n')), ['content', 1])
+	assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n')), ['content', 0])
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:/rule\n')), ['content', 1])
+	assert.deepEqual(path(losslessMarkdownToAdf('!adf:panel info\n!adf:rule {localId=a-1}\n!adf:/panel\n!adf:/rule\n')), ['content', 1])
 })
 
 test('names the position a directive name the other one spells belongs to', () => {
-  refused(losslessMarkdownToAdf('!adf:em\na\n!adf:/em\n'), 'unsupported-node-shape', '_x_', 'block directive')
-  refused(losslessMarkdownToAdf('!adf:underline\n'), 'unsupported-node-shape', '!adf:underline[…]', 'block directive')
-  refused(losslessMarkdownToAdf('!adf:link\n'), 'unsupported-node-shape', '[x](url)', '!adf:link[…]', 'block directive')
-  refused(losslessMarkdownToAdf('!adf:text {text=" "}\n'), 'unsupported-node-shape', '!adf:text{…}', 'block form')
-  refused(losslessMarkdownToAdf('!adf:date {timestamp=1}\n'), 'unsupported-node-shape', '!adf:date{…}', 'block form')
-  refused(losslessMarkdownToAdf('!adf:paragraph[a]\n'), 'unsupported-node-shape', '!adf:paragraph', 'inline form')
-  refused(losslessMarkdownToAdf('!adf:rule[a]\n'), 'unsupported-node-shape', '!adf:rule', 'inline form')
-  assert.equal(code(losslessMarkdownToAdf('!adf:widget\na\n!adf:/widget\n')), 'unknown-directive-name')
-  assert.equal(code(losslessMarkdownToAdf('!adf:widget[a]\n')), 'unknown-directive-name')
+	refused(losslessMarkdownToAdf('!adf:em\na\n!adf:/em\n'), 'unsupported-node-shape', '_x_', 'block directive')
+	refused(losslessMarkdownToAdf('!adf:underline\n'), 'unsupported-node-shape', '!adf:underline[…]', 'block directive')
+	refused(losslessMarkdownToAdf('!adf:link\n'), 'unsupported-node-shape', '[x](url)', '!adf:link[…]', 'block directive')
+	refused(losslessMarkdownToAdf('!adf:text {text=" "}\n'), 'unsupported-node-shape', '!adf:text{…}', 'block form')
+	refused(losslessMarkdownToAdf('!adf:date {timestamp=1}\n'), 'unsupported-node-shape', '!adf:date{…}', 'block form')
+	refused(losslessMarkdownToAdf('!adf:paragraph[a]\n'), 'unsupported-node-shape', '!adf:paragraph', 'inline form')
+	refused(losslessMarkdownToAdf('!adf:rule[a]\n'), 'unsupported-node-shape', '!adf:rule', 'inline form')
+	assert.equal(code(losslessMarkdownToAdf('!adf:widget\na\n!adf:/widget\n')), 'unknown-directive-name')
+	assert.equal(code(losslessMarkdownToAdf('!adf:widget[a]\n')), 'unknown-directive-name')
 })
 
 test('names the reserved carry name a block directive spells', () => {
-  const reserved = ['carry', 'adf: fence']
-  refused(losslessMarkdownToAdf('!adf:carry\n'), 'malformed-directive', ...reserved)
-  refused(losslessMarkdownToAdf('!adf:carry\nx\n!adf:/carry\n'), 'malformed-directive', ...reserved)
-  assert.deepEqual(content(losslessMarkdownToAdf('```adf\nx\n```\n')), [{ attrs: { language: 'adf' }, content: [text('x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('```carry\nx\n```\n')), [{ attrs: { language: 'carry' }, content: [text('x')], type: 'codeBlock' }])
+	const reserved = ['carry', 'adf: fence']
+	refused(losslessMarkdownToAdf('!adf:carry\n'), 'malformed-directive', ...reserved)
+	refused(losslessMarkdownToAdf('!adf:carry\nx\n!adf:/carry\n'), 'malformed-directive', ...reserved)
+	assert.deepEqual(content(losslessMarkdownToAdf('```adf\nx\n```\n')), [{ attrs: { language: 'adf' }, content: [text('x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('```carry\nx\n```\n')), [{ attrs: { language: 'carry' }, content: [text('x')], type: 'codeBlock' }])
 })
 
 const carried = '!adf:carry{json="{\\"type\\":\\"placeholder\\"}"}'
 
 test('reads the carry fence back to the node its info string names and its JSON holds', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('```adf:blockCard\n{\n  "attrs": {\n    "url": "https://example.com/x"\n  }\n}\n```\n')), [
-    { attrs: { url: 'https://example.com/x' }, type: 'blockCard' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('```adf:\n{\n  "type": "a`b"\n}\n```\n')), [{ type: 'a`b' }])
-  refused(losslessMarkdownToAdf('```adf:blockCard\n{\n  "type": "blockCard"\n}\n```\n'), 'unsupported-node-shape', 'adf:blockCard', 'holds a type as well', '!adf:codeBlock {language="adf:blockCard"}')
-  refused(losslessMarkdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n'), 'unsupported-node-shape', 'adf:blockCard', 'drop type')
-  refused(losslessMarkdownToAdf('```adf:\n{}\n```\n'), 'unsupported-node-shape', 'no ADF node', '!adf:codeBlock {language="adf:"}')
-  const unnamed = ['spell it adf: with the type in the JSON', '!adf:codeBlock {language="adf:\\\\"}']
-  refused(losslessMarkdownToAdf('```adf:\\\\\n{}\n```\n'), 'unsupported-node-shape', ...unnamed)
+	assert.deepEqual(content(losslessMarkdownToAdf('```adf:blockCard\n{\n  "attrs": {\n    "url": "https://example.com/x"\n  }\n}\n```\n')), [
+		{ attrs: { url: 'https://example.com/x' }, type: 'blockCard' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('```adf:\n{\n  "type": "a`b"\n}\n```\n')), [{ type: 'a`b' }])
+	refused(losslessMarkdownToAdf('```adf:blockCard\n{\n  "type": "blockCard"\n}\n```\n'), 'unsupported-node-shape', 'adf:blockCard', 'holds a type as well', '!adf:codeBlock {language="adf:blockCard"}')
+	refused(losslessMarkdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n'), 'unsupported-node-shape', 'adf:blockCard', 'drop type')
+	refused(losslessMarkdownToAdf('```adf:\n{}\n```\n'), 'unsupported-node-shape', 'no ADF node', '!adf:codeBlock {language="adf:"}')
+	const unnamed = ['spell it adf: with the type in the JSON', '!adf:codeBlock {language="adf:\\\\"}']
+	refused(losslessMarkdownToAdf('```adf:\\\\\n{}\n```\n'), 'unsupported-node-shape', ...unnamed)
 })
 
 test('reads the inline carry back to the node its json attribute holds', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf(`a ${carried} b\n`)), [
-    { content: [text('a '), { type: 'placeholder' }, text(' b')], type: 'paragraph' },
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf(`a ${carried} b\n`)), [
+		{ content: [text('a '), { type: 'placeholder' }, text(' b')], type: 'paragraph' },
+	])
 })
 
 test('reads an escaped JSON key as the key it spells after reading a key holding a backslash (https://issues.chromium.org/issues/521080746)', () => {
-  const extension = (parameters: string): string => `!adf:extension {extensionKey=toc extensionType=x parameters=${JSON.stringify(parameters)}}\n`
-  const read = content(losslessMarkdownToAdf([extension('{"\\b":1,"\\f":2}'), extension('{"\\b":3,"\\\\":4}'), extension('{"\\b":1,"\\f":2}')].join('\n')))
-  const node = (parameters: AdfAttributes): AdfNode => ({ attrs: { extensionKey: 'toc', extensionType: 'x', parameters }, type: 'extension' })
-  assert.deepEqual(read, [node({ '\b': 1, '\f': 2 }), node({ '\b': 3, '\\': 4 }), node({ '\b': 1, '\f': 2 })])
+	const extension = (parameters: string): string => `!adf:extension {extensionKey=toc extensionType=x parameters=${JSON.stringify(parameters)}}\n`
+	const read = content(losslessMarkdownToAdf([extension('{"\\b":1,"\\f":2}'), extension('{"\\b":3,"\\\\":4}'), extension('{"\\b":1,"\\f":2}')].join('\n')))
+	const node = (parameters: AdfAttributes): AdfNode => ({ attrs: { extensionKey: 'toc', extensionType: 'x', parameters }, type: 'extension' })
+	assert.deepEqual(read, [node({ '\b': 1, '\f': 2 }), node({ '\b': 3, '\\': 4 }), node({ '\b': 1, '\f': 2 })])
 })
 
 test('names the invalid JSON no opaque carry holds, and the spelling that keeps it literal', () => {
-  const fence = ['invalid JSON', '!adf:codeBlock {language="adf:x"}']
-  refused(losslessMarkdownToAdf('```adf:x\n{"attrs":\n```\n'), 'malformed-directive', ...fence)
-  refused(losslessMarkdownToAdf('```adf:x\n```\n'), 'malformed-directive', ...fence)
-  refused(losslessMarkdownToAdf('!adf:carry{json="{"}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
-  refused(losslessMarkdownToAdf('!adf:carry{json=abc}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
+	const fence = ['invalid JSON', '!adf:codeBlock {language="adf:x"}']
+	refused(losslessMarkdownToAdf('```adf:x\n{"attrs":\n```\n'), 'malformed-directive', ...fence)
+	refused(losslessMarkdownToAdf('```adf:x\n```\n'), 'malformed-directive', ...fence)
+	refused(losslessMarkdownToAdf('!adf:carry{json="{"}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
+	refused(losslessMarkdownToAdf('!adf:carry{json=abc}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
 })
 
 test('names the canonical spelling of a carried JSON that is spelled another way', () => {
-  const compact = ['compact, keys sorted', '\\!adf:']
-  refused(losslessMarkdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n'), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:blockCard"}')
-  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...compact)
-  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n'), 'unsupported-node-shape', ...compact)
+	const compact = ['compact, keys sorted', '\\!adf:']
+	refused(losslessMarkdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n'), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:blockCard"}')
+	refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...compact)
+	refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n'), 'unsupported-node-shape', ...compact)
 })
 
 test('refuses compact JSON of deep nesting in the carry fence', () => {
-  const json = `{"attrs":{"value":${'['.repeat(495)}${new Array(560_000).fill(0).join(',')}${']'.repeat(495)}}}`
-  refused(losslessMarkdownToAdf(`\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:unknownBlock"}')
+	const json = `{"attrs":{"value":${'['.repeat(495)}${new Array(560_000).fill(0).join(',')}${']'.repeat(495)}}}`
+	refused(losslessMarkdownToAdf(`\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:unknownBlock"}')
 })
 
 test('reads a carry fence indented five levels with deeper values compact, and one indented at every level as 0.3.1 wrote it', () => {
-  const value = { a: { b: { c: { d: { e: [1, { f: 2 }] } } } } }
-  const fence = (json: string): string => `\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`
-  const lines = ['{', '  "attrs": {', '    "a": {', '      "b": {', '        "c": {', '          "d": {"e":[1,{"f":2}]}', '        }', '      }', '    }', '  }', '}']
-  assert.deepEqual(content(losslessMarkdownToAdf(fence(lines.join('\n')))), [{ attrs: value, type: 'unknownBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf(fence(JSON.stringify({ attrs: value }, null, 2)))), [{ attrs: value, type: 'unknownBlock' }])
-  const fourLevels = lines.join('\n').replace('{\n          "d": {"e":[1,{"f":2}]}\n        }', '{"d":{"e":[1,{"f":2}]}}')
-  refused(losslessMarkdownToAdf(fence(fourLevels)), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:unknownBlock"}')
+	const value = { a: { b: { c: { d: { e: [1, { f: 2 }] } } } } }
+	const fence = (json: string): string => `\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`
+	const lines = ['{', '  "attrs": {', '    "a": {', '      "b": {', '        "c": {', '          "d": {"e":[1,{"f":2}]}', '        }', '      }', '    }', '  }', '}']
+	assert.deepEqual(content(losslessMarkdownToAdf(fence(lines.join('\n')))), [{ attrs: value, type: 'unknownBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf(fence(JSON.stringify({ attrs: value }, null, 2)))), [{ attrs: value, type: 'unknownBlock' }])
+	const fourLevels = lines.join('\n').replace('{\n          "d": {"e":[1,{"f":2}]}\n        }', '{"d":{"e":[1,{"f":2}]}}')
+	refused(losslessMarkdownToAdf(fence(fourLevels)), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:unknownBlock"}')
 })
 
 test('names the node JSON an opaque carry restores alone', () => {
-  refused(losslessMarkdownToAdf('```adf:x\n[]\n```\n'), 'unsupported-node-shape', 'no ADF node', '!adf:codeBlock {language="adf:x"}')
-  refused(losslessMarkdownToAdf('!adf:carry{json=null}\n'), 'unsupported-node-shape', 'no ADF node', '\\!adf:')
-  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n'), 'unsupported-node-shape', 'no ADF node', '\\!adf:')
+	refused(losslessMarkdownToAdf('```adf:x\n[]\n```\n'), 'unsupported-node-shape', 'no ADF node', '!adf:codeBlock {language="adf:x"}')
+	refused(losslessMarkdownToAdf('!adf:carry{json=null}\n'), 'unsupported-node-shape', 'no ADF node', '\\!adf:')
+	refused(losslessMarkdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n'), 'unsupported-node-shape', 'no ADF node', '\\!adf:')
 })
 
 test('refuses a carry holding an inline card a link marks, whether it stands alone, in a block or in a fence', () => {
-  const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
-  const json = JSON.stringify(card).replaceAll('"', '\\"')
-  refused(losslessMarkdownToAdf(`!adf:carry{json="${json}"}\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
-  refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${serializeCanonicalJson({ content: [card] }, 'five-level')}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
+	const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
+	const json = JSON.stringify(card).replaceAll('"', '\\"')
+	refused(losslessMarkdownToAdf(`!adf:carry{json="${json}"}\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
+	refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${serializeCanonicalJson({ content: [card] }, 'five-level')}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
 })
 
 test('refuses a carry holding a shape every writer refuses, whether it stands alone, in a block or in a fence', () => {
-  const holdsText = ['every writer refuses', 'status', 'neither content nor text']
-  const status = { text: 'x', type: 'status' }
-  const json = JSON.stringify(status).replaceAll('"', '\\"')
-  refused(losslessMarkdownToAdf(`!adf:carry{json="${json}"}\n`), 'unsupported-node-shape', ...holdsText)
-  refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [status] }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', ...holdsText)
-  refused(losslessMarkdownToAdf(`\`\`\`adf:panel\n${JSON.stringify({ text: 'x' }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'panel', 'no text key')
+	const holdsText = ['every writer refuses', 'status', 'neither content nor text']
+	const status = { text: 'x', type: 'status' }
+	const json = JSON.stringify(status).replaceAll('"', '\\"')
+	refused(losslessMarkdownToAdf(`!adf:carry{json="${json}"}\n`), 'unsupported-node-shape', ...holdsText)
+	refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [status] }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', ...holdsText)
+	refused(losslessMarkdownToAdf(`\`\`\`adf:panel\n${JSON.stringify({ text: 'x' }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'panel', 'no text key')
 })
 
 test('names the shape the inline carry reads alone', () => {
-  refused(losslessMarkdownToAdf('!adf:carry[x]{json="{}"}\n'), 'unsupported-node-shape', 'carry takes no content')
-  refused(losslessMarkdownToAdf('!adf:carry{}\n'), 'unsupported-node-shape', 'one json attribute')
-  refused(losslessMarkdownToAdf('!adf:carry{json="{}" localId=x}\n'), 'unsupported-node-shape', 'one json attribute')
-  refused(losslessMarkdownToAdf('!adf:carry{json="null"}\n'), 'unsupported-node-shape', 'json=null')
+	refused(losslessMarkdownToAdf('!adf:carry[x]{json="{}"}\n'), 'unsupported-node-shape', 'carry takes no content')
+	refused(losslessMarkdownToAdf('!adf:carry{}\n'), 'unsupported-node-shape', 'one json attribute')
+	refused(losslessMarkdownToAdf('!adf:carry{json="{}" localId=x}\n'), 'unsupported-node-shape', 'one json attribute')
+	refused(losslessMarkdownToAdf('!adf:carry{json="null"}\n'), 'unsupported-node-shape', 'json=null')
 })
 
 test('holds a carried JSON value to the nesting its position leaves', () => {
-  const nested = (levels: number): string => `${'['.repeat(levels)}${']'.repeat(levels)}`
-  const fence = (prefix: string, levels: number): string => `${prefix}\`\`\`adf:x\n${prefix}${nested(levels)}\n${prefix}\`\`\`\n`
-  const deeper = (levels: number): string[] => [`deeper than the ${levels} levels`]
-  refused(losslessMarkdownToAdf(`!adf:carry{json="${nested(largestNesting + 2)}"}\n`), 'unsupported-nesting-depth', ...deeper(largestNesting))
-  refused(losslessMarkdownToAdf(fence('', largestNesting + 1)), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:x"}')
-  refused(losslessMarkdownToAdf(fence('> ', largestNesting + 1)), 'unsupported-nesting-depth', ...deeper(largestNesting - 1))
+	const nested = (levels: number): string => `${'['.repeat(levels)}${']'.repeat(levels)}`
+	const fence = (prefix: string, levels: number): string => `${prefix}\`\`\`adf:x\n${prefix}${nested(levels)}\n${prefix}\`\`\`\n`
+	const deeper = (levels: number): string[] => [`deeper than the ${levels} levels`]
+	refused(losslessMarkdownToAdf(`!adf:carry{json="${nested(largestNesting + 2)}"}\n`), 'unsupported-nesting-depth', ...deeper(largestNesting))
+	refused(losslessMarkdownToAdf(fence('', largestNesting + 1)), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:x"}')
+	refused(losslessMarkdownToAdf(fence('> ', largestNesting + 1)), 'unsupported-nesting-depth', ...deeper(largestNesting - 1))
 })
 
 test('names the number no JSON spelling carries in an opaque carry', () => {
-  const named = ['a number JSON cannot spell']
-  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"attrs\\":{\\"width\\":1e999},\\"type\\":\\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('```adf:x\n1e999\n```\n'), 'unsupported-node-shape', ...named)
+	const named = ['a number JSON cannot spell']
+	refused(losslessMarkdownToAdf('!adf:carry{json="{\\"attrs\\":{\\"width\\":1e999},\\"type\\":\\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('```adf:x\n1e999\n```\n'), 'unsupported-node-shape', ...named)
 })
 
 test('names the mark spelling no opaque carry sits inside', () => {
-  const named = ['marks=empty', 'out of the mark spelling']
-  refused(losslessMarkdownToAdf(`_a ${carried} b_\n`), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf(`**${carried}**\n`), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf(`~~a ${carried}~~\n`), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf(`[a ${carried} b](https://example.com/x)\n`), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf(`[*<http://x/>${carried}*](/w)\n`), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf(`!adf:underline[${carried}]\n`), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf(`!adf:textColor[a ${carried}]{color="#ae2e24"}\n`), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf(`![_a ${carried}_](https://example.com/i)\n`), 'unsupported-node-shape', ...named)
+	const named = ['marks=empty', 'out of the mark spelling']
+	refused(losslessMarkdownToAdf(`_a ${carried} b_\n`), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf(`**${carried}**\n`), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf(`~~a ${carried}~~\n`), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf(`[a ${carried} b](https://example.com/x)\n`), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf(`[*<http://x/>${carried}*](/w)\n`), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf(`!adf:underline[${carried}]\n`), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf(`!adf:textColor[a ${carried}]{color="#ae2e24"}\n`), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf(`![_a ${carried}_](https://example.com/i)\n`), 'unsupported-node-shape', ...named)
 })
 
 test('keeps the carry a mark spelling does not wrap', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf(`[a ${carried} b]\n`)), [
-    { content: [text('[a '), { type: 'placeholder' }, text(' b]')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf(`**a**${carried}**b**\n`)), [
-    { content: [marked('a', strong), { type: 'placeholder' }, marked('b', strong)], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf(`![a ${carried} b](https://example.com/i)\n`)), [image('https://example.com/i', 'a  b')])
+	assert.deepEqual(content(losslessMarkdownToAdf(`[a ${carried} b]\n`)), [
+		{ content: [text('[a '), { type: 'placeholder' }, text(' b]')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf(`**a**${carried}**b**\n`)), [
+		{ content: [marked('a', strong), { type: 'placeholder' }, marked('b', strong)], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf(`![a ${carried} b](https://example.com/i)\n`)), [image('https://example.com/i', 'a  b')])
 })
 
 test('reads each attribute value as the type its section assigns', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:media {height=10 id=a-1 type=file url="/x y" width="20.5"}\n')), [
-    { attrs: { height: 10, id: 'a-1', type: 'file', url: '/x y', width: 20.5 }, type: 'media' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=true}\n!adf:/table\n')), [{ attrs: { isNumberColumnEnabled: true }, type: 'table' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,420.5"}\n!adf:/tableCell\n')), [{ attrs: { colwidth: [340, 420.5] }, type: 'tableCell' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:tableCell {colwidth=340}\n!adf:/tableCell\n')), [{ attrs: { colwidth: [340] }, type: 'tableCell' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n')), [{ attrs: { localId: 'a-1' }, type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:media {height=10 id=a-1 type=file url="/x y" width="20.5"}\n')), [
+		{ attrs: { height: 10, id: 'a-1', type: 'file', url: '/x y', width: 20.5 }, type: 'media' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=true}\n!adf:/table\n')), [{ attrs: { isNumberColumnEnabled: true }, type: 'table' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,420.5"}\n!adf:/tableCell\n')), [{ attrs: { colwidth: [340, 420.5] }, type: 'tableCell' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:tableCell {colwidth=340}\n!adf:/tableCell\n')), [{ attrs: { colwidth: [340] }, type: 'tableCell' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n')), [{ attrs: { localId: 'a-1' }, type: 'rule' }])
 })
 
 test('reads the reserved marks key as the marks it names, in order', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks=em}\n')), [{ marks: [em], type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1 marks="breakout{mode=wide}"}\n')), [
-    { attrs: { localId: 'a-1' }, marks: [{ attrs: { mode: 'wide' }, type: 'breakout' }], type: 'rule' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="indentation{level=2} fragment{localId=f1 name=\\"Price list\\"}"}\n')), [
-    { marks: [{ attrs: { level: 2 }, type: 'indentation' }, { attrs: { localId: 'f1', name: 'Price list' }, type: 'fragment' }], type: 'rule' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}"}\n')), [{ marks: [{ attrs: {}, type: 'em' }], type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks=empty}\n')), [{ marks: [], type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks=em}\n')), [{ marks: [em], type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1 marks="breakout{mode=wide}"}\n')), [
+		{ attrs: { localId: 'a-1' }, marks: [{ attrs: { mode: 'wide' }, type: 'breakout' }], type: 'rule' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="indentation{level=2} fragment{localId=f1 name=\\"Price list\\"}"}\n')), [
+		{ marks: [{ attrs: { level: 2 }, type: 'indentation' }, { attrs: { localId: 'f1', name: 'Price list' }, type: 'fragment' }], type: 'rule' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}"}\n')), [{ marks: [{ attrs: {}, type: 'em' }], type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks=empty}\n')), [{ marks: [], type: 'rule' }])
 })
 
 test('reads the reserved marks key as a JSON array where a mark is one the tables do not type', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"},{\\"attrs\\":{\\"color\\":\\"#fff\\"},\\"type\\":\\"backgroundColor\\"}]"}\n')), [
-    { marks: [em, { attrs: { color: '#fff' }, type: 'backgroundColor' }], type: 'rule' },
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"},{\\"attrs\\":{\\"color\\":\\"#fff\\"},\\"type\\":\\"backgroundColor\\"}]"}\n')), [
+		{ marks: [em, { attrs: { color: '#fff' }, type: 'backgroundColor' }], type: 'rule' },
+	])
 })
 
 test('names the marks key no marks read back from', () => {
-  const array = ['marks', 'rule', 'canonical JSON']
-  const named = ['marks', 'rule', 'one space apart']
-  refused(losslessMarkdownToAdf('!adf:rule {marks="[]"}\n'), 'unsupported-node-shape', ...array)
-  refused(losslessMarkdownToAdf('!adf:rule {marks="[1]"}\n'), 'unsupported-node-shape', ...array)
-  refused(losslessMarkdownToAdf('!adf:rule {marks="{}"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:rule {marks="em  strong"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:rule {marks="em "}\n'), 'unsupported-node-shape', ...named)
-  const inBreakout = ['breakout', 'marks', 'rule']
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=1 mode=wide}"}\n'), 'unsupported-node-shape', ...inBreakout, 'mode before width')
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide\\"x\\"}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide"}\n'), 'unsupported-node-shape', ...inBreakout, 'closing brace')
-  refused(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}strong"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=x}"}\n'), 'unsupported-node-shape', 'attrs', 'empty', 'attrs=x')
-  refused(losslessMarkdownToAdf('!adf:rule {marks=x}\n'), 'unsupported-node-shape', 'names x', 'marks="[{\\"type\\":\\"x\\"}]"')
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=wide}"}\n'), 'unsupported-node-shape', 'width', 'breakout', 'no number')
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{bogus=1}"}\n'), 'unsupported-node-shape', 'breakout', 'bogus')
+	const array = ['marks', 'rule', 'canonical JSON']
+	const named = ['marks', 'rule', 'one space apart']
+	refused(losslessMarkdownToAdf('!adf:rule {marks="[]"}\n'), 'unsupported-node-shape', ...array)
+	refused(losslessMarkdownToAdf('!adf:rule {marks="[1]"}\n'), 'unsupported-node-shape', ...array)
+	refused(losslessMarkdownToAdf('!adf:rule {marks="{}"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:rule {marks="em  strong"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:rule {marks="em "}\n'), 'unsupported-node-shape', ...named)
+	const inBreakout = ['breakout', 'marks', 'rule']
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=1 mode=wide}"}\n'), 'unsupported-node-shape', ...inBreakout, 'mode before width')
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide\\"x\\"}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide"}\n'), 'unsupported-node-shape', ...inBreakout, 'closing brace')
+	refused(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}strong"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=x}"}\n'), 'unsupported-node-shape', 'attrs', 'empty', 'attrs=x')
+	refused(losslessMarkdownToAdf('!adf:rule {marks=x}\n'), 'unsupported-node-shape', 'names x', 'marks="[{\\"type\\":\\"x\\"}]"')
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=wide}"}\n'), 'unsupported-node-shape', 'width', 'breakout', 'no number')
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{bogus=1}"}\n'), 'unsupported-node-shape', 'breakout', 'bogus')
 })
 
 test('names the marks key spelled outside the canonical form', () => {
-  const spells = (spelling: string): string[] => ['rule', `marks=${spelling}`]
-  refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"}]"}\n'), 'unsupported-node-shape', ...spells('em'))
-  refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n'), 'unsupported-node-shape', ...spells('"em{attrs=empty}"'))
-  refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\",\\"attrs\\":{}}]"}\n'), 'unsupported-node-shape', ...spells('"em{attrs=empty}"'))
-  refused(losslessMarkdownToAdf('!adf:rule {marks="em{}"}\n'), 'unsupported-node-shape', ...spells('em'))
-  refused(losslessMarkdownToAdf('!adf:rule {marks="em"}\n'), 'unsupported-node-shape', ...spells('em'))
-  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=\\"wide\\"}"}\n'), 'unsupported-node-shape', 'breakout', 'mode=wide')
+	const spells = (spelling: string): string[] => ['rule', `marks=${spelling}`]
+	refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"}]"}\n'), 'unsupported-node-shape', ...spells('em'))
+	refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n'), 'unsupported-node-shape', ...spells('"em{attrs=empty}"'))
+	refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\",\\"attrs\\":{}}]"}\n'), 'unsupported-node-shape', ...spells('"em{attrs=empty}"'))
+	refused(losslessMarkdownToAdf('!adf:rule {marks="em{}"}\n'), 'unsupported-node-shape', ...spells('em'))
+	refused(losslessMarkdownToAdf('!adf:rule {marks="em"}\n'), 'unsupported-node-shape', ...spells('em'))
+	refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=\\"wide\\"}"}\n'), 'unsupported-node-shape', 'breakout', 'mode=wide')
 })
 
 test('names the attribute a node holds no reading for', () => {
-  refused(losslessMarkdownToAdf('!adf:rule {bogus=1}\n'), 'unsupported-node-shape', 'rule', 'bogus')
-  refused(losslessMarkdownToAdf('!adf:media {width=wide}\n'), 'unsupported-node-shape', 'width', 'media', 'no number')
-  refused(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=yes}\n!adf:/table\n'), 'unsupported-node-shape', 'isNumberColumnEnabled', 'table', 'no boolean')
-  refused(losslessMarkdownToAdf('!adf:media {width=true}\n'), 'unsupported-node-shape', 'width', 'media', 'no number')
-  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
-  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
-  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,\\"420\\"]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
-  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth=""}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
-  refused(losslessMarkdownToAdf('!adf:panel info {panelType=note}\nx\n!adf:/panel\n'), 'unsupported-node-shape', 'panelType', 'directive argument')
-  refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
+	refused(losslessMarkdownToAdf('!adf:rule {bogus=1}\n'), 'unsupported-node-shape', 'rule', 'bogus')
+	refused(losslessMarkdownToAdf('!adf:media {width=wide}\n'), 'unsupported-node-shape', 'width', 'media', 'no number')
+	refused(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=yes}\n!adf:/table\n'), 'unsupported-node-shape', 'isNumberColumnEnabled', 'table', 'no boolean')
+	refused(losslessMarkdownToAdf('!adf:media {width=true}\n'), 'unsupported-node-shape', 'width', 'media', 'no number')
+	refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+	refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+	refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,\\"420\\"]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+	refused(losslessMarkdownToAdf('!adf:tableCell {colwidth=""}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+	refused(losslessMarkdownToAdf('!adf:panel info {panelType=note}\nx\n!adf:/panel\n'), 'unsupported-node-shape', 'panelType', 'directive argument')
+	refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
 })
 
 test('names the depth an attribute value nests past, never the kind the JSON reads as', () => {
-  const nested = (levels: number): string => `${'['.repeat(levels)}1${']'.repeat(levels)}`
-  const deeper = (key: string, type: string): string[] => [`the ${key} attribute of ${type}`, `${largestNesting} levels`]
-  refused(losslessMarkdownToAdf(`!adf:extension {parameters="${nested(largestNesting + 1)}"}\n`), 'unsupported-nesting-depth', ...deeper('parameters', 'extension'))
-  refused(losslessMarkdownToAdf(`!adf:rule {marks="${nested(largestNesting + 1)}"}\n`), 'unsupported-nesting-depth', ...deeper('marks', 'rule'))
-  refused(losslessMarkdownToAdf(`!adf:rule {marks="[{\\"attrs\\":{\\"deep\\":${nested(largestNesting - 2)}},\\"type\\":\\"em\\"}]"}\n`), 'unsupported-nesting-depth', ...deeper('marks', 'rule'))
-  refused(losslessMarkdownToAdf(`!adf:media {width="${nested(largestNesting + 1)}"}\n`), 'unsupported-node-shape', 'width', 'media', 'no number')
+	const nested = (levels: number): string => `${'['.repeat(levels)}1${']'.repeat(levels)}`
+	const deeper = (key: string, type: string): string[] => [`the ${key} attribute of ${type}`, `${largestNesting} levels`]
+	refused(losslessMarkdownToAdf(`!adf:extension {parameters="${nested(largestNesting + 1)}"}\n`), 'unsupported-nesting-depth', ...deeper('parameters', 'extension'))
+	refused(losslessMarkdownToAdf(`!adf:rule {marks="${nested(largestNesting + 1)}"}\n`), 'unsupported-nesting-depth', ...deeper('marks', 'rule'))
+	refused(losslessMarkdownToAdf(`!adf:rule {marks="[{\\"attrs\\":{\\"deep\\":${nested(largestNesting - 2)}},\\"type\\":\\"em\\"}]"}\n`), 'unsupported-nesting-depth', ...deeper('marks', 'rule'))
+	refused(losslessMarkdownToAdf(`!adf:media {width="${nested(largestNesting + 1)}"}\n`), 'unsupported-node-shape', 'width', 'media', 'no number')
 })
 
 test('names the attribute value spelled outside the canonical form', () => {
-  refused(losslessMarkdownToAdf('!adf:rule {localId="a-1"}\n'), 'unsupported-node-shape', 'localId=a-1')
-  refused(losslessMarkdownToAdf('!adf:media {width="20.0"}\n'), 'unsupported-node-shape', 'width=20')
-  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340, 420"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth="340,420"')
-  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth=340')
-  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,420]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth="340,420"')
+	refused(losslessMarkdownToAdf('!adf:rule {localId="a-1"}\n'), 'unsupported-node-shape', 'localId=a-1')
+	refused(losslessMarkdownToAdf('!adf:media {width="20.0"}\n'), 'unsupported-node-shape', 'width=20')
+	refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340, 420"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth="340,420"')
+	refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth=340')
+	refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,420]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth="340,420"')
 })
 
 test('names the argument and the body a node takes no reading for', () => {
-  refused(losslessMarkdownToAdf('!adf:rule x\n'), 'unsupported-node-shape', 'rule', 'no argument')
-  refused(losslessMarkdownToAdf('!adf:paragraph\nOne.\n\nTwo.\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'one paragraph')
-  refused(losslessMarkdownToAdf('!adf:paragraph\n---\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'one paragraph')
-  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\nx\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'code blocks', 'another block')
-  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'code blocks', 'holds none')
-  refused(losslessMarkdownToAdf('Part !adf:date[now]{timestamp=1}.\n'), 'unsupported-node-shape', 'date', 'no content')
+	refused(losslessMarkdownToAdf('!adf:rule x\n'), 'unsupported-node-shape', 'rule', 'no argument')
+	refused(losslessMarkdownToAdf('!adf:paragraph\nOne.\n\nTwo.\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'one paragraph')
+	refused(losslessMarkdownToAdf('!adf:paragraph\n---\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'one paragraph')
+	refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\nx\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'code blocks', 'another block')
+	refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'code blocks', 'holds none')
+	refused(losslessMarkdownToAdf('Part !adf:date[now]{timestamp=1}.\n'), 'unsupported-node-shape', 'date', 'no content')
 })
 
 test('leaves the text that opens no directive the text it is', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('At 10:30 :smile: today.\n')), [paragraph('At 10:30 :smile: today.')])
-  assert.deepEqual(content(losslessMarkdownToAdf(':mention[@A] and !adfx and a!\n')), [paragraph(':mention[@A] and !adfx and a!')])
-  assert.deepEqual(content(losslessMarkdownToAdf('\\!adf:mention[@A]\n')), [paragraph('!adf:mention[@A]')])
-  assert.deepEqual(content(losslessMarkdownToAdf('`!adf:mention[@A]`\n')), [{ content: [codeSpan('!adf:mention[@A]')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('At 10:30 :smile: today.\n')), [paragraph('At 10:30 :smile: today.')])
+	assert.deepEqual(content(losslessMarkdownToAdf(':mention[@A] and !adfx and a!\n')), [paragraph(':mention[@A] and !adfx and a!')])
+	assert.deepEqual(content(losslessMarkdownToAdf('\\!adf:mention[@A]\n')), [paragraph('!adf:mention[@A]')])
+	assert.deepEqual(content(losslessMarkdownToAdf('`!adf:mention[@A]`\n')), [{ content: [codeSpan('!adf:mention[@A]')], type: 'paragraph' }])
 })
 
 test('names the unescaped prefix that completes no directive', () => {
-  const named = ['no directive', '\\!adf:']
-  refused(losslessMarkdownToAdf('Part !adf: here.\n'), 'malformed-directive', ...named)
-  refused(losslessMarkdownToAdf('Part !adf:Mention[@A] here.\n'), 'malformed-directive', ...named)
-  refused(losslessMarkdownToAdf('Part !adf:mention @A here.\n'), 'malformed-directive', ...named)
-  refused(losslessMarkdownToAdf('!adf:underline[a !adf: b]\n'), 'malformed-directive', ...named)
+	const named = ['no directive', '\\!adf:']
+	refused(losslessMarkdownToAdf('Part !adf: here.\n'), 'malformed-directive', ...named)
+	refused(losslessMarkdownToAdf('Part !adf:Mention[@A] here.\n'), 'malformed-directive', ...named)
+	refused(losslessMarkdownToAdf('Part !adf:mention @A here.\n'), 'malformed-directive', ...named)
+	refused(losslessMarkdownToAdf('!adf:underline[a !adf: b]\n'), 'malformed-directive', ...named)
 })
 
 test('names the inline directive left unclosed at the end of its line', () => {
-  refused(losslessMarkdownToAdf('Part !adf:mention[@A\n'), 'malformed-directive', '[content] is unclosed', '\\!adf:')
-  assert.equal(code(losslessMarkdownToAdf('Part !adf:mention[@A]{id=\n')), 'malformed-directive')
-  assert.deepEqual(path(losslessMarkdownToAdf('> Part !adf:mention[@A\n')), ['content', 0, 'content', 0])
+	refused(losslessMarkdownToAdf('Part !adf:mention[@A\n'), 'malformed-directive', '[content] is unclosed', '\\!adf:')
+	assert.equal(code(losslessMarkdownToAdf('Part !adf:mention[@A]{id=\n')), 'malformed-directive')
+	assert.deepEqual(path(losslessMarkdownToAdf('> Part !adf:mention[@A\n')), ['content', 0, 'content', 0])
 })
 
 test('claims a block-level pipe with no table to parse it', () => {
-  assert.equal(code(losslessMarkdownToAdf('| Part | Qty |\n')), 'malformed-pipe-table')
-  assert.deepEqual(content(losslessMarkdownToAdf('\\| Part\n')), [paragraph('| Part')])
+	assert.equal(code(losslessMarkdownToAdf('| Part | Qty |\n')), 'malformed-pipe-table')
+	assert.deepEqual(content(losslessMarkdownToAdf('\\| Part\n')), [paragraph('| Part')])
 })
 
 test('refuses the raw HTML no element mapping carries', () => {
-  assert.equal(code(losslessMarkdownToAdf('<!-- note -->\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<div>\nx\n</div>\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<?php ?>\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<!DOCTYPE html>\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<![CDATA[x]]>\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<pre>\nx\n</pre>\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<span foo="bar">\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<div\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<?php\n')), 'unmappable-html')
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n<div>\n')), ['content', 1])
-  assert.equal(code(losslessMarkdownToAdf('<div>\nx\n\n!adf:/panel\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<div>\n- x\n</div>\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<!-- note -->\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<div>\nx\n</div>\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<?php ?>\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<!DOCTYPE html>\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<![CDATA[x]]>\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<pre>\nx\n</pre>\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<span foo="bar">\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<div\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<?php\n')), 'unmappable-html')
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n<div>\n')), ['content', 1])
+	assert.equal(code(losslessMarkdownToAdf('<div>\nx\n\n!adf:/panel\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<div>\n- x\n</div>\n')), 'unmappable-html')
 })
 
 test('swallows an HTML block ahead of the claim a line inside it would make', () => {
-  assert.equal(code(losslessMarkdownToAdf('<!--\n!adf:/panel\n-->\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('<div>\n| x |\n</div>\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<!--\n!adf:/panel\n-->\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('<div>\n| x |\n</div>\n')), 'unmappable-html')
 })
 
 test('names the line and the offset in the input a refusal sits at, the innermost block winning', () => {
-  assert.deepEqual(position(losslessMarkdownToAdf('<div>\n')), { line: 1, offset: 0 })
-  assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n<div>\n')), { line: 3, offset: 7 })
-  assert.deepEqual(position(losslessMarkdownToAdf('> Part.\n>\n> a <span>b</span>\n')), { line: 3, offset: 10 })
-  assert.deepEqual(position(losslessMarkdownToAdf('- Part.\n- a <span>b</span>\n')), { line: 2, offset: 8 })
-  assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n!adf:panel info\nMore.\n')), { line: 3, offset: 7 })
-  assert.deepEqual(position(losslessMarkdownToAdf('x\n\na <span>b</span>\n===\n')), { line: 3, offset: 3 })
-  assert.deepEqual(position(losslessMarkdownToAdf('x\n\n```adf:x\n{\n```\n')), { line: 3, offset: 3 })
-  assert.deepEqual(position(losslessMarkdownToAdf('x\n\n| a |\n')), { line: 3, offset: 3 })
-  assert.deepEqual(position(losslessMarkdownToAdf('a\nb <span>c</span>\n')), { line: 1, offset: 0 })
-  assert.deepEqual(position(losslessMarkdownToAdf('Part.\r\n\r\n<div>\r\n')), { line: 3, offset: 9 })
-  assert.deepEqual(position(losslessMarkdownToAdf('a\u0000b\n\n<div>\n')), { line: 3, offset: 5 })
-  assert.deepEqual(position(losslessMarkdownToAdf('!adf:caption\na <span>b</span>\n!adf:/caption\n')), { line: 2, offset: 13 })
-  assert.deepEqual(position(losslessMarkdownToAdf('x\n\n!adf:caption\n- a\n!adf:/caption\n')), { line: 3, offset: 3 })
+	assert.deepEqual(position(losslessMarkdownToAdf('<div>\n')), { line: 1, offset: 0 })
+	assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n<div>\n')), { line: 3, offset: 7 })
+	assert.deepEqual(position(losslessMarkdownToAdf('> Part.\n>\n> a <span>b</span>\n')), { line: 3, offset: 10 })
+	assert.deepEqual(position(losslessMarkdownToAdf('- Part.\n- a <span>b</span>\n')), { line: 2, offset: 8 })
+	assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n!adf:panel info\nMore.\n')), { line: 3, offset: 7 })
+	assert.deepEqual(position(losslessMarkdownToAdf('x\n\na <span>b</span>\n===\n')), { line: 3, offset: 3 })
+	assert.deepEqual(position(losslessMarkdownToAdf('x\n\n```adf:x\n{\n```\n')), { line: 3, offset: 3 })
+	assert.deepEqual(position(losslessMarkdownToAdf('x\n\n| a |\n')), { line: 3, offset: 3 })
+	assert.deepEqual(position(losslessMarkdownToAdf('a\nb <span>c</span>\n')), { line: 1, offset: 0 })
+	assert.deepEqual(position(losslessMarkdownToAdf('Part.\r\n\r\n<div>\r\n')), { line: 3, offset: 9 })
+	assert.deepEqual(position(losslessMarkdownToAdf('a\u0000b\n\n<div>\n')), { line: 3, offset: 5 })
+	assert.deepEqual(position(losslessMarkdownToAdf('!adf:caption\na <span>b</span>\n!adf:/caption\n')), { line: 2, offset: 13 })
+	assert.deepEqual(position(losslessMarkdownToAdf('x\n\n!adf:caption\n- a\n!adf:/caption\n')), { line: 3, offset: 3 })
 })
 
 test('names the line the text a paragraph keeps starts on, never a definition line it gave up', () => {
-  assert.deepEqual(position(losslessMarkdownToAdf('[a]: /url\n<span>b</span>\n')), { line: 2, offset: 10 })
-  assert.deepEqual(position(losslessMarkdownToAdf('[a]: /a\n[b]: /b\n[c]: /c\n[d]: /d\n<span>x</span>\n')), { line: 5, offset: 32 })
-  assert.deepEqual(position(losslessMarkdownToAdf('[a]:\n<the url>\n"Title"\n<span>b</span>\n')), { line: 4, offset: 23 })
-  assert.deepEqual(position(losslessMarkdownToAdf('> [a]: /url\n> <span>b</span>\n')), { line: 2, offset: 12 })
-  assert.deepEqual(position(losslessMarkdownToAdf('!adf:caption\n[a]: /url\n<span>b</span>\n!adf:/caption\n')), { line: 3, offset: 23 })
+	assert.deepEqual(position(losslessMarkdownToAdf('[a]: /url\n<span>b</span>\n')), { line: 2, offset: 10 })
+	assert.deepEqual(position(losslessMarkdownToAdf('[a]: /a\n[b]: /b\n[c]: /c\n[d]: /d\n<span>x</span>\n')), { line: 5, offset: 32 })
+	assert.deepEqual(position(losslessMarkdownToAdf('[a]:\n<the url>\n"Title"\n<span>b</span>\n')), { line: 4, offset: 23 })
+	assert.deepEqual(position(losslessMarkdownToAdf('> [a]: /url\n> <span>b</span>\n')), { line: 2, offset: 12 })
+	assert.deepEqual(position(losslessMarkdownToAdf('!adf:caption\n[a]: /url\n<span>b</span>\n!adf:/caption\n')), { line: 3, offset: 23 })
 })
 
 test('gives up the link reference definitions a paragraph opens with', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n')), [])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n[b]: /other\nPart.\n')), [paragraph('Part.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n"Title"\n\nPart.\n')), [paragraph('Part.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url and more\n')), [paragraph('[a]: /url and more')])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n[a]: /url\n')), [paragraph('Part. [a]: /url')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n===\n')), [paragraph('===')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n')), [])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n[b]: /other\nPart.\n')), [paragraph('Part.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n"Title"\n\nPart.\n')), [paragraph('Part.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url and more\n')), [paragraph('[a]: /url and more')])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n[a]: /url\n')), [paragraph('Part. [a]: /url')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]: /url\n===\n')), [paragraph('===')])
 })
 
 test('keeps the whitespace CommonMark strips no more of than a space or a tab', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('\u00a0Part.\u00a0\n')), [paragraph('\u00a0Part.\u00a0')])
-  assert.deepEqual(content(losslessMarkdownToAdf('  \u3000Part.\t\n')), [paragraph('\u3000Part.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('\u00a0Part.\u00a0\n')), [paragraph('\u00a0Part.\u00a0')])
+	assert.deepEqual(content(losslessMarkdownToAdf('  \u3000Part.\t\n')), [paragraph('\u3000Part.')])
 })
 
 test('normalizes the line endings and the null character CommonMark replaces', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('One\r\ntwo.\r\n')), [paragraph('One two.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('One\rtwo.\r')), [paragraph('One two.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('```\r\nx\r\n```\r\n')), [{ content: [text('x')], type: 'codeBlock' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('a\u0000b\n')), [paragraph('a\ufffdb')])
+	assert.deepEqual(content(losslessMarkdownToAdf('One\r\ntwo.\r\n')), [paragraph('One two.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('One\rtwo.\r')), [paragraph('One two.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('```\r\nx\r\n```\r\n')), [{ content: [text('x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('a\u0000b\n')), [paragraph('a\ufffdb')])
 })
 
 test('reads a blockquote and the blocks its prefix carries', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('> Ship it.\n>\n> Then tell them.\n')), [quote(paragraph('Ship it.'), paragraph('Then tell them.'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('>Ship it.\n')), [quote(paragraph('Ship it.'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('   > > Deep.\n')), [quote(quote(paragraph('Deep.')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('>\n')), [quote()])
-  assert.deepEqual(content(losslessMarkdownToAdf('> One.\n\n> Two.\n')), [quote(paragraph('One.')), quote(paragraph('Two.'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n> Ship it.\n')), [paragraph('Part.'), quote(paragraph('Ship it.'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('    > Code.\n')), [{ content: [text('> Code.')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('> Ship it.\n>\n> Then tell them.\n')), [quote(paragraph('Ship it.'), paragraph('Then tell them.'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('>Ship it.\n')), [quote(paragraph('Ship it.'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('   > > Deep.\n')), [quote(quote(paragraph('Deep.')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('>\n')), [quote()])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One.\n\n> Two.\n')), [quote(paragraph('One.')), quote(paragraph('Two.'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n> Ship it.\n')), [paragraph('Part.'), quote(paragraph('Ship it.'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('    > Code.\n')), [{ content: [text('> Code.')], type: 'codeBlock' }])
 })
 
 test('reads a bullet list, the marker width setting the continuation', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('- Bolt M8\n- Nut M8\n')), [bulletList(item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- Washer M8\n  - Fibre\n')), [bulletList(item(paragraph('Washer M8'), bulletList(item(paragraph('Fibre')))))])
-  assert.deepEqual(content(losslessMarkdownToAdf('-\n')), [bulletList(item())])
-  assert.deepEqual(content(losslessMarkdownToAdf('- One\n\n  Two.\n')), [bulletList(item(paragraph('One'), paragraph('Two.')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('-     Code.\n')), [bulletList(item({ content: [text('Code.')], type: 'codeBlock' }))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n-\n\n- c\n')), [bulletList(item(paragraph('a')), item(), item(paragraph('c')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n1. b\n')), [bulletList(item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('- Bolt M8\n- Nut M8\n')), [bulletList(item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- Washer M8\n  - Fibre\n')), [bulletList(item(paragraph('Washer M8'), bulletList(item(paragraph('Fibre')))))])
+	assert.deepEqual(content(losslessMarkdownToAdf('-\n')), [bulletList(item())])
+	assert.deepEqual(content(losslessMarkdownToAdf('- One\n\n  Two.\n')), [bulletList(item(paragraph('One'), paragraph('Two.')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('-     Code.\n')), [bulletList(item({ content: [text('Code.')], type: 'codeBlock' }))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- a\n-\n\n- c\n')), [bulletList(item(paragraph('a')), item(), item(paragraph('c')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- a\n1. b\n')), [bulletList(item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
 })
 
 for (const read of readers) {
-  test(`ends a list at a link reference definition in ${read.name}`, () => {
-    assert.deepEqual(content(read('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
-    assert.deepEqual(content(read('- a\n\n[r]: /u\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
-    assert.deepEqual(content(read('-\n\n[r]: /u\n\n- b\n')), [bulletList(item()), bulletList(item(paragraph('b')))])
-    assert.deepEqual(content(read('- a\n\n  [r]: /u\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
-  })
+	test(`ends a list at a link reference definition in ${read.name}`, () => {
+		assert.deepEqual(content(read('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
+		assert.deepEqual(content(read('- a\n\n[r]: /u\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
+		assert.deepEqual(content(read('-\n\n[r]: /u\n\n- b\n')), [bulletList(item()), bulletList(item(paragraph('b')))])
+		assert.deepEqual(content(read('- a\n\n  [r]: /u\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
+	})
 }
 
 test('reads an ordered list, its first marker the order attribute', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('9. Bolt M8\n10. Nut M8\n')), [orderedList(9, item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('1) Loosen the clamp\n')), [orderedList(1, item(paragraph('Loosen the clamp')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('0. Zero\n')), [orderedList(0, item(paragraph('Zero')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('9. Bolt M8\n10. Nut M8\n')), [orderedList(9, item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('1) Loosen the clamp\n')), [orderedList(1, item(paragraph('Loosen the clamp')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('0. Zero\n')), [orderedList(0, item(paragraph('Zero')))])
 })
 
 test('measures a tab from the column the containers cut it to', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('>\t\tfoo\n')), [quote({ content: [text('  foo')], type: 'codeBlock' })])
-  assert.deepEqual(content(losslessMarkdownToAdf('-\t\tfoo\n')), [bulletList(item({ content: [text('  foo')], type: 'codeBlock' }))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- foo\n\n\t\tbar\n')), [bulletList(item(paragraph('foo'), { content: [text('  bar')], type: 'codeBlock' }))])
-  assert.deepEqual(content(losslessMarkdownToAdf('-\t foo\n')), [bulletList(item(paragraph('foo')))])
-  assert.deepEqual(content(losslessMarkdownToAdf(' - foo\n   - bar\n\t - baz\n')), [
-    bulletList(item(paragraph('foo'), bulletList(item(paragraph('bar'), bulletList(item(paragraph('baz'))))))),
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf('>\t\tfoo\n')), [quote({ content: [text('  foo')], type: 'codeBlock' })])
+	assert.deepEqual(content(losslessMarkdownToAdf('-\t\tfoo\n')), [bulletList(item({ content: [text('  foo')], type: 'codeBlock' }))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- foo\n\n\t\tbar\n')), [bulletList(item(paragraph('foo'), { content: [text('  bar')], type: 'codeBlock' }))])
+	assert.deepEqual(content(losslessMarkdownToAdf('-\t foo\n')), [bulletList(item(paragraph('foo')))])
+	assert.deepEqual(content(losslessMarkdownToAdf(' - foo\n   - bar\n\t - baz\n')), [
+		bulletList(item(paragraph('foo'), bulletList(item(paragraph('bar'), bulletList(item(paragraph('baz'))))))),
+	])
 })
 
 test('drops the tightness ADF does not record', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n  2. b\n')), [bulletList(item(paragraph('a'), orderedList(2, item(paragraph('b')))))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n  -\n')), [bulletList(item(paragraph('a'), bulletList(item())))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n  2. b\n')), [bulletList(item(paragraph('a'), orderedList(2, item(paragraph('b')))))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n  -\n')), [bulletList(item(paragraph('a'), bulletList(item())))])
 })
 
 test('opens a list beside a paragraph only where the marker interrupts it', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n- a\n')), [paragraph('Part.'), bulletList(item(paragraph('a')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n1. a\n')), [paragraph('Part.'), orderedList(1, item(paragraph('a')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n2. a\n')), [paragraph('Part. 2. a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n*\n')), [paragraph('Part. *')])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n- - -\n')), [paragraph('Part.'), { type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part.\n-\n')), [{ attrs: { level: 2 }, content: [text('Part.')], type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n  2. b\n')), [bulletList(item(paragraph('a 2. b')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n  1. b\n')), [bulletList(item(paragraph('a'), orderedList(1, item(paragraph('b')))))])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n- a\n')), [paragraph('Part.'), bulletList(item(paragraph('a')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n1. a\n')), [paragraph('Part.'), orderedList(1, item(paragraph('a')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n2. a\n')), [paragraph('Part. 2. a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n*\n')), [paragraph('Part. *')])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n- - -\n')), [paragraph('Part.'), { type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part.\n-\n')), [{ attrs: { level: 2 }, content: [text('Part.')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('- a\n  2. b\n')), [bulletList(item(paragraph('a 2. b')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- a\n  1. b\n')), [bulletList(item(paragraph('a'), orderedList(1, item(paragraph('b')))))])
 })
 
 test('folds a lazy continuation into the paragraph the container holds', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('> One\ntwo.\n')), [quote(paragraph('One two.'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- One\ntwo.\n')), [bulletList(item(paragraph('One two.')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('> One\n    two.\n')), [quote(paragraph('One two.'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('> One\n\ntwo.\n')), [quote(paragraph('One')), paragraph('two.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('> One\n# Two\n')), [quote(paragraph('One')), { attrs: { level: 1 }, content: [text('Two')], type: 'heading' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('> One\n---\n')), [quote(paragraph('One')), { type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('> One\n```\n')), [quote(paragraph('One')), { type: 'codeBlock' }])
-  assert.equal(code(losslessMarkdownToAdf('> One\n<div>\n')), 'unmappable-html')
-  assert.deepEqual(path(losslessMarkdownToAdf('> One\n<div>\n')), ['content', 1])
-  assert.deepEqual(path(losslessMarkdownToAdf('> One\n<span>\n')), ['content', 0, 'content', 0])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One\ntwo.\n')), [quote(paragraph('One two.'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('- One\ntwo.\n')), [bulletList(item(paragraph('One two.')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One\n    two.\n')), [quote(paragraph('One two.'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One\n\ntwo.\n')), [quote(paragraph('One')), paragraph('two.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One\n# Two\n')), [quote(paragraph('One')), { attrs: { level: 1 }, content: [text('Two')], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One\n---\n')), [quote(paragraph('One')), { type: 'rule' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One\n```\n')), [quote(paragraph('One')), { type: 'codeBlock' }])
+	assert.equal(code(losslessMarkdownToAdf('> One\n<div>\n')), 'unmappable-html')
+	assert.deepEqual(path(losslessMarkdownToAdf('> One\n<div>\n')), ['content', 1])
+	assert.deepEqual(path(losslessMarkdownToAdf('> One\n<span>\n')), ['content', 0, 'content', 0])
 })
 
 test('ends a lazy continuation at a claimed line', () => {
-  assert.equal(code(losslessMarkdownToAdf('> Part.\n!adf:/panel\n')), 'malformed-directive')
-  assert.deepEqual(path(losslessMarkdownToAdf('> Part.\n!adf:/panel\n')), ['content', 1])
-  assert.equal(code(losslessMarkdownToAdf('- Part.\n| x |\n')), 'malformed-pipe-table')
+	assert.equal(code(losslessMarkdownToAdf('> Part.\n!adf:/panel\n')), 'malformed-directive')
+	assert.deepEqual(path(losslessMarkdownToAdf('> Part.\n!adf:/panel\n')), ['content', 1])
+	assert.equal(code(losslessMarkdownToAdf('- Part.\n| x |\n')), 'malformed-pipe-table')
 })
 
 test('names the block the claim inside a container opens', () => {
-  assert.deepEqual(path(losslessMarkdownToAdf('> Part.\n>\n> !adf:expand\n')), ['content', 0, 'content', 1])
-  assert.deepEqual(path(losslessMarkdownToAdf('- Part.\n- | x |\n')), ['content', 0, 'content', 1, 'content', 0])
+	assert.deepEqual(path(losslessMarkdownToAdf('> Part.\n>\n> !adf:expand\n')), ['content', 0, 'content', 1])
+	assert.deepEqual(path(losslessMarkdownToAdf('- Part.\n- | x |\n')), ['content', 0, 'content', 1, 'content', 0])
 })
 
 test('refuses input nested deeper than the parser carries', () => {
-  assert.equal(code(losslessMarkdownToAdf('> '.repeat(501))), 'unsupported-nesting-depth')
-  assert.ok(losslessMarkdownToAdf('> '.repeat(500)).ok)
-  const marks = (levels: number): string => `${'!adf:underline['.repeat(levels)}a${']'.repeat(levels)}\n`
-  assert.equal(code(losslessMarkdownToAdf(marks(largestNesting + 1))), 'unsupported-nesting-depth')
-  assert.deepEqual(content(losslessMarkdownToAdf(marks(largestNesting))), [{ content: [marked('a', underline)], type: 'paragraph' }])
-  const nest = (names: readonly string[], body: string): string => [...names.map((name) => `!adf:${name}\n`), body, ...names.map((name) => `!adf:/${name}\n`).reverse()].join('')
-  const repeated = (name: string, levels: number = largestNesting): string[] => Array.from({ length: levels }, () => name)
-  assert.ok(losslessMarkdownToAdf(nest(repeated('panel'), '!adf:paragraph {localId=a-1}\nPart.\n!adf:/paragraph\n')).ok)
-  assert.deepEqual(position(losslessMarkdownToAdf(nest(['expand', ...repeated('panel'), 'expand'], 'Part.\n'))), { line: 501, offset: 5501 })
-  assert.equal(code(losslessMarkdownToAdf(nest(['panel', ...repeated('expand'), 'panel'], 'Part.\n'))), 'unsupported-nesting-depth')
-  const listed = (levels: number): string => `${'!adf:bulletList\n!adf:listItem\n---\n'.repeat(levels)}${'!adf:/listItem\n!adf:/bulletList\n'.repeat(levels)}`
-  const directiveLists = largestNesting / 2
-  assert.ok(losslessMarkdownToAdf(listed(directiveLists)).ok)
-  assert.equal(code(losslessMarkdownToAdf(listed(directiveLists + 1))), 'unsupported-nesting-depth')
-  const asking = (body: string): string => `!adf:bulletList\n!adf:listItem\n${body}!adf:/listItem\n!adf:/bulletList\n`
-  // Two items past the largest list marker leave the list no readable spelling, so the emitter
-  // walks it as list plus item where the parser counted one level.
-  const overflowing = (body: string): string => {
-    const marker = '999999999. '
-    return `${marker}${body.replace(/^(?!$)/gm, ' '.repeat(marker.length)).slice(marker.length)}\n${marker}z\n`
-  }
-  const overflowed = (panels: number): string => asking(overflowing(overflowing(asking(`---\n${nest(repeated('panel', panels), 'Part.\n')}`))))
-  assert.equal(code(losslessMarkdownToAdf(overflowed(493))), 'unsupported-node-shape')
-  assert.equal(code(losslessMarkdownToAdf(overflowed(494))), 'unsupported-nesting-depth')
-  const rebasing = (panels: number): string => asking(`---\n${overflowing(asking(`---\n${nest(repeated('panel', panels), 'Part.\n')}`))}`)
-  assert.ok(losslessMarkdownToAdf(rebasing(494)).ok)
-  assert.equal(code(losslessMarkdownToAdf(rebasing(495))), 'unsupported-nesting-depth')
-  assert.ok(losslessMarkdownToAdf(`${'- '.repeat(largestNesting)}a\n`).ok)
-  assert.equal(code(losslessMarkdownToAdf(`${'- '.repeat(largestNesting + 1)}a\n`)), 'unsupported-nesting-depth')
+	assert.equal(code(losslessMarkdownToAdf('> '.repeat(501))), 'unsupported-nesting-depth')
+	assert.ok(losslessMarkdownToAdf('> '.repeat(500)).ok)
+	const marks = (levels: number): string => `${'!adf:underline['.repeat(levels)}a${']'.repeat(levels)}\n`
+	assert.equal(code(losslessMarkdownToAdf(marks(largestNesting + 1))), 'unsupported-nesting-depth')
+	assert.deepEqual(content(losslessMarkdownToAdf(marks(largestNesting))), [{ content: [marked('a', underline)], type: 'paragraph' }])
+	const nest = (names: readonly string[], body: string): string => [...names.map((name) => `!adf:${name}\n`), body, ...names.map((name) => `!adf:/${name}\n`).reverse()].join('')
+	const repeated = (name: string, levels: number = largestNesting): string[] => Array.from({ length: levels }, () => name)
+	assert.ok(losslessMarkdownToAdf(nest(repeated('panel'), '!adf:paragraph {localId=a-1}\nPart.\n!adf:/paragraph\n')).ok)
+	assert.deepEqual(position(losslessMarkdownToAdf(nest(['expand', ...repeated('panel'), 'expand'], 'Part.\n'))), { line: 501, offset: 5501 })
+	assert.equal(code(losslessMarkdownToAdf(nest(['panel', ...repeated('expand'), 'panel'], 'Part.\n'))), 'unsupported-nesting-depth')
+	const listed = (levels: number): string => `${'!adf:bulletList\n!adf:listItem\n---\n'.repeat(levels)}${'!adf:/listItem\n!adf:/bulletList\n'.repeat(levels)}`
+	const directiveLists = largestNesting / 2
+	assert.ok(losslessMarkdownToAdf(listed(directiveLists)).ok)
+	assert.equal(code(losslessMarkdownToAdf(listed(directiveLists + 1))), 'unsupported-nesting-depth')
+	const asking = (body: string): string => `!adf:bulletList\n!adf:listItem\n${body}!adf:/listItem\n!adf:/bulletList\n`
+	// Two items past the largest list marker leave the list no readable spelling, so the emitter
+	// walks it as list plus item where the parser counted one level.
+	const overflowing = (body: string): string => {
+		const marker = '999999999. '
+		return `${marker}${body.replace(/^(?!$)/gm, ' '.repeat(marker.length)).slice(marker.length)}\n${marker}z\n`
+	}
+	const overflowed = (panels: number): string => asking(overflowing(overflowing(asking(`---\n${nest(repeated('panel', panels), 'Part.\n')}`))))
+	assert.equal(code(losslessMarkdownToAdf(overflowed(493))), 'unsupported-node-shape')
+	assert.equal(code(losslessMarkdownToAdf(overflowed(494))), 'unsupported-nesting-depth')
+	const rebasing = (panels: number): string => asking(`---\n${overflowing(asking(`---\n${nest(repeated('panel', panels), 'Part.\n')}`))}`)
+	assert.ok(losslessMarkdownToAdf(rebasing(494)).ok)
+	assert.equal(code(losslessMarkdownToAdf(rebasing(495))), 'unsupported-nesting-depth')
+	assert.ok(losslessMarkdownToAdf(`${'- '.repeat(largestNesting)}a\n`).ok)
+	assert.equal(code(losslessMarkdownToAdf(`${'- '.repeat(largestNesting + 1)}a\n`)), 'unsupported-nesting-depth')
 })
 
 test('decodes the backslash escapes CommonMark spells, and keeps the rest literal', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('\\*not emphasis\\*\n')), [paragraph('*not emphasis*')])
-  assert.deepEqual(content(losslessMarkdownToAdf('\\\\\n')), [paragraph('\\')])
-  assert.deepEqual(content(losslessMarkdownToAdf('\\a \\\u00a0\n')), [paragraph('\\a \\\u00a0')])
-  assert.deepEqual(content(losslessMarkdownToAdf('Part\\\n')), [paragraph('Part\\')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a\\`b`\n')), [paragraph('a`b`')])
+	assert.deepEqual(content(losslessMarkdownToAdf('\\*not emphasis\\*\n')), [paragraph('*not emphasis*')])
+	assert.deepEqual(content(losslessMarkdownToAdf('\\\\\n')), [paragraph('\\')])
+	assert.deepEqual(content(losslessMarkdownToAdf('\\a \\\u00a0\n')), [paragraph('\\a \\\u00a0')])
+	assert.deepEqual(content(losslessMarkdownToAdf('Part\\\n')), [paragraph('Part\\')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a\\`b`\n')), [paragraph('a`b`')])
 })
 
 test('decodes the entity references HTML5 names, and the numeric ones', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('&amp; &copy; &ngE; &zwnj; &AElig;\n')), [paragraph('& \u00a9 \u2267\u0338 \u200c \u00c6')])
-  assert.deepEqual(content(losslessMarkdownToAdf('&#35; &#X22; &#x2665;\n')), [paragraph('# " \u2665')])
-  assert.deepEqual(content(losslessMarkdownToAdf('&#0; &#xd800; &#9999999;\n')), [paragraph('\ufffd \ufffd \ufffd')])
-  assert.deepEqual(content(losslessMarkdownToAdf('&zzz; &amp &#; &\n')), [paragraph('&zzz; &amp &#; &')])
-  assert.deepEqual(content(losslessMarkdownToAdf('&#96;not code&#96;\n')), [paragraph('`not code`')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a&Tab;b&NewLine;c&nbsp;d&Aopf;e&verbar;f\n')), [paragraph('a\tb\nc d\u{1d538}e|f')])
+	assert.deepEqual(content(losslessMarkdownToAdf('&amp; &copy; &ngE; &zwnj; &AElig;\n')), [paragraph('& \u00a9 \u2267\u0338 \u200c \u00c6')])
+	assert.deepEqual(content(losslessMarkdownToAdf('&#35; &#X22; &#x2665;\n')), [paragraph('# " \u2665')])
+	assert.deepEqual(content(losslessMarkdownToAdf('&#0; &#xd800; &#9999999;\n')), [paragraph('\ufffd \ufffd \ufffd')])
+	assert.deepEqual(content(losslessMarkdownToAdf('&zzz; &amp &#; &\n')), [paragraph('&zzz; &amp &#; &')])
+	assert.deepEqual(content(losslessMarkdownToAdf('&#96;not code&#96;\n')), [paragraph('`not code`')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a&Tab;b&NewLine;c&nbsp;d&Aopf;e&verbar;f\n')), [paragraph('a\tb\nc d\u{1d538}e|f')])
 })
 
 test('reads a code span, its content literal', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('Run `npm test` now.\n')), [
-    { content: [text('Run '), codeSpan('npm test'), text(' now.')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('``a`b``\n')), [{ content: [codeSpan('a`b')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('` `` `\n')), [{ content: [codeSpan('``')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('`  `\n')), [{ content: [codeSpan('  ')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('`a\nb`\n')), [{ content: [codeSpan('a b')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('`foo``bar`\n')), [{ content: [codeSpan('foo``bar')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('`!adf:/panel` `~~x~~` `\\*` `&amp;`\n')), [
-    {
-      content: [codeSpan('!adf:/panel'), text(' '), codeSpan('~~x~~'), text(' '), codeSpan('\\*'), text(' '), codeSpan('&amp;')],
-      type: 'paragraph',
-    },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('`foo\n')), [paragraph('`foo')])
-  assert.deepEqual(content(losslessMarkdownToAdf('``foo`\n')), [paragraph('``foo`')])
+	assert.deepEqual(content(losslessMarkdownToAdf('Run `npm test` now.\n')), [
+		{ content: [text('Run '), codeSpan('npm test'), text(' now.')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('``a`b``\n')), [{ content: [codeSpan('a`b')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('` `` `\n')), [{ content: [codeSpan('``')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('`  `\n')), [{ content: [codeSpan('  ')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('`a\nb`\n')), [{ content: [codeSpan('a b')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('`foo``bar`\n')), [{ content: [codeSpan('foo``bar')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('`!adf:/panel` `~~x~~` `\\*` `&amp;`\n')), [
+		{
+			content: [codeSpan('!adf:/panel'), text(' '), codeSpan('~~x~~'), text(' '), codeSpan('\\*'), text(' '), codeSpan('&amp;')],
+			type: 'paragraph',
+		},
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('`foo\n')), [paragraph('`foo')])
+	assert.deepEqual(content(losslessMarkdownToAdf('``foo`\n')), [paragraph('``foo`')])
 })
 
 test('reads a hard break from a trailing backslash and from two trailing spaces alike', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('One\\\ntwo.\n')), [{ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('One  \ntwo.\n')), [{ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('One\\  \ntwo.\n')), [{ content: [text('One\\'), hardBreak(), text('two.')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('One \\\ntwo.\n')), [{ content: [text('One '), hardBreak(), text('two.')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('One \ntwo.\n')), [paragraph('One two.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('One \t\ntwo.\n')), [paragraph('One two.')])
-  assert.deepEqual(content(losslessMarkdownToAdf('One  \n')), [paragraph('One')])
-  assert.deepEqual(content(losslessMarkdownToAdf('> One\\\n> two.\n')), [quote({ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' })])
+	assert.deepEqual(content(losslessMarkdownToAdf('One\\\ntwo.\n')), [{ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('One  \ntwo.\n')), [{ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('One\\  \ntwo.\n')), [{ content: [text('One\\'), hardBreak(), text('two.')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('One \\\ntwo.\n')), [{ content: [text('One '), hardBreak(), text('two.')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('One \ntwo.\n')), [paragraph('One two.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('One \t\ntwo.\n')), [paragraph('One two.')])
+	assert.deepEqual(content(losslessMarkdownToAdf('One  \n')), [paragraph('One')])
+	assert.deepEqual(content(losslessMarkdownToAdf('> One\\\n> two.\n')), [quote({ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' })])
 })
 
 function broken(...marks: AdfMark[]): AdfNode[] {
-  return [{ content: [marked('a', ...marks), hardBreak(), marked('b', ...marks)], type: 'paragraph' }]
+	return [{ content: [marked('a', ...marks), hardBreak(), marked('b', ...marks)], type: 'paragraph' }]
 }
 
 for (const read of readers) {
-  test(`reads a hard break inside a mark's spelling without that mark in ${read.name}`, () => {
-    assert.deepEqual(content(read('*a  \nb*\n')), broken(em))
-    assert.deepEqual(content(read('**a\\\nb**\n')), broken(strong))
-    assert.deepEqual(content(read('[a\\\nb](/u)\n')), broken(link('/u')))
-  })
+	test(`reads a hard break inside a mark's spelling without that mark in ${read.name}`, () => {
+		assert.deepEqual(content(read('*a  \nb*\n')), broken(em))
+		assert.deepEqual(content(read('**a\\\nb**\n')), broken(strong))
+		assert.deepEqual(content(read('[a\\\nb](/u)\n')), broken(link('/u')))
+	})
 
-  test(`reads a link of hard breaks as its destination in ${read.name}`, () => {
-    assert.deepEqual(content(read('[\\\n](/u)\n')), [{ content: [marked('/u', link('/u')), hardBreak()], type: 'paragraph' }])
-    assert.deepEqual(content(read('a[\\\n]()b\n')), [{ content: [text('a'), hardBreak(), text('b')], type: 'paragraph' }])
-  })
+	test(`reads a link of hard breaks as its destination in ${read.name}`, () => {
+		assert.deepEqual(content(read('[\\\n](/u)\n')), [{ content: [marked('/u', link('/u')), hardBreak()], type: 'paragraph' }])
+		assert.deepEqual(content(read('a[\\\n]()b\n')), [{ content: [text('a'), hardBreak(), text('b')], type: 'paragraph' }])
+	})
 }
 
 test('reads a hard break inside the spelling of a mark only the lossless flavour spells without that mark', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('~~a\\\nb~~\n')), broken(strike))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:hardBreak{}b]\n')), broken(underline))
-  const localId = '01a0431d-201e-7400-a175-9c04d3628f95'
-  assert.deepEqual(content(losslessMarkdownToAdf(`_!adf:hardBreak{localId=${localId}}_\n`)), [{ content: [{ attrs: { localId }, type: 'hardBreak' }], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('~~a\\\nb~~\n')), broken(strike))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:hardBreak{}b]\n')), broken(underline))
+	const localId = '01a0431d-201e-7400-a175-9c04d3628f95'
+	assert.deepEqual(content(losslessMarkdownToAdf(`_!adf:hardBreak{localId=${localId}}_\n`)), [{ content: [{ attrs: { localId }, type: 'hardBreak' }], type: 'paragraph' }])
 })
 
 test('gives an inline node no mark Atlassian\'s schema withholds from it', () => {
-  const mention: AdfNode = { attrs: { id: 'b1c2', text: '@A' }, type: 'mention' }
-  const media: AdfNode = { attrs: { id: 'm1' }, type: 'mediaInline' }
-  const border: AdfMark = { attrs: { color: '#091e42', size: 2 }, type: 'border' }
-  const read = (markdown: string): AdfNode[] | string => content(losslessMarkdownToAdf(markdown))
-  assert.deepEqual(read('**!adf:mention[@A]{id=b1c2}**\n'), [{ content: [mention], type: 'paragraph' }])
-  assert.deepEqual(read('*a !adf:date{timestamp=1}*\n'), [{ content: [marked('a ', em), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' }])
-  assert.deepEqual(read('!adf:underline[a !adf:emoji[🎉]{shortName=":tada:"}]\n'), [
-    { content: [marked('a ', underline), { attrs: { shortName: ':tada:', text: '🎉' }, type: 'emoji' }], type: 'paragraph' },
-  ])
-  const unlinkable = ['take no link', 'write the link around text beside them']
-  refused(losslessMarkdownToAdf('[!adf:status[Done]{color=green}](/u)\n'), 'unsupported-node-shape', ...unlinkable)
-  refused(losslessMarkdownToAdf('[!adf:status[Done]{color=green}\\\n](/u)\n'), 'unsupported-node-shape', ...unlinkable)
-  assert.deepEqual(read('[a !adf:inlineCard{url="https://x/"}](/u)\n'), [{ content: [marked('a ', link('/u')), { attrs: { url: 'https://x/' }, type: 'inlineCard' }], type: 'paragraph' }])
-  assert.deepEqual(read('_!adf:mediaInline{id=m1}_\n'), [{ content: [media], type: 'paragraph' }])
-  assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])
-  assert.deepEqual(read('[!adf:mediaInline{id=m1}](/u)\n'), [{ content: [{ ...media, marks: [link('/u')] }], type: 'paragraph' }])
-  assert.deepEqual(read('!adf:border[a !adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ text: 'a ', type: 'text' }, { ...media, marks: [border] }], type: 'paragraph' }])
-  const unborderable = ['take no border mark', 'only a mediaInline takes border', 'delete the border spelling']
-  const wrapsOnly = (name: string): string[] => [`take no ${name} mark`, `write the ${name} mark around text beside them`]
-  refused(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=2}\n'), 'unsupported-node-shape', ...unborderable)
-  refused(losslessMarkdownToAdf('_!adf:border[a]{color="#091e42" size=2}_\n'), 'unsupported-node-shape', ...unborderable)
-  refused(losslessMarkdownToAdf('!adf:underline[!adf:border[a]{color="#091e42" size=2}]\n'), 'unsupported-node-shape', ...unborderable)
-  refused(losslessMarkdownToAdf('!adf:border[a!adf:textBreak{}b]{color="#091e42" size=2}\n'), 'unsupported-node-shape', ...unborderable)
-  refused(losslessMarkdownToAdf('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
-  refused(losslessMarkdownToAdf('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
-  refused(losslessMarkdownToAdf('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...wrapsOnly('link'))
+	const mention: AdfNode = { attrs: { id: 'b1c2', text: '@A' }, type: 'mention' }
+	const media: AdfNode = { attrs: { id: 'm1' }, type: 'mediaInline' }
+	const border: AdfMark = { attrs: { color: '#091e42', size: 2 }, type: 'border' }
+	const read = (markdown: string): AdfNode[] | string => content(losslessMarkdownToAdf(markdown))
+	assert.deepEqual(read('**!adf:mention[@A]{id=b1c2}**\n'), [{ content: [mention], type: 'paragraph' }])
+	assert.deepEqual(read('*a !adf:date{timestamp=1}*\n'), [{ content: [marked('a ', em), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' }])
+	assert.deepEqual(read('!adf:underline[a !adf:emoji[🎉]{shortName=":tada:"}]\n'), [
+		{ content: [marked('a ', underline), { attrs: { shortName: ':tada:', text: '🎉' }, type: 'emoji' }], type: 'paragraph' },
+	])
+	const unlinkable = ['take no link', 'write the link around text beside them']
+	refused(losslessMarkdownToAdf('[!adf:status[Done]{color=green}](/u)\n'), 'unsupported-node-shape', ...unlinkable)
+	refused(losslessMarkdownToAdf('[!adf:status[Done]{color=green}\\\n](/u)\n'), 'unsupported-node-shape', ...unlinkable)
+	assert.deepEqual(read('[a !adf:inlineCard{url="https://x/"}](/u)\n'), [{ content: [marked('a ', link('/u')), { attrs: { url: 'https://x/' }, type: 'inlineCard' }], type: 'paragraph' }])
+	assert.deepEqual(read('_!adf:mediaInline{id=m1}_\n'), [{ content: [media], type: 'paragraph' }])
+	assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])
+	assert.deepEqual(read('[!adf:mediaInline{id=m1}](/u)\n'), [{ content: [{ ...media, marks: [link('/u')] }], type: 'paragraph' }])
+	assert.deepEqual(read('!adf:border[a !adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ text: 'a ', type: 'text' }, { ...media, marks: [border] }], type: 'paragraph' }])
+	const unborderable = ['take no border mark', 'only a mediaInline takes border', 'delete the border spelling']
+	const wrapsOnly = (name: string): string[] => [`take no ${name} mark`, `write the ${name} mark around text beside them`]
+	refused(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=2}\n'), 'unsupported-node-shape', ...unborderable)
+	refused(losslessMarkdownToAdf('_!adf:border[a]{color="#091e42" size=2}_\n'), 'unsupported-node-shape', ...unborderable)
+	refused(losslessMarkdownToAdf('!adf:underline[!adf:border[a]{color="#091e42" size=2}]\n'), 'unsupported-node-shape', ...unborderable)
+	refused(losslessMarkdownToAdf('!adf:border[a!adf:textBreak{}b]{color="#091e42" size=2}\n'), 'unsupported-node-shape', ...unborderable)
+	refused(losslessMarkdownToAdf('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
+	refused(losslessMarkdownToAdf('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
+	refused(losslessMarkdownToAdf('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...wrapsOnly('link'))
 })
 
 for (const read of readers) {
-  test(`gives code text no mark but code, link and annotation in ${read.name}`, () => {
-    const code: AdfMark = { type: 'code' }
-    assert.deepEqual(content(read('**`npm ci`**\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
-    assert.deepEqual(content(read('*run `npm ci`*\n')), [{ content: [marked('run ', em), marked('npm ci', code)], type: 'paragraph' }])
-    assert.deepEqual(content(read('**[`npm ci`](/u)**\n')), [{ content: [marked('npm ci', link('/u'), code)], type: 'paragraph' }])
-  })
+	test(`gives code text no mark but code, link and annotation in ${read.name}`, () => {
+		const code: AdfMark = { type: 'code' }
+		assert.deepEqual(content(read('**`npm ci`**\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
+		assert.deepEqual(content(read('*run `npm ci`*\n')), [{ content: [marked('run ', em), marked('npm ci', code)], type: 'paragraph' }])
+		assert.deepEqual(content(read('**[`npm ci`](/u)**\n')), [{ content: [marked('npm ci', link('/u'), code)], type: 'paragraph' }])
+	})
 }
 
 test('gives code text no mark but code where one flavour alone spells the mark', () => {
-  const code: AdfMark = { type: 'code' }
-  assert.deepEqual(content(portableMarkdownToAdf('~~`npm ci`~~\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[run `npm ci`]\n')), [{ content: [marked('run ', underline), marked('npm ci', code)], type: 'paragraph' }])
-  refused(losslessMarkdownToAdf('!adf:underline[`npm ci`]\n'), 'unsupported-node-shape', 'underline', 'write the underline mark around text beside them')
+	const code: AdfMark = { type: 'code' }
+	assert.deepEqual(content(portableMarkdownToAdf('~~`npm ci`~~\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[run `npm ci`]\n')), [{ content: [marked('run ', underline), marked('npm ci', code)], type: 'paragraph' }])
+	refused(losslessMarkdownToAdf('!adf:underline[`npm ci`]\n'), 'unsupported-node-shape', 'underline', 'write the underline mark around text beside them')
 })
 
 test('decodes the fenced info string the block walk leaves raw', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('```java&#8203;script\nx\n```\n')), [
-    { attrs: { language: 'java\u200bscript' }, content: [text('x')], type: 'codeBlock' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('```\\#c\nx\n```\n')), [{ attrs: { language: '#c' }, content: [text('x')], type: 'codeBlock' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('```java&#8203;script\nx\n```\n')), [
+		{ attrs: { language: 'java\u200bscript' }, content: [text('x')], type: 'codeBlock' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('```\\#c\nx\n```\n')), [{ attrs: { language: '#c' }, content: [text('x')], type: 'codeBlock' }])
 })
 
 test('refuses the raw inline HTML no element mapping carries, naming it', () => {
-  refused(losslessMarkdownToAdf('Part <span> here.\n'), 'unmappable-html', '<span>')
-  refused(losslessMarkdownToAdf('Part </div> here.\n'), 'unmappable-html', '<div>')
-  refused(losslessMarkdownToAdf('Part <!-- note --> here.\n'), 'unmappable-html', 'an HTML comment')
-  refused(losslessMarkdownToAdf('Part <?php ?> here.\n'), 'unmappable-html', 'an HTML processing instruction')
-  refused(losslessMarkdownToAdf('Part <!DOCTYPE html> here.\n'), 'unmappable-html', 'an HTML declaration')
-  refused(losslessMarkdownToAdf('Part <![CDATA[x]]> here.\n'), 'unmappable-html', 'a CDATA section')
-  refused(losslessMarkdownToAdf('Part <!--> here.\n'), 'unmappable-html', 'an HTML comment')
-  refused(losslessMarkdownToAdf('Part <!---> here.\n'), 'unmappable-html', 'an HTML comment')
-  assert.equal(code(losslessMarkdownToAdf('A <a href="/x" disabled\nid=y> b\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('Part.\n<span>\n')), 'unmappable-html')
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\nA <b>b</b>.\n')), ['content', 1])
+	refused(losslessMarkdownToAdf('Part <span> here.\n'), 'unmappable-html', '<span>')
+	refused(losslessMarkdownToAdf('Part </div> here.\n'), 'unmappable-html', '<div>')
+	refused(losslessMarkdownToAdf('Part <!-- note --> here.\n'), 'unmappable-html', 'an HTML comment')
+	refused(losslessMarkdownToAdf('Part <?php ?> here.\n'), 'unmappable-html', 'an HTML processing instruction')
+	refused(losslessMarkdownToAdf('Part <!DOCTYPE html> here.\n'), 'unmappable-html', 'an HTML declaration')
+	refused(losslessMarkdownToAdf('Part <![CDATA[x]]> here.\n'), 'unmappable-html', 'a CDATA section')
+	refused(losslessMarkdownToAdf('Part <!--> here.\n'), 'unmappable-html', 'an HTML comment')
+	refused(losslessMarkdownToAdf('Part <!---> here.\n'), 'unmappable-html', 'an HTML comment')
+	assert.equal(code(losslessMarkdownToAdf('A <a href="/x" disabled\nid=y> b\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('Part.\n<span>\n')), 'unmappable-html')
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\nA <b>b</b>.\n')), ['content', 1])
 })
 
 test('leaves the angle bracket that opens no HTML construct to the text it sits in', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('3 < 4 and 5 <b 6\n')), [paragraph('3 < 4 and 5 <b 6')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a <b"c> d\n')), [paragraph('a <b"c> d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a <!-- b\n')), [paragraph('a <!-- b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a </b c> d\n')), [paragraph('a </b c> d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('`<span>`\n')), [{ content: [codeSpan('<span>')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('\\<span>\n')), [paragraph('<span>')])
+	assert.deepEqual(content(losslessMarkdownToAdf('3 < 4 and 5 <b 6\n')), [paragraph('3 < 4 and 5 <b 6')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a <b"c> d\n')), [paragraph('a <b"c> d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a <!-- b\n')), [paragraph('a <!-- b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a </b c> d\n')), [paragraph('a </b c> d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('`<span>`\n')), [{ content: [codeSpan('<span>')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('\\<span>\n')), [paragraph('<span>')])
 })
 
 test('reads the emphasis CommonMark matches, the marks nesting outermost first', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('*a*\n')), [{ content: [marked('a', em)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('_a_\n')), [{ content: [marked('a', em)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('**a**\n')), [{ content: [marked('a', strong)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('__a__\n')), [{ content: [marked('a', strong)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('***a***\n')), [{ content: [marked('a', em, strong)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('*a **b** c*\n')), [
-    { content: [marked('a ', em), marked('b', em, strong), marked(' c', em)], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('a*b*c\n')), [{ content: [text('a'), marked('b', em), text('c')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('# *a*\n')), [{ attrs: { level: 1 }, content: [marked('a', em)], type: 'heading' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('*a*\n')), [{ content: [marked('a', em)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('_a_\n')), [{ content: [marked('a', em)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('**a**\n')), [{ content: [marked('a', strong)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('__a__\n')), [{ content: [marked('a', strong)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('***a***\n')), [{ content: [marked('a', em, strong)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('*a **b** c*\n')), [
+		{ content: [marked('a ', em), marked('b', em, strong), marked(' c', em)], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('a*b*c\n')), [{ content: [text('a'), marked('b', em), text('c')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('# *a*\n')), [{ attrs: { level: 1 }, content: [marked('a', em)], type: 'heading' }])
 })
 
 test('leaves a delimiter run CommonMark pairs with nothing in the text it sits in', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('a_b_c\n')), [paragraph('a_b_c')])
-  assert.deepEqual(content(losslessMarkdownToAdf('*a\n')), [paragraph('*a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a * b\n')), [paragraph('a * b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('**a*\n')), [{ content: [text('*'), marked('a', em)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('*a**\n')), [{ content: [marked('a', em), text('*')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('\\*a\\*\n')), [paragraph('*a*')])
-  assert.deepEqual(content(losslessMarkdownToAdf('`*a*`\n')), [{ content: [codeSpan('*a*')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('a_b_c\n')), [paragraph('a_b_c')])
+	assert.deepEqual(content(losslessMarkdownToAdf('*a\n')), [paragraph('*a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a * b\n')), [paragraph('a * b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('**a*\n')), [{ content: [text('*'), marked('a', em)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('*a**\n')), [{ content: [marked('a', em), text('*')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('\\*a\\*\n')), [paragraph('*a*')])
+	assert.deepEqual(content(losslessMarkdownToAdf('`*a*`\n')), [{ content: [codeSpan('*a*')], type: 'paragraph' }])
 })
 
 test('reads two tildes as strike, a single tilde and a longer run literal', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('~~a~~\n')), [{ content: [marked('a', strike)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('a ~b~ c\n')), [paragraph('a ~b~ c')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a ~~~b~~~ c\n')), [paragraph('a ~~~b~~~ c')])
-  assert.deepEqual(content(losslessMarkdownToAdf('~~a **b**~~\n')), [{ content: [marked('a ', strike), marked('b', strike, strong)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('~~a~~\n')), [{ content: [marked('a', strike)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('a ~b~ c\n')), [paragraph('a ~b~ c')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a ~~~b~~~ c\n')), [paragraph('a ~~~b~~~ c')])
+	assert.deepEqual(content(losslessMarkdownToAdf('~~a **b**~~\n')), [{ content: [marked('a ', strike), marked('b', strike, strong)], type: 'paragraph' }])
 })
 
 test('reads an inline link, its destination and title', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/url)\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/url "t")\n')), [{ content: [marked('a', link('/url', 't'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](\n/url\n"t" )\n')), [{ content: [marked('a', link('/url', 't'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](<u v>)\n')), [{ content: [marked('a', link('u v'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]()\n')), [{ content: [marked('a', link(''))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/x(y))\n')), [{ content: [marked('a', link('/x(y)'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[**a**](/u)\n')), [{ content: [marked('a', link('/u'), strong)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a `b`](/u)\n')), [
-    { content: [marked('a ', link('/u')), { marks: [link('/u'), { type: 'code' }], text: 'b', type: 'text' }], type: 'paragraph' },
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/url)\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/url "t")\n')), [{ content: [marked('a', link('/url', 't'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](\n/url\n"t" )\n')), [{ content: [marked('a', link('/url', 't'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](<u v>)\n')), [{ content: [marked('a', link('u v'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]()\n')), [{ content: [marked('a', link(''))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/x(y))\n')), [{ content: [marked('a', link('/x(y)'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[**a**](/u)\n')), [{ content: [marked('a', link('/u'), strong)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a `b`](/u)\n')), [
+		{ content: [marked('a ', link('/u')), { marks: [link('/u'), { type: 'code' }], text: 'b', type: 'text' }], type: 'paragraph' },
+	])
 })
 
 test('decodes the escapes and the references a destination and a title hold', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/x\\)y)\n')), [{ content: [marked('a', link('/x)y'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/u "He said \\"hi\\"")\n')), [{ content: [marked('a', link('/u', 'He said "hi"'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/x&amp;y)\n')), [{ content: [marked('a', link('/x&y'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a][r]\n\n[r]: /x\\)y "He said \\"hi\\""\n')), [
-    { content: [marked('a', link('/x)y', 'He said "hi"'))], type: 'paragraph' },
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/x\\)y)\n')), [{ content: [marked('a', link('/x)y'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/u "He said \\"hi\\"")\n')), [{ content: [marked('a', link('/u', 'He said "hi"'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/x&amp;y)\n')), [{ content: [marked('a', link('/x&y'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a][r]\n\n[r]: /x\\)y "He said \\"hi\\""\n')), [
+		{ content: [marked('a', link('/x)y', 'He said "hi"'))], type: 'paragraph' },
+	])
 })
 
 test('leaves the bracket pair no link parses as the text it holds', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('[a\n')), [paragraph('[a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a] (/u)\n')), [paragraph('[a] (/u)')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a ] b\n')), [paragraph('a ] b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/u\n')), [paragraph('[a](/u')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](/u x)\n')), [paragraph('[a](/u x)')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](b(c "t")\n')), [paragraph('[a](b(c "t")')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a][r]\n\n[r]: b(c "t"\n')), [paragraph('[a][r]'), paragraph('[r]: b(c "t"')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a](<u\n')), [paragraph('[a](<u')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a\n')), [paragraph('![a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a [b](/u) c](/v)\n')), [
-    { content: [text('[a '), marked('b', link('/u')), text(' c](/v)')], type: 'paragraph' },
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a\n')), [paragraph('[a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a] (/u)\n')), [paragraph('[a] (/u)')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a ] b\n')), [paragraph('a ] b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/u\n')), [paragraph('[a](/u')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](/u x)\n')), [paragraph('[a](/u x)')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](b(c "t")\n')), [paragraph('[a](b(c "t")')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a][r]\n\n[r]: b(c "t"\n')), [paragraph('[a][r]'), paragraph('[r]: b(c "t"')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a](<u\n')), [paragraph('[a](<u')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a\n')), [paragraph('![a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a [b](/u) c](/v)\n')), [
+		{ content: [text('[a '), marked('b', link('/u')), text(' c](/v)')], type: 'paragraph' },
+	])
 })
 
 test('leaves a link literal whose target runs past the directive content holding it', () => {
-  assert.deepEqual(firstContent('!adf:underline[[a](b]c)\n'), [marked('[a](b', underline), text('c)')])
-  assert.deepEqual(firstContent('!adf:underline[[a](<b]>)\n'), [marked('[a](<b', underline), text('>)')])
-  assert.deepEqual(firstContent('!adf:underline[[a](b "t]")\n'), [marked('[a](b "t', underline), text('")')])
-  assert.deepEqual(firstContent('!adf:underline[[a](b]) [c](d)\n'), [marked('[a](b', underline), text(') '), marked('c', link('d'))])
+	assert.deepEqual(firstContent('!adf:underline[[a](b]c)\n'), [marked('[a](b', underline), text('c)')])
+	assert.deepEqual(firstContent('!adf:underline[[a](<b]>)\n'), [marked('[a](<b', underline), text('>)')])
+	assert.deepEqual(firstContent('!adf:underline[[a](b "t]")\n'), [marked('[a](b "t', underline), text('")')])
+	assert.deepEqual(firstContent('!adf:underline[[a](b]) [c](d)\n'), [marked('[a](b', underline), text(') '), marked('c', link('d'))])
 })
 
 test('leaves the brackets of a link whose text already holds one the text they are', () => {
-  const held: AdfMark = { attrs: { collection: 'c', href: '/u' }, type: 'link' }
-  assert.deepEqual(content(losslessMarkdownToAdf('[<http://x/>](/v)\n')), [
-    { content: [text('['), marked('http://x/', link('http://x/')), text('](/v)')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a<http://x/>b](/v)\n')), [
-    { content: [text('[a'), marked('http://x/', link('http://x/')), text('b](/v)')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('[!adf:link[a]{collection=c href="/u"}](/v)\n')), [
-    { content: [text('['), marked('a', held), text('](/v)')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('[<http://x/>][r]\n\n[r]: /v\n')), [
-    { content: [text('['), marked('http://x/', link('http://x/')), text(']'), marked('r', link('/v'))], type: 'paragraph' },
-  ])
+	const held: AdfMark = { attrs: { collection: 'c', href: '/u' }, type: 'link' }
+	assert.deepEqual(content(losslessMarkdownToAdf('[<http://x/>](/v)\n')), [
+		{ content: [text('['), marked('http://x/', link('http://x/')), text('](/v)')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a<http://x/>b](/v)\n')), [
+		{ content: [text('[a'), marked('http://x/', link('http://x/')), text('b](/v)')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('[!adf:link[a]{collection=c href="/u"}](/v)\n')), [
+		{ content: [text('['), marked('a', held), text('](/v)')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('[<http://x/>][r]\n\n[r]: /v\n')), [
+		{ content: [text('['), marked('http://x/', link('http://x/')), text(']'), marked('r', link('/v'))], type: 'paragraph' },
+	])
 })
 
 test('keeps the carry and the image the brackets a nested link leaves literal hold', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf(`[<http://x/>${carried}](/w)\n`)), [
-    { content: [text('['), marked('http://x/', link('http://x/')), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf(`[[<http://x/>](/c)${carried}](/w)\n`)), [
-    { content: [text('[['), marked('http://x/', link('http://x/')), text('](/c)'), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
-  ])
-  // The failing bracket sits inside the image, not beside it: beside it the link-marked piece survives, and the deactivation stops being what the assertion pins.
-  assert.deepEqual(content(losslessMarkdownToAdf('![![a [b](/c) ](/i)[![[<http://x/>](/c)](/y)](/w)](/v)\n')), [image('/v', 'a b [[http://x/](/c)](/w)')])
+	assert.deepEqual(content(losslessMarkdownToAdf(`[<http://x/>${carried}](/w)\n`)), [
+		{ content: [text('['), marked('http://x/', link('http://x/')), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf(`[[<http://x/>](/c)${carried}](/w)\n`)), [
+		{ content: [text('[['), marked('http://x/', link('http://x/')), text('](/c)'), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
+	])
+	// The failing bracket sits inside the image, not beside it: beside it the link-marked piece survives, and the deactivation stops being what the assertion pins.
+	assert.deepEqual(content(losslessMarkdownToAdf('![![a [b](/c) ](/i)[![[<http://x/>](/c)](/y)](/w)](/v)\n')), [image('/v', 'a b [[http://x/](/c)](/w)')])
 })
 
 test('reads the reference links a definition resolves, and leaves the rest literal', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('[a][r]\n\n[r]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a][]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[Foo\nBar][]\n\n[foo   bar]: /url\n')), [{ content: [marked('Foo Bar', link('/url'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a][z]\n\n[a]: /url\n')), [paragraph('[a][z]')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[a]\n')), [paragraph('[a]')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[][]\n')), [paragraph('[][]')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a][r]\n\n[r]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a][]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[Foo\nBar][]\n\n[foo   bar]: /url\n')), [{ content: [marked('Foo Bar', link('/url'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a][z]\n\n[a]: /url\n')), [paragraph('[a][z]')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[a]\n')), [paragraph('[a]')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[][]\n')), [paragraph('[][]')])
 })
 
 for (const read of readers) {
-  test(`matches a reference to its definition under Unicode case folding in ${read.name}`, () => {
-    assert.deepEqual(content(read('[ẞ]\n\n[SS]: /url\n')), [{ content: [marked('ẞ', link('/url'))], type: 'paragraph' }])
-  })
+	test(`matches a reference to its definition under Unicode case folding in ${read.name}`, () => {
+		assert.deepEqual(content(read('[ẞ]\n\n[SS]: /url\n')), [{ content: [marked('ẞ', link('/url'))], type: 'paragraph' }])
+	})
 
-  test(`keeps a dotless i and a capital I two labels in ${read.name}`, () => {
-    assert.deepEqual(content(read('[ı]\n\n[I]: /url\n')), [paragraph('[ı]')])
-  })
+	test(`keeps a dotless i and a capital I two labels in ${read.name}`, () => {
+		assert.deepEqual(content(read('[ı]\n\n[I]: /url\n')), [paragraph('[ı]')])
+	})
 }
 
 for (const read of readers) {
-  test(`leaves a link label past 999 characters literal, an escape counting as two, in ${read.name}`, () => {
-    const longest = `foo${' '.repeat(993)}bar`
-    const tooLong = `foo${' '.repeat(994)}bar`
-    const escaped = '\\*'.repeat(499)
-    const escapedTooLong = '\\*'.repeat(500)
-    assert.deepEqual(content(read(`[a][${escaped}]\n\n[${escaped}]: /u\n`)), [{ content: [marked('a', link('/u'))], type: 'paragraph' }])
-    assert.deepEqual(content(read(`[a][${escapedTooLong}]\n\n[${escapedTooLong}]: /u\n`)), [paragraph(`[a][${'*'.repeat(500)}]`), paragraph(`[${'*'.repeat(500)}]: /u`)])
-    assert.deepEqual(content(read(`[${longest}]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
-    assert.deepEqual(content(read(`[${longest}][]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
-    assert.deepEqual(content(read(`[${tooLong}]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}]`)])
-    assert.deepEqual(content(read(`[${tooLong}][]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}][]`)])
-  })
+	test(`leaves a link label past 999 characters literal, an escape counting as two, in ${read.name}`, () => {
+		const longest = `foo${' '.repeat(993)}bar`
+		const tooLong = `foo${' '.repeat(994)}bar`
+		const escaped = '\\*'.repeat(499)
+		const escapedTooLong = '\\*'.repeat(500)
+		assert.deepEqual(content(read(`[a][${escaped}]\n\n[${escaped}]: /u\n`)), [{ content: [marked('a', link('/u'))], type: 'paragraph' }])
+		assert.deepEqual(content(read(`[a][${escapedTooLong}]\n\n[${escapedTooLong}]: /u\n`)), [paragraph(`[a][${'*'.repeat(500)}]`), paragraph(`[${'*'.repeat(500)}]: /u`)])
+		assert.deepEqual(content(read(`[${longest}]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
+		assert.deepEqual(content(read(`[${longest}][]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
+		assert.deepEqual(content(read(`[${tooLong}]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}]`)])
+		assert.deepEqual(content(read(`[${tooLong}][]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}][]`)])
+	})
 }
 
 test('reads an autolink, the email form as the mailto link it means', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('<https://example.com/>\n')), [
-    { content: [marked('https://example.com/', link('https://example.com/'))], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('a <a@b.example.com> c\n')), [
-    { content: [text('a '), marked('a@b.example.com', link('mailto:a@b.example.com')), text(' c')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('a <a@b-c.example.com> d\n')), [
-    { content: [text('a '), marked('a@b-c.example.com', link('mailto:a@b-c.example.com')), text(' d')], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('a <b@-c.example.com> d\n')), [paragraph('a <b@-c.example.com> d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a <b[c@example.com> d\n')), [paragraph('a <b[c@example.com> d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('<https://example.com/?a=\\*>\n')), [
-    { content: [marked('https://example.com/?a=\\*', link('https://example.com/?a=\\*'))], type: 'paragraph' },
-  ])
-  assert.equal(code(losslessMarkdownToAdf('<https://example.com/> <span>\n')), 'unmappable-html')
+	assert.deepEqual(content(losslessMarkdownToAdf('<https://example.com/>\n')), [
+		{ content: [marked('https://example.com/', link('https://example.com/'))], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('a <a@b.example.com> c\n')), [
+		{ content: [text('a '), marked('a@b.example.com', link('mailto:a@b.example.com')), text(' c')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('a <a@b-c.example.com> d\n')), [
+		{ content: [text('a '), marked('a@b-c.example.com', link('mailto:a@b-c.example.com')), text(' d')], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('a <b@-c.example.com> d\n')), [paragraph('a <b@-c.example.com> d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a <b[c@example.com> d\n')), [paragraph('a <b[c@example.com> d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('<https://example.com/?a=\\*>\n')), [
+		{ content: [marked('https://example.com/?a=\\*', link('https://example.com/?a=\\*'))], type: 'paragraph' },
+	])
+	assert.equal(code(losslessMarkdownToAdf('<https://example.com/> <span>\n')), 'unmappable-html')
 })
 
 test('reads a lone image as the media the flavour spells for it', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('![The moon](https://example.com/moon.png)\n')), [
-    image('https://example.com/moon.png', 'The moon'),
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('![](/u)\n')), [image('/u')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![*a*](/u)\n')), [image('/u', 'a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('- ![a](/u)\n')), [bulletList(item(image('/u', 'a')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('> ![a](/u)\n')), [quote(image('/u', 'a'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('![The moon](https://example.com/moon.png)\n')), [
+		image('https://example.com/moon.png', 'The moon'),
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('![](/u)\n')), [image('/u')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![*a*](/u)\n')), [image('/u', 'a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('- ![a](/u)\n')), [bulletList(item(image('/u', 'a')))])
+	assert.deepEqual(content(losslessMarkdownToAdf('> ![a](/u)\n')), [quote(image('/u', 'a'))])
 })
 
 test('flattens the description of a lone image to the plain text alt holds', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('![a [b](/u) c](/v)\n')), [image('/v', 'a b c')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a ![b](/c) d](/e)\n')), [image('/e', 'a b d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x [y ![a](/u)](/h)](/v)\n')), [image('/v', 'x y a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:link[y ![a](/u)]{href="a\\nb"}](/v)\n')), [image('/v', 'x y a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x *[y ![a](/u)](/h)*](/v)\n')), [image('/v', 'x y a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[[y ![a](/u)](/h)]](/v)\n')), [image('/v', 'x y a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[*[y ![a](/u)](/h)* z]](/v)\n')), [image('/v', 'x y a z')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[!adf:textColor[[y ![a](/u)](/h)]{color="#ae2e24"}]](/v)\n')), [image('/v', 'x y a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[!adf:link[y ![a](/u)]{href="a\\nb"}]](/v)\n')), [image('/v', 'x y a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:link[!adf:underline[y ![a](/u)]]{href="a\\nb"}](/v)\n')), [image('/v', 'x y a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a\nb](/u)\n')), [image('/u', 'a b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a  \nb](/u)\n')), [image('/u', 'a b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a `b`](/u)\n')), [image('/u', 'a b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a !adf:mention[@A]{id=b1c2} b](/u)\n')), [image('/u', 'a @A b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![!adf:mention[@A]{id=b1c2}](/u)\n')), [image('/u', '@A')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a [b](/u) c](/v)\n')), [image('/v', 'a b c')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a ![b](/c) d](/e)\n')), [image('/e', 'a b d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x [y ![a](/u)](/h)](/v)\n')), [image('/v', 'x y a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:link[y ![a](/u)]{href="a\\nb"}](/v)\n')), [image('/v', 'x y a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x *[y ![a](/u)](/h)*](/v)\n')), [image('/v', 'x y a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[[y ![a](/u)](/h)]](/v)\n')), [image('/v', 'x y a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[*[y ![a](/u)](/h)* z]](/v)\n')), [image('/v', 'x y a z')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[!adf:textColor[[y ![a](/u)](/h)]{color="#ae2e24"}]](/v)\n')), [image('/v', 'x y a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:underline[!adf:link[y ![a](/u)]{href="a\\nb"}]](/v)\n')), [image('/v', 'x y a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:link[!adf:underline[y ![a](/u)]]{href="a\\nb"}](/v)\n')), [image('/v', 'x y a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a\nb](/u)\n')), [image('/u', 'a b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a  \nb](/u)\n')), [image('/u', 'a b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a `b`](/u)\n')), [image('/u', 'a b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a !adf:mention[@A]{id=b1c2} b](/u)\n')), [image('/u', 'a @A b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![!adf:mention[@A]{id=b1c2}](/u)\n')), [image('/u', '@A')])
 })
 
 test('reads an empty link text as its destination, and an empty destination as nothing', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('[](/u)\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('a [](/u "t") b\n')), [{ content: [text('a '), marked('/u', link('/u', 't')), text(' b')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[][r]\n\n[r]: /u\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('a []() b\n')), [paragraph('a  b')])
-  assert.deepEqual(content(losslessMarkdownToAdf('[]()\n')), [{ type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[](/u)\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('a [](/u "t") b\n')), [{ content: [text('a '), marked('/u', link('/u', 't')), text(' b')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[][r]\n\n[r]: /u\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('a []() b\n')), [paragraph('a  b')])
+	assert.deepEqual(content(losslessMarkdownToAdf('[]()\n')), [{ type: 'paragraph' }])
 })
 
 test('reads a titled image alone in its paragraph as the image captioned with its title', () => {
-  const caption: AdfNode = { content: [text('The moon & stars')], type: 'caption' }
-  assert.deepEqual(content(losslessMarkdownToAdf('![a](/u "The moon &amp; stars")\n')), [{ ...image('/u', 'a'), content: [...(image('/u', 'a').content ?? []), caption] }])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a](/u "")\n')), [image('/u', 'a')])
+	const caption: AdfNode = { content: [text('The moon & stars')], type: 'caption' }
+	assert.deepEqual(content(losslessMarkdownToAdf('![a](/u "The moon &amp; stars")\n')), [{ ...image('/u', 'a'), content: [...(image('/u', 'a').content ?? []), caption] }])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a](/u "")\n')), [image('/u', 'a')])
 })
 
 test('reads an image alone in a link as the image the link marks, and the link a title gives as its own', () => {
-  const linked = (node: AdfNode, mark: AdfMark): AdfNode => ({ ...node, content: (node.content ?? []).map((media) => ({ ...media, marks: [mark] })) })
-  assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u)](/v "t")\n')), [linked(image('/u', 'a'), link('/v', 't'))])
-  const captioned = linked(image('/u', 'a'), link('/v'))
-  assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u "c")](/v)\n')), [{ ...captioned, content: [...(captioned.content ?? []), { content: [text('c')], type: 'caption' }] }])
-  assert.deepEqual(content(losslessMarkdownToAdf('[![a][i]][v]\n\n[i]: /u\n[v]: /v\n')), [linked(image('/u', 'a'), link('/v'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('[[![a](/u)](/v)](/w)\n')), [{ content: [text('['), marked('a', link('/v')), text(' ('), marked('image', link('/u')), text(')](/w)')], type: 'paragraph' }])
+	const linked = (node: AdfNode, mark: AdfMark): AdfNode => ({ ...node, content: (node.content ?? []).map((media) => ({ ...media, marks: [mark] })) })
+	assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u)](/v "t")\n')), [linked(image('/u', 'a'), link('/v', 't'))])
+	const captioned = linked(image('/u', 'a'), link('/v'))
+	assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u "c")](/v)\n')), [{ ...captioned, content: [...(captioned.content ?? []), { content: [text('c')], type: 'caption' }] }])
+	assert.deepEqual(content(losslessMarkdownToAdf('[![a][i]][v]\n\n[i]: /u\n[v]: /v\n')), [linked(image('/u', 'a'), link('/v'))])
+	assert.deepEqual(content(losslessMarkdownToAdf('[[![a](/u)](/v)](/w)\n')), [{ content: [text('['), marked('a', link('/v')), text(' ('), marked('image', link('/u')), text(')](/w)')], type: 'paragraph' }])
 })
 
 test('reads an image no paragraph holds alone as its alt text, linked to its destination', () => {
-  assert.deepEqual(firstContent('See ![a](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
-  assert.deepEqual(firstContent('See ![](/u).\n'), [text('See '), marked('/u', link('/u')), text('.')])
-  assert.deepEqual(firstContent('See ![]().\n'), [text('See .')])
-  assert.deepEqual(firstContent('*![a](/u)*\n'), [marked('a', { type: 'em' }, link('/u'))])
-  assert.deepEqual(firstContent('![a](/u)![b](/v)\n'), [marked('a', link('/u')), marked('b', link('/v'))])
-  assert.deepEqual(firstContent('# ![a](/u)\n'), [marked('a', link('/u'))])
-  assert.deepEqual(firstContent('!adf:paragraph {localId=p}\n![a](/u)\n!adf:/paragraph\n'), [marked('a', link('/u'))])
-  assert.deepEqual(firstContent('![a ![b](/c) d\n'), [text('![a '), marked('b', link('/c')), text(' d')])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a]\n')), [paragraph('![a]')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a ! b\n')), [paragraph('a ! b')])
+	assert.deepEqual(firstContent('See ![a](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
+	assert.deepEqual(firstContent('See ![](/u).\n'), [text('See '), marked('/u', link('/u')), text('.')])
+	assert.deepEqual(firstContent('See ![]().\n'), [text('See .')])
+	assert.deepEqual(firstContent('*![a](/u)*\n'), [marked('a', { type: 'em' }, link('/u'))])
+	assert.deepEqual(firstContent('![a](/u)![b](/v)\n'), [marked('a', link('/u')), marked('b', link('/v'))])
+	assert.deepEqual(firstContent('# ![a](/u)\n'), [marked('a', link('/u'))])
+	assert.deepEqual(firstContent('!adf:paragraph {localId=p}\n![a](/u)\n!adf:/paragraph\n'), [marked('a', link('/u'))])
+	assert.deepEqual(firstContent('![a ![b](/c) d\n'), [text('![a '), marked('b', link('/c')), text(' d')])
+	assert.deepEqual(content(losslessMarkdownToAdf('![a]\n')), [paragraph('![a]')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a ! b\n')), [paragraph('a ! b')])
 })
 
 test('reads an image inside a link not alone in its paragraph as plain alt text the link marks, then (image) linked to its destination', () => {
-  const image = (destination: string, title?: string): AdfNode[] => [text(' ('), marked('image', link(destination, title)), text(')')]
-  assert.deepEqual(firstContent('See [![a](/u "t")](/v).\n'), [text('See '), marked('a', link('/v')), text(' ('), marked('image', link('/u', 't')), text(').')])
-  assert.deepEqual(firstContent('See [![](/u)](/v).\n'), [text('See '), marked('/v', link('/v')), text(' ('), marked('image', link('/u')), text(').')])
-  assert.deepEqual(firstContent('[b ![a](/u "t") c](/v)\n'), [marked('b a c', link('/v')), ...image('/u', 't')])
-  assert.deepEqual(firstContent('[![a](/u) and ![b](/w)](/v)\n'), [marked('a and b', link('/v')), text(' ('), marked('image', link('/u')), text(') ('), marked('image', link('/w')), text(')')])
-  assert.deepEqual(firstContent('*[b ![a](/u)](/v)*\n'), [marked('b a', em, link('/v')), marked(' (', em), marked('image', em, link('/u')), marked(')', em)])
-  assert.deepEqual(firstContent('!adf:underline[[b ![a](/u)](/v)]\n'), [marked('b a', underline, link('/v')), marked(' (', underline), marked('image', underline, link('/u')), marked(')', underline)])
-  assert.deepEqual(firstContent('!adf:underline[[b ![a](/u)](/v) c]\n'), [marked('b a', underline, link('/v')), marked(' (', underline), marked('image', underline, link('/u')), marked(') c', underline)])
-  assert.deepEqual(firstContent('[x !adf:underline[[![](/u)]()]](/w)\n'), [text('[x '), marked(' (', underline), marked('image', underline, link('/u')), marked(')', underline), text('](/w)')])
-  const unspellable = { attrs: { href: 'a\nb' }, type: 'link' }
-  assert.deepEqual(firstContent('!adf:link[b ![a](/u)]{href="a\\nb"}\n'), [marked('b a', unspellable), ...image('/u')])
-  assert.deepEqual(firstContent('!adf:link[!adf:underline[![a](/u)]]{href="a\\nb"}\n'), [marked('a', unspellable, { type: 'underline' }), ...image('/u')])
-  assert.deepEqual(firstContent('!adf:link[![a](/u) !adf:underline[![b](/w)]]{href="a\\nb"}\n'), [
-    marked('a ', unspellable),
-    marked('b', unspellable, { type: 'underline' }),
-    text(' ('),
-    marked('image', link('/u')),
-    text(') ('),
-    marked('image', link('/w')),
-    text(')'),
-  ])
-  refused(losslessMarkdownToAdf('!adf:link[x [![a](/u)](/v)]{href="a\\nb"}\n'), 'unsupported-node-shape', 'no link wraps a link')
+	const image = (destination: string, title?: string): AdfNode[] => [text(' ('), marked('image', link(destination, title)), text(')')]
+	assert.deepEqual(firstContent('See [![a](/u "t")](/v).\n'), [text('See '), marked('a', link('/v')), text(' ('), marked('image', link('/u', 't')), text(').')])
+	assert.deepEqual(firstContent('See [![](/u)](/v).\n'), [text('See '), marked('/v', link('/v')), text(' ('), marked('image', link('/u')), text(').')])
+	assert.deepEqual(firstContent('[b ![a](/u "t") c](/v)\n'), [marked('b a c', link('/v')), ...image('/u', 't')])
+	assert.deepEqual(firstContent('[![a](/u) and ![b](/w)](/v)\n'), [marked('a and b', link('/v')), text(' ('), marked('image', link('/u')), text(') ('), marked('image', link('/w')), text(')')])
+	assert.deepEqual(firstContent('*[b ![a](/u)](/v)*\n'), [marked('b a', em, link('/v')), marked(' (', em), marked('image', em, link('/u')), marked(')', em)])
+	assert.deepEqual(firstContent('!adf:underline[[b ![a](/u)](/v)]\n'), [marked('b a', underline, link('/v')), marked(' (', underline), marked('image', underline, link('/u')), marked(')', underline)])
+	assert.deepEqual(firstContent('!adf:underline[[b ![a](/u)](/v) c]\n'), [marked('b a', underline, link('/v')), marked(' (', underline), marked('image', underline, link('/u')), marked(') c', underline)])
+	assert.deepEqual(firstContent('[x !adf:underline[[![](/u)]()]](/w)\n'), [text('[x '), marked(' (', underline), marked('image', underline, link('/u')), marked(')', underline), text('](/w)')])
+	const unspellable = { attrs: { href: 'a\nb' }, type: 'link' }
+	assert.deepEqual(firstContent('!adf:link[b ![a](/u)]{href="a\\nb"}\n'), [marked('b a', unspellable), ...image('/u')])
+	assert.deepEqual(firstContent('!adf:link[!adf:underline[![a](/u)]]{href="a\\nb"}\n'), [marked('a', unspellable, { type: 'underline' }), ...image('/u')])
+	assert.deepEqual(firstContent('!adf:link[![a](/u) !adf:underline[![b](/w)]]{href="a\\nb"}\n'), [
+		marked('a ', unspellable),
+		marked('b', unspellable, { type: 'underline' }),
+		text(' ('),
+		marked('image', link('/u')),
+		text(') ('),
+		marked('image', link('/w')),
+		text(')'),
+	])
+	refused(losslessMarkdownToAdf('!adf:link[x [![a](/u)](/v)]{href="a\\nb"}\n'), 'unsupported-node-shape', 'no link wraps a link')
 })
 
 test('writes no (image) after a link to the image itself, unless the image holds a title the link does not', () => {
-  assert.deepEqual(firstContent('See [![a](/u)](/u).\n'), [text('See '), marked('a', link('/u')), text('.')])
-  assert.deepEqual(firstContent('See [![a](/u "t")](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
-  assert.deepEqual(firstContent('See [![a](/u)](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
-  assert.deepEqual(firstContent('See [![a](/u "t")](/u).\n'), [text('See '), marked('a', link('/u')), text(' ('), marked('image', link('/u', 't')), text(').')])
-  assert.deepEqual(firstContent('[b ![a](/u) ![c](/w)](/u)\n'), [marked('b a c', link('/u')), text(' ('), marked('image', link('/w')), text(')')])
-  assert.deepEqual(firstContent('See [![a](/u "")](/u).\n'), [text('See '), marked('a', link('/u')), text('.')])
-  const titled = { attrs: { href: 'a\nb', title: 't' }, type: 'link' }
-  assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b)]{href="a\\nb"}\n'), [marked('b a', { attrs: { href: 'a\nb' }, type: 'link' })])
-  assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b "t")]{href="a\\nb" title=t}\n'), [marked('b a', titled)])
-  assert.deepEqual(firstContent('!adf:link[!adf:underline[![a]()]]{href="a\\nb"}\n'), [marked('a', { attrs: { href: 'a\nb' }, type: 'link' }, { type: 'underline' }), text(' ('), marked('image', link('')), text(')')])
-  assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b "u")]{href="a\\nb" title=t}\n'), [marked('b a', titled), text(' ('), marked('image', link('a\nb', 'u')), text(')')])
+	assert.deepEqual(firstContent('See [![a](/u)](/u).\n'), [text('See '), marked('a', link('/u')), text('.')])
+	assert.deepEqual(firstContent('See [![a](/u "t")](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
+	assert.deepEqual(firstContent('See [![a](/u)](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
+	assert.deepEqual(firstContent('See [![a](/u "t")](/u).\n'), [text('See '), marked('a', link('/u')), text(' ('), marked('image', link('/u', 't')), text(').')])
+	assert.deepEqual(firstContent('[b ![a](/u) ![c](/w)](/u)\n'), [marked('b a c', link('/u')), text(' ('), marked('image', link('/w')), text(')')])
+	assert.deepEqual(firstContent('See [![a](/u "")](/u).\n'), [text('See '), marked('a', link('/u')), text('.')])
+	const titled = { attrs: { href: 'a\nb', title: 't' }, type: 'link' }
+	assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b)]{href="a\\nb"}\n'), [marked('b a', { attrs: { href: 'a\nb' }, type: 'link' })])
+	assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b "t")]{href="a\\nb" title=t}\n'), [marked('b a', titled)])
+	assert.deepEqual(firstContent('!adf:link[!adf:underline[![a]()]]{href="a\\nb"}\n'), [marked('a', { attrs: { href: 'a\nb' }, type: 'link' }, { type: 'underline' }), text(' ('), marked('image', link('')), text(')')])
+	assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b "u")]{href="a\\nb" title=t}\n'), [marked('b a', titled), text(' ('), marked('image', link('a\nb', 'u')), text(')')])
 })
 
 test('carries the mark a spelling nested inside its own kind names once', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('*(*a*)*\n')), [{ content: [marked('(a)', em)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf(`${'*'.repeat(600)}a${'*'.repeat(600)}\n`)), [{ content: [marked('a', strong)], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('*a **b** c*\n')), [
-    { content: [marked('a ', em), marked('b', em, strong), marked(' c', em)], type: 'paragraph' },
-  ])
+	assert.deepEqual(content(losslessMarkdownToAdf('*(*a*)*\n')), [{ content: [marked('(a)', em)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf(`${'*'.repeat(600)}a${'*'.repeat(600)}\n`)), [{ content: [marked('a', strong)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('*a **b** c*\n')), [
+		{ content: [marked('a ', em), marked('b', em, strong), marked(' c', em)], type: 'paragraph' },
+	])
 })
 
 test('reads the content slot as the text attribute the node spells there', () => {
-  const status = (attrs: AdfAttributes): AdfNode[] => [{ content: [{ attrs, type: 'status' }], type: 'paragraph' }]
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[In review]{color=yellow}\n')), status({ color: 'yellow', text: 'In review' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:status{color=neutral}\n')), status({ color: 'neutral' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[]{color=neutral}\n')), status({ color: 'neutral', text: '' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[ In review ]{color=yellow}\n')), status({ color: 'yellow', text: ' In review ' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[In!adf:text{text=" "}review]{color=yellow}\n')), status({ color: 'yellow', text: 'In review' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[a\\]b]{color=yellow}\n')), status({ color: 'yellow', text: 'a]b' }))
+	const status = (attrs: AdfAttributes): AdfNode[] => [{ content: [{ attrs, type: 'status' }], type: 'paragraph' }]
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[In review]{color=yellow}\n')), status({ color: 'yellow', text: 'In review' }))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:status{color=neutral}\n')), status({ color: 'neutral' }))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[]{color=neutral}\n')), status({ color: 'neutral', text: '' }))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[ In review ]{color=yellow}\n')), status({ color: 'yellow', text: ' In review ' }))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[In!adf:text{text=" "}review]{color=yellow}\n')), status({ color: 'yellow', text: 'In review' }))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[a\\]b]{color=yellow}\n')), status({ color: 'yellow', text: 'a]b' }))
 })
 
 test('names the content slot no lone plain text node reads back from', () => {
-  const named = ['status content slot', 'one text node']
-  refused(losslessMarkdownToAdf('!adf:status[**A**]{color=yellow}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"attrs\\":{\\"localId\\":\\"a\\"},\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"content\\":[{\\"text\\":\\"B\\",\\"type\\":\\"text\\"}],\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n'), 'unsupported-node-shape', ...named)
-  assert.equal(code(losslessMarkdownToAdf('!adf:status[a`b`]{color=yellow}\n')), 'unsupported-node-shape')
-  assert.equal(code(losslessMarkdownToAdf('!adf:status[!adf:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
-  refused(losslessMarkdownToAdf('!adf:status[![a](/u)]{color=yellow}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:link[x !adf:status[![a](/u)]{color=yellow}]{href="a\\nb"}\n'), 'unsupported-node-shape', ...named)
-  assert.equal(code(losslessMarkdownToAdf('!adf:status[<div>]{color=yellow}\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('!adf:date[<div>]{timestamp=1}\n')), 'unmappable-html')
-  assert.equal(code(losslessMarkdownToAdf('!adf:widget[<div>]\n')), 'unmappable-html')
-  const spans = ['status content slot', 'line ending', 'replace it with a space', '!adf:carry']
-  refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\n"}]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
-  refused(losslessMarkdownToAdf('!adf:status[a&#10;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
-  refused(losslessMarkdownToAdf('!adf:status[a&#13;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
-  refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\u0000"}]{color=yellow}\n'), 'unsupported-node-shape', 'null character', '!adf:carry')
-  refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\ud800"}]{color=yellow}\n'), 'unsupported-node-shape', 'status content slot holds a lone surrogate', '!adf:carry')
-  refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
+	const named = ['status content slot', 'one text node']
+	refused(losslessMarkdownToAdf('!adf:status[**A**]{color=yellow}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"attrs\\":{\\"localId\\":\\"a\\"},\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"content\\":[{\\"text\\":\\"B\\",\\"type\\":\\"text\\"}],\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n'), 'unsupported-node-shape', ...named)
+	assert.equal(code(losslessMarkdownToAdf('!adf:status[a`b`]{color=yellow}\n')), 'unsupported-node-shape')
+	assert.equal(code(losslessMarkdownToAdf('!adf:status[!adf:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
+	refused(losslessMarkdownToAdf('!adf:status[![a](/u)]{color=yellow}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:link[x !adf:status[![a](/u)]{color=yellow}]{href="a\\nb"}\n'), 'unsupported-node-shape', ...named)
+	assert.equal(code(losslessMarkdownToAdf('!adf:status[<div>]{color=yellow}\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('!adf:date[<div>]{timestamp=1}\n')), 'unmappable-html')
+	assert.equal(code(losslessMarkdownToAdf('!adf:widget[<div>]\n')), 'unmappable-html')
+	const spans = ['status content slot', 'line ending', 'replace it with a space', '!adf:carry']
+	refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\n"}]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
+	refused(losslessMarkdownToAdf('!adf:status[a&#10;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
+	refused(losslessMarkdownToAdf('!adf:status[a&#13;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
+	refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\u0000"}]{color=yellow}\n'), 'unsupported-node-shape', 'null character', '!adf:carry')
+	refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\ud800"}]{color=yellow}\n'), 'unsupported-node-shape', 'status content slot holds a lone surrogate', '!adf:carry')
+	refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
 })
 
 test('reads the characters CommonMark rewrites from their spellings', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('a&#13;b!adf:text{text="\\u0000\\u0000"}\n')), [paragraph('a\rb\u0000\u0000')])
-  refused(losslessMarkdownToAdf('!adf:text{text="\\u0000a"}\n'), 'unsupported-node-shape', 'one run of null characters')
-  assert.deepEqual(content(losslessMarkdownToAdf('a!adf:text{text="\\udc00\\ud800"}b\n')), [paragraph('a\udc00\ud800b')])
-  refused(losslessMarkdownToAdf('!adf:text{text="\u{10000}"}\n'), 'unsupported-node-shape', 'one run of lone surrogates')
-  refused(losslessMarkdownToAdf('!adf:text{text="\\ud800\\u0000"}\n'), 'unsupported-node-shape', 'one run of lone surrogates')
+	assert.deepEqual(content(losslessMarkdownToAdf('a&#13;b!adf:text{text="\\u0000\\u0000"}\n')), [paragraph('a\rb\u0000\u0000')])
+	refused(losslessMarkdownToAdf('!adf:text{text="\\u0000a"}\n'), 'unsupported-node-shape', 'one run of null characters')
+	assert.deepEqual(content(losslessMarkdownToAdf('a!adf:text{text="\\udc00\\ud800"}b\n')), [paragraph('a\udc00\ud800b')])
+	refused(losslessMarkdownToAdf('!adf:text{text="\u{10000}"}\n'), 'unsupported-node-shape', 'one run of lone surrogates')
+	refused(losslessMarkdownToAdf('!adf:text{text="\\ud800\\u0000"}\n'), 'unsupported-node-shape', 'one run of lone surrogates')
 })
 
 test('reads the whitespace the reserved text directive carries', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:text{text="  "}a\n')), [paragraph('  a')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a!adf:text{text="\\n"}b\n')), [paragraph('a\nb')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a!adf:text{text="\\t"}\n')), [paragraph('a\t')])
-  assert.deepEqual(content(losslessMarkdownToAdf('_!adf:text{text=" "}a_\n')), [{ content: [marked(' a', em)], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:text{text="  "}a\n')), [paragraph('  a')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a!adf:text{text="\\n"}b\n')), [paragraph('a\nb')])
+	assert.deepEqual(content(losslessMarkdownToAdf('a!adf:text{text="\\t"}\n')), [paragraph('a\t')])
+	assert.deepEqual(content(losslessMarkdownToAdf('_!adf:text{text=" "}a_\n')), [{ content: [marked(' a', em)], type: 'paragraph' }])
 })
 
 test('names the text directive spelling no whitespace run reads back from', () => {
-  const named = ['one run of spaces and tabs, one run of newlines, one run of null characters, or one run of lone surrogates']
-  refused(losslessMarkdownToAdf('!adf:text{text=hi}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:text{text=" \\n"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:text{text=""}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:text{}\n'), 'unsupported-node-shape', 'one text attribute')
-  refused(losslessMarkdownToAdf('!adf:text{localId=a text=" "}\n'), 'unsupported-node-shape', 'one text attribute')
-  refused(losslessMarkdownToAdf('!adf:text[a]{text=" "}\n'), 'unsupported-node-shape', 'text takes no content')
-  refused(losslessMarkdownToAdf('!adf:text{text="\\u0020"}\n'), 'unsupported-node-shape', 'text=" "')
+	const named = ['one run of spaces and tabs, one run of newlines, one run of null characters, or one run of lone surrogates']
+	refused(losslessMarkdownToAdf('!adf:text{text=hi}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:text{text=" \\n"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:text{text=""}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:text{}\n'), 'unsupported-node-shape', 'one text attribute')
+	refused(losslessMarkdownToAdf('!adf:text{localId=a text=" "}\n'), 'unsupported-node-shape', 'one text attribute')
+	refused(losslessMarkdownToAdf('!adf:text[a]{text=" "}\n'), 'unsupported-node-shape', 'text takes no content')
+	refused(losslessMarkdownToAdf('!adf:text{text="\\u0020"}\n'), 'unsupported-node-shape', 'text=" "')
 })
 
 test('reads the directive marks, the nesting outermost first', () => {
-  const wrapped = (...marks: AdfMark[]): AdfNode[] => [{ content: [marked('a', ...marks)], type: 'paragraph' }]
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a]\n')), wrapped(underline))
-  assert.deepEqual(content(losslessMarkdownToAdf('_!adf:underline[a]_\n')), wrapped(em, underline))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[_a_]\n')), wrapped(underline, em))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[!adf:underline[a]]\n')), wrapped(underline))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:textColor[a]{color="#ae2e24"}\n')), wrapped({ attrs: { color: '#ae2e24' }, type: 'textColor' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:subsup[a]{type=sub}\n')), wrapped({ attrs: { type: 'sub' }, type: 'subsup' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:date{timestamp=1}]\n')), [
-    { content: [marked('a', underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
-  ])
-  assert.deepEqual(content(losslessMarkdownToAdf('_!adf:underline[a!adf:date{timestamp=1}]_\n')), [
-    { content: [marked('a', em, underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
-  ])
-  refused(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=x}\n'), 'unsupported-node-shape', 'size', 'border', 'no number')
+	const wrapped = (...marks: AdfMark[]): AdfNode[] => [{ content: [marked('a', ...marks)], type: 'paragraph' }]
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a]\n')), wrapped(underline))
+	assert.deepEqual(content(losslessMarkdownToAdf('_!adf:underline[a]_\n')), wrapped(em, underline))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[_a_]\n')), wrapped(underline, em))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[!adf:underline[a]]\n')), wrapped(underline))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:textColor[a]{color="#ae2e24"}\n')), wrapped({ attrs: { color: '#ae2e24' }, type: 'textColor' }))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:subsup[a]{type=sub}\n')), wrapped({ attrs: { type: 'sub' }, type: 'subsup' }))
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:date{timestamp=1}]\n')), [
+		{ content: [marked('a', underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
+	])
+	assert.deepEqual(content(losslessMarkdownToAdf('_!adf:underline[a!adf:date{timestamp=1}]_\n')), [
+		{ content: [marked('a', em, underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
+	])
+	refused(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=x}\n'), 'unsupported-node-shape', 'size', 'border', 'no number')
 })
 
 test('names the mark markdown spells, never a directive', () => {
-  refused(losslessMarkdownToAdf('!adf:em[a]\n'), 'unsupported-node-shape', '_x_')
-  refused(losslessMarkdownToAdf('!adf:strong[a]\n'), 'unsupported-node-shape', '**x**')
-  refused(losslessMarkdownToAdf('!adf:strike[a]\n'), 'unsupported-node-shape', '~~x~~')
-  refused(losslessMarkdownToAdf('!adf:code[a]\n'), 'unsupported-node-shape', '`x`')
+	refused(losslessMarkdownToAdf('!adf:em[a]\n'), 'unsupported-node-shape', '_x_')
+	refused(losslessMarkdownToAdf('!adf:strong[a]\n'), 'unsupported-node-shape', '**x**')
+	refused(losslessMarkdownToAdf('!adf:strike[a]\n'), 'unsupported-node-shape', '~~x~~')
+	refused(losslessMarkdownToAdf('!adf:code[a]\n'), 'unsupported-node-shape', '`x`')
 })
 
 test('refuses the directive link CommonMark could spell, and reads the one it could not', () => {
-  const spellable = ['[text](url "title")', '<url>']
-  refused(losslessMarkdownToAdf('!adf:link[a]{href="/u"}\n'), 'unsupported-node-shape', ...spellable)
-  refused(losslessMarkdownToAdf('See !adf:link[a]{href="/u"}.\n'), 'unsupported-node-shape', ...spellable)
-  refused(losslessMarkdownToAdf('!adf:link[https://example.com/]{href="https://example.com/"}\n'), 'unsupported-node-shape', ...spellable)
-  refused(losslessMarkdownToAdf('# !adf:link[`]: a`]{href="/u"}\n'), 'unsupported-node-shape', ...spellable)
-  refused(losslessMarkdownToAdf('| !adf:link[`]: a`]{href="/u"} |\n| --- |\n'), 'unsupported-node-shape', ...spellable)
-  refused(losslessMarkdownToAdf('!adf:underline[!adf:link[a]{href="/u"}]\n'), 'unsupported-node-shape', ...spellable)
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\nSee !adf:link[a]{href="/u"}.\n')), ['content', 1])
-  const opening: AdfNode = { marks: [{ attrs: { href: '/u' }, type: 'link' }, { type: 'code' }], text: ']: a', type: 'text' }
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:link[`]: a`]{href="/u"}\n')), [{ content: [opening], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:heading {level=1 localId=h}\n!adf:link[`]: a`]{href="/u"}\n!adf:/heading\n')), [
-    { attrs: { level: 1, localId: 'h' }, content: [opening], type: 'heading' },
-  ])
+	const spellable = ['[text](url "title")', '<url>']
+	refused(losslessMarkdownToAdf('!adf:link[a]{href="/u"}\n'), 'unsupported-node-shape', ...spellable)
+	refused(losslessMarkdownToAdf('See !adf:link[a]{href="/u"}.\n'), 'unsupported-node-shape', ...spellable)
+	refused(losslessMarkdownToAdf('!adf:link[https://example.com/]{href="https://example.com/"}\n'), 'unsupported-node-shape', ...spellable)
+	refused(losslessMarkdownToAdf('# !adf:link[`]: a`]{href="/u"}\n'), 'unsupported-node-shape', ...spellable)
+	refused(losslessMarkdownToAdf('| !adf:link[`]: a`]{href="/u"} |\n| --- |\n'), 'unsupported-node-shape', ...spellable)
+	refused(losslessMarkdownToAdf('!adf:underline[!adf:link[a]{href="/u"}]\n'), 'unsupported-node-shape', ...spellable)
+	assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\nSee !adf:link[a]{href="/u"}.\n')), ['content', 1])
+	const opening: AdfNode = { marks: [{ attrs: { href: '/u' }, type: 'link' }, { type: 'code' }], text: ']: a', type: 'text' }
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:link[`]: a`]{href="/u"}\n')), [{ content: [opening], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:heading {level=1 localId=h}\n!adf:link[`]: a`]{href="/u"}\n!adf:/heading\n')), [
+		{ attrs: { level: 1, localId: 'h' }, content: [opening], type: 'heading' },
+	])
 })
 
 test('names the href the directive link spells no value for', () => {
-  const named = ['link mark spells its href']
-  refused(losslessMarkdownToAdf('!adf:link[a]\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:link[a]{title=t}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('See !adf:link[a]{id=01a032c3-7a90-70c9-88f6-c60f710eda07}.\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c}\n'), 'unsupported-node-shape', ...named)
+	const named = ['link mark spells its href']
+	refused(losslessMarkdownToAdf('!adf:link[a]\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:link[a]{title=t}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('See !adf:link[a]{id=01a032c3-7a90-70c9-88f6-c60f710eda07}.\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c}\n'), 'unsupported-node-shape', ...named)
 })
 
 test('names the link a directive link wraps, no link holding another', () => {
-  const named = ['no link wraps a link']
-  refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:link[[a](/v)]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:link[a <http://x/> b]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{href="/u"}\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:link[x !adf:underline[[![](/u)]()]]{href="a\\nb"}\n'), 'unsupported-node-shape', ...named)
+	const named = ['no link wraps a link']
+	refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:link[[a](/v)]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:link[a <http://x/> b]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{href="/u"}\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:link[x !adf:underline[[![](/u)]()]]{href="a\\nb"}\n'), 'unsupported-node-shape', ...named)
 })
 
 test('names the directive mark left without the content it wraps', () => {
-  const named = ['underline', 'wraps none']
-  refused(losslessMarkdownToAdf('!adf:underline[]\n'), 'unsupported-node-shape', ...named)
-  refused(losslessMarkdownToAdf('!adf:underline{}\n'), 'unsupported-node-shape', ...named)
-  const wrapsOnly = (name: string): string[] => [`take no ${name} mark`, `write the ${name} mark around text beside them`]
-  refused(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
-  refused(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n'), 'unsupported-node-shape', ...wrapsOnly('link'))
+	const named = ['underline', 'wraps none']
+	refused(losslessMarkdownToAdf('!adf:underline[]\n'), 'unsupported-node-shape', ...named)
+	refused(losslessMarkdownToAdf('!adf:underline{}\n'), 'unsupported-node-shape', ...named)
+	const wrapsOnly = (name: string): string[] => [`take no ${name} mark`, `write the ${name} mark around text beside them`]
+	refused(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
+	refused(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n'), 'unsupported-node-shape', ...wrapsOnly('link'))
 })
 
 test('reads the text break only between two text nodes CommonMark joins, building no node', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('a!adf:textBreak{}b\n')), [{ content: [text('a'), text('b')], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('==a!adf:textBreak{}b==\n')), [{ content: [text('==a'), text('b==')], type: 'paragraph' }])
-  const parts = ['delete !adf:textBreak{} here', 'two runs of text with the same formatting']
-  const carried = '!adf:carry{json="{\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
-  refused(losslessMarkdownToAdf('!adf:textBreak{}a\n'), 'unsupported-node-shape', ...parts)
-  refused(losslessMarkdownToAdf('a!adf:textBreak{}\n'), 'unsupported-node-shape', ...parts)
-  refused(losslessMarkdownToAdf('a!adf:textBreak{}!adf:textBreak{}b\n'), 'unsupported-node-shape', ...parts)
-  refused(losslessMarkdownToAdf('**a**!adf:textBreak{}b\n'), 'unsupported-node-shape', ...parts)
-  refused(losslessMarkdownToAdf('[!adf:textBreak{}](/u)\n'), 'unsupported-node-shape', ...parts)
-  refused(losslessMarkdownToAdf(`a!adf:textBreak{}${carried}\n`), 'unsupported-node-shape', ...parts)
-  refused(losslessMarkdownToAdf('!adf:status[a!adf:textBreak{}b]\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'content slot')
-  refused(losslessMarkdownToAdf('![a!adf:textBreak{}b](/i)\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'image description')
-  refused(losslessMarkdownToAdf('a!adf:textBreak{x=y}b\n'), 'unsupported-node-shape', '!adf:textBreak{}', 'spells more')
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"textBreak\\"}"}\n')), [{ content: [{ type: 'textBreak' }], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('a!adf:textBreak{}b\n')), [{ content: [text('a'), text('b')], type: 'paragraph' }])
+	assert.deepEqual(content(losslessMarkdownToAdf('==a!adf:textBreak{}b==\n')), [{ content: [text('==a'), text('b==')], type: 'paragraph' }])
+	const parts = ['delete !adf:textBreak{} here', 'two runs of text with the same formatting']
+	const carried = '!adf:carry{json="{\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
+	refused(losslessMarkdownToAdf('!adf:textBreak{}a\n'), 'unsupported-node-shape', ...parts)
+	refused(losslessMarkdownToAdf('a!adf:textBreak{}\n'), 'unsupported-node-shape', ...parts)
+	refused(losslessMarkdownToAdf('a!adf:textBreak{}!adf:textBreak{}b\n'), 'unsupported-node-shape', ...parts)
+	refused(losslessMarkdownToAdf('**a**!adf:textBreak{}b\n'), 'unsupported-node-shape', ...parts)
+	refused(losslessMarkdownToAdf('[!adf:textBreak{}](/u)\n'), 'unsupported-node-shape', ...parts)
+	refused(losslessMarkdownToAdf(`a!adf:textBreak{}${carried}\n`), 'unsupported-node-shape', ...parts)
+	refused(losslessMarkdownToAdf('!adf:status[a!adf:textBreak{}b]\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'content slot')
+	refused(losslessMarkdownToAdf('![a!adf:textBreak{}b](/i)\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'image description')
+	refused(losslessMarkdownToAdf('a!adf:textBreak{x=y}b\n'), 'unsupported-node-shape', '!adf:textBreak{}', 'spells more')
+	assert.deepEqual(content(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"textBreak\\"}"}\n')), [{ content: [{ type: 'textBreak' }], type: 'paragraph' }])
 })
 
 test('leads a refusal ordinary editing meets with the edit that fixes it', () => {
-  const leads = (markdown: string, edit: string): void => {
-    const result = losslessMarkdownToAdf(markdown)
-    assert.equal(code(result), 'unsupported-node-shape')
-    assert.ok(!result.ok && result.error.message.startsWith(edit), edit)
-  }
-  leads('!adf:paragraph {content=empty}\nText.\n!adf:/paragraph\n', 'remove content=empty')
-  leads('!adf:codeBlock\n```\na\n```\n```\n```\n!adf:/codeBlock\n', 'delete the empty fence')
-  leads('!adf:codeBlock {attrs=empty}\n```js\na\n```\n```js\nb\n```\n!adf:/codeBlock\n', 'remove attrs=empty')
-  refused(losslessMarkdownToAdf('!adf:panel info {attrs=empty}\nText.\n!adf:/panel\n'), 'unsupported-node-shape', 'drop attrs=empty')
+	const leads = (markdown: string, edit: string): void => {
+		const result = losslessMarkdownToAdf(markdown)
+		assert.equal(code(result), 'unsupported-node-shape')
+		assert.ok(!result.ok && result.error.message.startsWith(edit), edit)
+	}
+	leads('!adf:paragraph {content=empty}\nText.\n!adf:/paragraph\n', 'remove content=empty')
+	leads('!adf:codeBlock\n```\na\n```\n```\n```\n!adf:/codeBlock\n', 'delete the empty fence')
+	leads('!adf:codeBlock {attrs=empty}\n```js\na\n```\n```js\nb\n```\n!adf:/codeBlock\n', 'remove attrs=empty')
+	refused(losslessMarkdownToAdf('!adf:panel info {attrs=empty}\nText.\n!adf:/panel\n'), 'unsupported-node-shape', 'drop attrs=empty')
 })

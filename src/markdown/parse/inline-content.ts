@@ -9,10 +9,10 @@ import { parseInlineContent, spellableLink } from '../inline-content.ts'
 
 // The only place a reader asks the writer whether the link opening a paragraph still needs its directive (spec/flavour.md, Marks).
 export function readInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
-  const content = parseInlineContent(source, definitions, path, container, flavour)
-  if (!content.ok || !content.value.openingSpellableLink) return content
-  const takesDirective = openingLinkTakesDirective(content.value.nodes, path)
-  if (!takesDirective.ok) return takesDirective
-  if (!takesDirective.value) return failure('unsupported-node-shape', spellableLink, path)
-  return success(content.value)
+	const content = parseInlineContent(source, definitions, path, container, flavour)
+	if (!content.ok || !content.value.openingSpellableLink) return content
+	const takesDirective = openingLinkTakesDirective(content.value.nodes, path)
+	if (!takesDirective.ok) return takesDirective
+	if (!takesDirective.value) return failure('unsupported-node-shape', spellableLink, path)
+	return success(content.value)
 }

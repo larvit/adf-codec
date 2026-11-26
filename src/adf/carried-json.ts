@@ -13,30 +13,30 @@ export type BoundedJson = { readonly bounded: JsonValue }
 
 // `carried`: the node, or the run of nodes, being carried; `spelled`: the JSON written for `carried`, its `type` dropped where the format names it apart; `levels` the nesting its position leaves.
 export function carriedJson(carried: AdfNode | readonly AdfNode[], spelled: object, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
-  const headroom = levels - nestingDepth(carried)
-  if (!isJsonValue(spelled) || headroom < 0) return faulted(nestedPast(levels), path)
-  // A carried node's JSON can pass the bound by itself: join only up to the bound.
-  const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
-  return json.ok ? success({ headroom, json: json.value }) : json
+	const headroom = levels - nestingDepth(carried)
+	if (!isJsonValue(spelled) || headroom < 0) return faulted(nestedPast(levels), path)
+	// A carried node's JSON can pass the bound by itself: join only up to the bound.
+	const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
+	return json.ok ? success({ headroom, json: json.value }) : json
 }
 
 // The read inverse of `carriedJson` takes three steps, value, nesting and node, so each format's own refusals keep their place between them.
 export function carriedValue(json: string, holder: string, invalid: ConvertFault): Read<JsonValue> {
-  const parsed = parseJsonText(json)
-  if (parsed.refusal === undefined) return { value: parsed.value }
-  return { fault: parsed.refusal === 'syntax' ? invalid : { code: 'unsupported-node-shape', message: `${holder} holds a number JSON cannot spell` } }
+	const parsed = parseJsonText(json)
+	if (parsed.refusal === undefined) return { value: parsed.value }
+	return { fault: parsed.refusal === 'syntax' ? invalid : { code: 'unsupported-node-shape', message: `${holder} holds a number JSON cannot spell` } }
 }
 
 export function carriedNesting(held: JsonValue, levels: number): Read<BoundedJson> {
-  return overNested(held, levels) ? { fault: nestedPast(levels) } : { value: { bounded: held } }
+	return overNested(held, levels) ? { fault: nestedPast(levels) } : { value: { bounded: held } }
 }
 
 export function carriedNode({ bounded }: BoundedJson, holder: string): Read<AdfNode> {
-  if (!isAdfNode(bounded)) return { fault: { code: 'unsupported-node-shape', message: `${holder} holds one ADF node's JSON: this JSON is no ADF node` } }
-  const refused = refusedShape([bounded])
-  return refused === undefined ? { value: bounded } : { fault: { code: refused.code, message: `${holder} holds a node every writer refuses: ${refused.message}` } }
+	if (!isAdfNode(bounded)) return { fault: { code: 'unsupported-node-shape', message: `${holder} holds one ADF node's JSON: this JSON is no ADF node` } }
+	const refused = refusedShape([bounded])
+	return refused === undefined ? { value: bounded } : { fault: { code: refused.code, message: `${holder} holds a node every writer refuses: ${refused.message}` } }
 }
 
 function nestedPast(levels: number): ConvertFault {
-  return { code: 'unsupported-nesting-depth', message: `a carried node's JSON nests deeper than the ${levels} levels its position leaves` }
+	return { code: 'unsupported-nesting-depth', message: `a carried node's JSON nests deeper than the ${levels} levels its position leaves` }
 }

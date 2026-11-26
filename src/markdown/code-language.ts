@@ -7,7 +7,7 @@ export type LanguageSlot = { info: string; kind: 'fence' } | { kind: 'attribute'
 
 // spec/flavour.md, The CommonMark blocks: the one slot a codeBlock's language rides.
 export function languageSlot(language: JsonValue | undefined, claims: Claims): LanguageSlot {
-  if (language === undefined) return { kind: 'none' }
-  if (typeof language !== 'string' || (claims.carryFence && carryFenceType(language) !== undefined) || !infoStringCarries(language)) return { kind: 'attribute' }
-  return { info: language, kind: 'fence' }
+	if (language === undefined) return { kind: 'none' }
+	if (typeof language !== 'string' || (claims.carryFence && carryFenceType(language) !== undefined) || !infoStringCarries(language)) return { kind: 'attribute' }
+	return { info: language, kind: 'fence' }
 }

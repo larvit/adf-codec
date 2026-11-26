@@ -8,26 +8,26 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 export type Elsewhere = { key: string; slot: 'argument' | 'content' }
 
 export function readVocabulary(
-  type: string,
-  attributes: DirectiveAttributes,
-  vocabulary: AttributeVocabulary,
-  elsewhere: Elsewhere | undefined,
-  path: ConvertErrorPath,
+	type: string,
+	attributes: DirectiveAttributes,
+	vocabulary: AttributeVocabulary,
+	elsewhere: Elsewhere | undefined,
+	path: ConvertErrorPath,
 ): Result<AdfAttributes> {
-  const attrs: AdfAttributes = {}
-  for (const [key, spelled] of attributes) {
-    if (key === elsewhere?.key) {
-      const place = elsewhere.slot === 'argument' ? 'as the directive argument' : 'in the content slot'
-      return failure('unsupported-node-shape', `${type} spells its ${key} attribute ${place}, never in {attrs}`, path)
-    }
-    const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
-    if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute: this one spells it`, path)
-    const read = attributeValue(spelled.decoded, kind)
-    if (read.refusal === 'nesting') return failure('unsupported-nesting-depth', attributeNestingMessage(key, type), path)
-    if (read.value === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind === 'numbers' ? 'comma list of numbers' : kind}`, path)
-    const spelling = spellAttributeValue(read.value)
-    if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${key} attribute as ${key}=${spelling}`, path)
-    attrs[key] = read.value.value
-  }
-  return success(attrs)
+	const attrs: AdfAttributes = {}
+	for (const [key, spelled] of attributes) {
+		if (key === elsewhere?.key) {
+			const place = elsewhere.slot === 'argument' ? 'as the directive argument' : 'in the content slot'
+			return failure('unsupported-node-shape', `${type} spells its ${key} attribute ${place}, never in {attrs}`, path)
+		}
+		const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
+		if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute: this one spells it`, path)
+		const read = attributeValue(spelled.decoded, kind)
+		if (read.refusal === 'nesting') return failure('unsupported-nesting-depth', attributeNestingMessage(key, type), path)
+		if (read.value === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind === 'numbers' ? 'comma list of numbers' : kind}`, path)
+		const spelling = spellAttributeValue(read.value)
+		if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${key} attribute as ${key}=${spelling}`, path)
+		attrs[key] = read.value.value
+	}
+	return success(attrs)
 }

@@ -6,16 +6,16 @@ source ./docker-runner.sh
 base=$(git merge-base "${1:-origin/main}" HEAD)
 # Each hunk's added lines as path:first-last, in the working tree's numbering; Stryker keeps a mutant only wholly inside one, so a hunk that only deletes has none.
 mutate=$(git diff --no-ext-diff --no-prefix -U0 --inter-hunk-context=0 --no-color "$base" -- 'src/*.ts' ':!src/*.test.ts' ':!src/conformance/property-harness.ts' | awk '
-  /^\+\+\+ / { path = $2 }
-  /^@@ / {
-    split($3, added, ",")
-    first = substr(added[1], 2)
-    count = (2 in added) ? added[2] : 1
-    if (count > 0) { printf "%s%s:%d-%d", separator, path, first, first + count - 1; separator = "," }
-  }')
+	/^\+\+\+ / { path = $2 }
+	/^@@ / {
+		split($3, added, ",")
+		first = substr(added[1], 2)
+		count = (2 in added) ? added[2] : 1
+		if (count > 0) { printf "%s%s:%d-%d", separator, path, first, first + count - 1; separator = "," }
+	}')
 if [ -z "$mutate" ]; then
-  echo "no source line changed since $base"
-  exit 0
+	echo "no source line changed since $base"
+	exit 0
 fi
 
 leg "install ($node_image)" in_image "$node_image" sh -c 'npm ci --no-audit --no-fund && npm ci --no-audit --no-fund --prefix mutation-tests'

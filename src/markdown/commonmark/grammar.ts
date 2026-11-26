@@ -10,10 +10,10 @@ type OpenHtmlBlock = { closer: RegExp | undefined; construct: string }
 type HtmlBlockCondition = { closer: RegExp | undefined; construct: string | undefined; interrupts: boolean; start: RegExp }
 
 const htmlConstructNames = {
-  cdata: 'a CDATA section',
-  comment: 'an HTML comment',
-  declaration: 'an HTML declaration',
-  processingInstruction: 'an HTML processing instruction',
+	cdata: 'a CDATA section',
+	comment: 'an HTML comment',
+	declaration: 'an HTML declaration',
+	processingInstruction: 'an HTML processing instruction',
 }
 
 export const controlCharacterRange = '\\u0000-\\u001f\\u007f'
@@ -39,23 +39,23 @@ const loneSurrogate = new RegExp(loneSurrogateSource)
 const tagName = new RegExp(`^</?(${tagNameSource})[\\s\\S]*$`)
 // The opener's own match ends with the terminator where the construct is complete on its own (`<!-->`).
 const inlineHtmlConstructs = [
-  { name: htmlConstructNames.cdata, opener: /<!\[CDATA\[/y, terminator: ']]>' },
-  { name: htmlConstructNames.comment, opener: /<!(?:--->|-->|--)/y, terminator: '-->' },
-  { name: htmlConstructNames.declaration, opener: /<![A-Za-z]/y, terminator: '>' },
-  { name: htmlConstructNames.processingInstruction, opener: /<\?/y, terminator: '?>' },
+	{ name: htmlConstructNames.cdata, opener: /<!\[CDATA\[/y, terminator: ']]>' },
+	{ name: htmlConstructNames.comment, opener: /<!(?:--->|-->|--)/y, terminator: '-->' },
+	{ name: htmlConstructNames.declaration, opener: /<![A-Za-z]/y, terminator: '>' },
+	{ name: htmlConstructNames.processingInstruction, opener: /<\?/y, terminator: '?>' },
 ]
 // CommonMark 0.31.2, HTML blocks: the tag names start condition 6 lists.
 const blockTagNames =
-  'address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul'
+	'address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul'
 const completeTag = new RegExp(`^${htmlTagSource}[ \\t]*$`)
 const htmlBlockConditions: HtmlBlockCondition[] = [
-  { closer: /<\/(?:pre|script|style|textarea)>/i, construct: undefined, interrupts: true, start: /^<(?:pre|script|style|textarea)(?:[ \t>]|$)/i },
-  { closer: /-->/, construct: htmlConstructNames.comment, interrupts: true, start: /^<!--/ },
-  { closer: /\?>/, construct: htmlConstructNames.processingInstruction, interrupts: true, start: /^<\?/ },
-  { closer: />/, construct: htmlConstructNames.declaration, interrupts: true, start: /^<![A-Za-z]/ },
-  { closer: /\]\]>/, construct: htmlConstructNames.cdata, interrupts: true, start: /^<!\[CDATA\[/ },
-  { closer: undefined, construct: undefined, interrupts: true, start: new RegExp(`^</?(?:${blockTagNames})(?:[ \\t>]|/>|$)`, 'i') },
-  { closer: undefined, construct: undefined, interrupts: false, start: completeTag },
+	{ closer: /<\/(?:pre|script|style|textarea)>/i, construct: undefined, interrupts: true, start: /^<(?:pre|script|style|textarea)(?:[ \t>]|$)/i },
+	{ closer: /-->/, construct: htmlConstructNames.comment, interrupts: true, start: /^<!--/ },
+	{ closer: /\?>/, construct: htmlConstructNames.processingInstruction, interrupts: true, start: /^<\?/ },
+	{ closer: />/, construct: htmlConstructNames.declaration, interrupts: true, start: /^<![A-Za-z]/ },
+	{ closer: /\]\]>/, construct: htmlConstructNames.cdata, interrupts: true, start: /^<!\[CDATA\[/ },
+	{ closer: undefined, construct: undefined, interrupts: true, start: new RegExp(`^</?(?:${blockTagNames})(?:[ \\t>]|/>|$)`, 'i') },
+	{ closer: undefined, construct: undefined, interrupts: false, start: completeTag },
 ]
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const atxHeadingOpener = /^(#{1,6})(?:[ \t]|$)/
@@ -75,214 +75,214 @@ const setextUnderline = /^(=+|-+)[ \t]*$/
 const unicodeWhitespace = /[\t\n\f\r \p{Zs}]/u
 
 export function atxHeading(line: string): { level: number; text: string } | undefined {
-  const hashes = atxHeadingOpener.exec(line)?.[1]
-  if (hashes === undefined) return undefined
-  const text = trimSpace(line.slice(hashes.length))
-  return { level: hashes.length, text: trimSpace(text.replace(/(?:^|(?<=[ \t]))#+$/, '')) }
+	const hashes = atxHeadingOpener.exec(line)?.[1]
+	if (hashes === undefined) return undefined
+	const text = trimSpace(line.slice(hashes.length))
+	return { level: hashes.length, text: trimSpace(text.replace(/(?:^|(?<=[ \t]))#+$/, '')) }
 }
 
 // The character a backslash escapes at `index`, `undefined` where the backslash is literal text.
 export function backslashEscape(text: string, index: number): string | undefined {
-  if (text.charAt(index) !== '\\') return undefined
-  const escaped = text.charAt(index + 1)
-  return isAsciiPunctuation(escaped) ? escaped : undefined
+	if (text.charAt(index) !== '\\') return undefined
+	const escaped = text.charAt(index + 1)
+	return isAsciiPunctuation(escaped) ? escaped : undefined
 }
 
 export function claimsPipeLine(line: string): boolean {
-  return pipeClaim.test(line)
+	return pipeClaim.test(line)
 }
 
 export function closingCodeFence(line: string, marker: string): boolean {
-  const closing = codeFenceOpener.exec(line)?.[1]
-  if (closing === undefined || closing.charAt(0) !== marker.charAt(0) || closing.length < marker.length) return false
-  return /^[ \t]*$/.test(line.slice(closing.length))
+	const closing = codeFenceOpener.exec(line)?.[1]
+	if (closing === undefined || closing.charAt(0) !== marker.charAt(0) || closing.length < marker.length) return false
+	return /^[ \t]*$/.test(line.slice(closing.length))
 }
 
 export function decodeTextEscapes(text: string): string {
-  let decoded = ''
-  let index = 0
-  while (index < text.length) {
-    const escaped = backslashEscape(text, index)
-    if (escaped !== undefined) {
-      decoded += escaped
-      index += 2
-      continue
-    }
-    const reference = readEntityReference(text, index)
-    if (reference !== undefined) {
-      decoded += reference.text
-      index += reference.length
-      continue
-    }
-    decoded += text.charAt(index)
-    index += 1
-  }
-  return decoded
+	let decoded = ''
+	let index = 0
+	while (index < text.length) {
+		const escaped = backslashEscape(text, index)
+		if (escaped !== undefined) {
+			decoded += escaped
+			index += 2
+			continue
+		}
+		const reference = readEntityReference(text, index)
+		if (reference !== undefined) {
+			decoded += reference.text
+			index += reference.length
+			continue
+		}
+		decoded += text.charAt(index)
+		index += 1
+	}
+	return decoded
 }
 
 export function escapesLineClaim(line: string, offset: number, position: LinePosition): boolean {
-  if (offset === 0) {
-    if (firstCharacterOpeners.some((opener) => opener.test(line)) || isThematicBreak(line)) return true
-    if (openingHtmlBlock(line, position === 'later') !== undefined) return true
-    return position === 'later' && setextUnderline.test(line)
-  }
-  const digits = orderedListOpener.exec(line)?.[1]
-  return digits !== undefined && offset === digits.length
+	if (offset === 0) {
+		if (firstCharacterOpeners.some((opener) => opener.test(line)) || isThematicBreak(line)) return true
+		if (openingHtmlBlock(line, position === 'later') !== undefined) return true
+		return position === 'later' && setextUnderline.test(line)
+	}
+	const digits = orderedListOpener.exec(line)?.[1]
+	return digits !== undefined && offset === digits.length
 }
 
 export function holdsControlCharacter(text: string): boolean {
-  return controlCharacter.test(text)
+	return controlCharacter.test(text)
 }
 
 // What a backtick fence's info string reads back verbatim: escapes and entity references decode, and the edges trim.
 export function infoStringCarries(text: string): boolean {
-  return text !== '' && !/[`\\]/.test(text) && !holdsControlCharacter(text) && !holdsLoneSurrogate(text) && text === text.trim() && !holdsEntityReference(text)
+	return text !== '' && !/[`\\]/.test(text) && !holdsControlCharacter(text) && !holdsLoneSurrogate(text) && text === text.trim() && !holdsEntityReference(text)
 }
 
 export function holdsNullCharacter(text: string): boolean {
-  return nullCharacter.test(text)
+	return nullCharacter.test(text)
 }
 
 // UTF-8 cannot encode one: stored as UTF-8, it reads back as U+FFFD.
 export function holdsLoneSurrogate(text: string): boolean {
-  return loneSurrogate.test(text)
+	return loneSurrogate.test(text)
 }
 
 export function replaceNullCharacters(text: string): string {
-  return text.replaceAll(nullCharacters, replacementCharacter)
+	return text.replaceAll(nullCharacters, replacementCharacter)
 }
 
 function htmlTagName(text: string): string {
-  return text.replace(tagName, '<$1>')
+	return text.replace(tagName, '<$1>')
 }
 
 // `terminated` says whether `terminator` starts at or after `from` in `text`.
 export function inlineHtmlConstruct(text: string, index: number, terminated: (terminator: string, from: number) => boolean): string | undefined {
-  for (const construct of inlineHtmlConstructs) {
-    construct.opener.lastIndex = index
-    const opened = construct.opener.exec(text)?.[0]
-    if (opened === undefined) continue
-    if (opened.endsWith(construct.terminator)) return construct.name
-    return terminated(construct.terminator, index + opened.length) ? construct.name : undefined
-  }
-  htmlTag.lastIndex = index
-  const tag = htmlTag.exec(text)?.[0]
-  return tag === undefined ? undefined : htmlTagName(tag)
+	for (const construct of inlineHtmlConstructs) {
+		construct.opener.lastIndex = index
+		const opened = construct.opener.exec(text)?.[0]
+		if (opened === undefined) continue
+		if (opened.endsWith(construct.terminator)) return construct.name
+		return terminated(construct.terminator, index + opened.length) ? construct.name : undefined
+	}
+	htmlTag.lastIndex = index
+	const tag = htmlTag.exec(text)?.[0]
+	return tag === undefined ? undefined : htmlTagName(tag)
 }
 
 export function isAsciiPunctuation(character: string): boolean {
-  return asciiPunctuation.test(character)
+	return asciiPunctuation.test(character)
 }
 
 export function isAutolink(text: string): boolean {
-  return autolink.test(text)
+	return autolink.test(text)
 }
 
 export function isBlankLine(line: string): boolean {
-  return blankLine.test(line)
+	return blankLine.test(line)
 }
 
 export function isThematicBreak(line: string): boolean {
-  return holdsThematicBreak(thematicBreakTail(line), line)
+	return holdsThematicBreak(thematicBreakTail(line), line)
 }
 
 export function thematicBreakTail(text: string): ThematicBreakTail | undefined {
-  let marker: string | undefined
-  let markers = 0
-  let first = text.length
-  let third = text.length
-  let cursor = text.length
-  while (cursor > 0) {
-    const character = text.charAt(cursor - 1)
-    if (marker === undefined ? breakMarkers.includes(character) : character === marker) {
-      marker = character
-      markers += 1
-      first = cursor - 1
-      if (markers === 3) third = cursor - 1
-    } else if (!spaceOrTab(character)) break
-    cursor -= 1
-  }
-  if (marker === undefined || markers < 3) return undefined
-  return { longest: text.length - first, marker, shortest: text.length - third }
+	let marker: string | undefined
+	let markers = 0
+	let first = text.length
+	let third = text.length
+	let cursor = text.length
+	while (cursor > 0) {
+		const character = text.charAt(cursor - 1)
+		if (marker === undefined ? breakMarkers.includes(character) : character === marker) {
+			marker = character
+			markers += 1
+			first = cursor - 1
+			if (markers === 3) third = cursor - 1
+		} else if (!spaceOrTab(character)) break
+		cursor -= 1
+	}
+	if (marker === undefined || markers < 3) return undefined
+	return { longest: text.length - first, marker, shortest: text.length - third }
 }
 
 // `text` is a suffix of what `tail` was read from, or opens with a space: a length alone names a
 // suffix, and the marker check is what refuses one starting mid-run — `--- ---` holds ` ---`.
 export function holdsThematicBreak(tail: ThematicBreakTail | undefined, text: string): boolean {
-  if (tail === undefined) return false
-  return text.length >= tail.shortest && text.length <= tail.longest && text.charAt(0) === tail.marker
+	if (tail === undefined) return false
+	return text.length >= tail.shortest && text.length <= tail.longest && text.charAt(0) === tail.marker
 }
 
 // Every line isThematicBreak accepts passes this.
 export function holdsOnlyRuleCharacters(text: string): boolean {
-  for (let index = 0; index < text.length; index += 1) {
-    const character = text.charAt(index)
-    if (!breakMarkers.includes(character) && !spaceOrTab(character)) return false
-  }
-  return true
+	for (let index = 0; index < text.length; index += 1) {
+		const character = text.charAt(index)
+		if (!breakMarkers.includes(character) && !spaceOrTab(character)) return false
+	}
+	return true
 }
 
 export function isUnicodeWhitespace(character: string): boolean {
-  return unicodeWhitespace.test(character)
+	return unicodeWhitespace.test(character)
 }
 
 // `start` is the list's first number, `undefined` for a bullet.
 export function listMarker(line: string): { delimiter: string; start: number | undefined; width: number } | undefined {
-  const ordered = orderedListOpener.exec(line)
-  if (ordered !== null) {
-    const digits = ordered[1] ?? ''
-    return { delimiter: ordered[2] ?? '', start: Number(digits), width: digits.length + 1 }
-  }
-  return bulletListOpener.test(line) ? { delimiter: line.charAt(0), start: undefined, width: 1 } : undefined
+	const ordered = orderedListOpener.exec(line)
+	if (ordered !== null) {
+		const digits = ordered[1] ?? ''
+		return { delimiter: ordered[2] ?? '', start: Number(digits), width: digits.length + 1 }
+	}
+	return bulletListOpener.test(line) ? { delimiter: line.charAt(0), start: undefined, width: 1 } : undefined
 }
 
 export function markerInterruptsParagraph(start: number | undefined, empty: boolean): boolean {
-  return !empty && (start === undefined || start === 1)
+	return !empty && (start === undefined || start === 1)
 }
 
 export function openingCodeFence(line: string): { info: string; marker: string } | undefined {
-  const marker = codeFenceOpener.exec(line)?.[1]
-  if (marker === undefined) return undefined
-  const info = trimSpace(line.slice(marker.length))
-  return marker.startsWith('`') && info.includes('`') ? undefined : { info, marker }
+	const marker = codeFenceOpener.exec(line)?.[1]
+	if (marker === undefined) return undefined
+	const info = trimSpace(line.slice(marker.length))
+	return marker.startsWith('`') && info.includes('`') ? undefined : { info, marker }
 }
 
 export function openingHtmlBlock(line: string, interrupting: boolean): OpenHtmlBlock | undefined {
-  for (const condition of htmlBlockConditions) {
-    if ((interrupting && !condition.interrupts) || !condition.start.test(line)) continue
-    return { closer: condition.closer, construct: condition.construct ?? htmlTagName(line) }
-  }
-  return undefined
+	for (const condition of htmlBlockConditions) {
+		if ((interrupting && !condition.interrupts) || !condition.start.test(line)) continue
+		return { closer: condition.closer, construct: condition.construct ?? htmlTagName(line) }
+	}
+	return undefined
 }
 
 export function readBracketedAutolink(text: string, index: number): number | undefined {
-  bracketedAutolink.lastIndex = index
-  return bracketedAutolink.exec(text)?.[0].length
+	bracketedAutolink.lastIndex = index
+	return bracketedAutolink.exec(text)?.[0].length
 }
 
 export function readEmailAutolink(text: string, index: number): number | undefined {
-  emailAutolink.lastIndex = index
-  return emailAutolink.exec(text)?.[0].length
+	emailAutolink.lastIndex = index
+	return emailAutolink.exec(text)?.[0].length
 }
 
 export function setextHeadingLevel(line: string): number | undefined {
-  const underline = setextUnderline.exec(line)?.[1]
-  if (underline === undefined) return undefined
-  return underline.startsWith('=') ? 1 : 2
+	const underline = setextUnderline.exec(line)?.[1]
+	if (underline === undefined) return undefined
+	return underline.startsWith('=') ? 1 : 2
 }
 
 function spaceOrTab(character: string): boolean {
-  return character === ' ' || character === '\t'
+	return character === ' ' || character === '\t'
 }
 
 export function trimSpace(text: string): string {
-  let start = 0
-  while (start < text.length && spaceOrTab(text.charAt(start))) start += 1
-  return trimTrailingSpace(text.slice(start))
+	let start = 0
+	while (start < text.length && spaceOrTab(text.charAt(start))) start += 1
+	return trimTrailingSpace(text.slice(start))
 }
 
 export function trimTrailingSpace(text: string): string {
-  let end = text.length
-  while (end > 0 && spaceOrTab(text.charAt(end - 1))) end -= 1
-  return text.slice(0, end)
+	let end = text.length
+	while (end > 0 && spaceOrTab(text.charAt(end - 1))) end -= 1
+	return text.slice(0, end)
 }
