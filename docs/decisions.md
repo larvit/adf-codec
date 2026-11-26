@@ -140,7 +140,7 @@ checking its position, and refusing loses a document ADF itself keeps in an `uns
 
 ## The block carry indents five levels in two spaces and writes deeper values compact
 
-2026-11-26, the maintainer. Goals 5, 6 and 9. Valid while the block carry spells a node's JSON on
+2026-11-26, the maintainer. Goals 1, 5, 6 and 9. Valid while the block carry spells a node's JSON on
 several lines.
 
 The block carry's JSON indents two spaces a level for the first five levels of nesting, and spells
@@ -150,9 +150,9 @@ fences are unchanged at five levels. Spaces, not tabs: a spelling of a format us
 expect of JSON, and a tab inside a list item or a block quote meets CommonMark's tab stops. This
 doesn't set the source files' indentation, which `~/.claude/principles/technical-principles.md`
 sets to tabs. A stored carry nested deeper than five levels is respelled, which `MIGRATION.md`
-says. `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it:
-refusing it would leave markdown that `0.3.1` stored unreadable, which goal 1 rules out. The next
-write spells it in five levels.
+says. `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it.
+Refusing it would leave markdown that `0.3.1` wrote unreadable, and goal 1 rules that loss out. The
+next write spells it in five levels.
 
 ## The carry fence names the node type
 
