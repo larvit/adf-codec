@@ -14,8 +14,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 214 | 0.4.0 |  | defect | **Refuse a carried node whose string values would abort the engine in `JSON.stringify`, as output past the longest string, before spelling any of them.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
 | 212 | 0.4.0 |  |  | **Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.** | 2 | 2 | 2 | 4 | 3 | 11 by 3 | 2.5 |
-| 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
-| 213 | 0.4.0 | 107, 212 |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
+| 213 | 0.4.0 | 212 |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -61,32 +60,6 @@ Touches:
 - `src/wiki/emit/text-escaping.ts`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string `` (small)
-
-### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
-
-The block carry indents two spaces a level, so about 1 MB of deeply nested arrays in a carried
-node's JSON spells past V8's longest string, which the writers refuse as `unsupported-node-shape`;
-the inline carry's compact JSON would fit. docs/decisions.md §The code list calls a refusal no
-spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
-are API). Found by the README-goals audit of item 83, 2026-10-11.
-
-Decided by the maintainer, 2026-11-26 (docs/decisions.md §The block carry indents five levels in two spaces and writes deeper values compact): the block carry indents two spaces a level for the first five levels and spells a value nested deeper compact on its line. Spaces, not tabs. Add a `MIGRATION.md` entry for stored carries nested deeper than five levels.
-
-Touches:
-
-- `src/canonical-json.ts`: `JsonSpelling`, `canonicalJsonPieces`, `objectMembers`, `schedule`, `spellsCanonicalJson` (small)
-- `src/markdown/opaque-carry.ts`: `carriedBlock`, `readCarriedJson`
-- `src/adf/carried-json.ts`: `carriedJson` (small)
-- `src/canonical-json.test.ts`
-- `src/markdown/parse/markdown-to-adf.test.ts`: lines 450-500
-- `src/conformance/markdown-property.test.ts`: lines 183-200
-- `spec/flavour.md`: `## The opaque carry`
-- `corpus/round-trip/opaque-carry/unknown-block.md`
-- `corpus/round-trip/opaque-carry/unknown-type-spelling.md`
-- `corpus/round-trip/opaque-carry/carry-in-wrappers.md`
-- `corpus/round-trip/opaque-carry/code-block-children.md`
-- `corpus/errors/carry-fence-type.md`
-- `corpus/errors/carry-fence-type-spellable.md`
 
 ### 213. Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.
 
