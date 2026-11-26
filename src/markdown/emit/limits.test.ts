@@ -84,6 +84,12 @@ test('writes a carry of deeply nested JSON in a length linear in the JSON, and r
   assert.deepEqual(losslessMarkdownToAdf(written.value), success(carried))
 })
 
+test('refuses a carry whose JSON alone would run past V8\'s longest string', () => {
+  const shared = 'a'.repeat(2 ** 24)
+  const attrs = Object.fromEntries(Array.from({ length: 40 }, (_, index) => [`key${index}`, shared]))
+  assert.equal(pastTheBound(adfToLosslessMarkdown(document({ attrs, type: 'unknownBlock' }))), true)
+})
+
 test('refuses a quote whose prefixed lines would pass V8\'s longest string', { timeout: 60000 }, () => {
   const code = nearlyHalfTheBound()
   assert.equal(pastTheBound(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), true)

@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 214`
+`Next ID = 215`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 214 | 0.4.0 |  | defect | **Refuse a carried node whose string values would abort the engine in `JSON.stringify`, as output past the longest string, before spelling any of them.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
 | 212 | 0.4.0 |  |  | **Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.** | 2 | 2 | 2 | 4 | 3 | 11 by 3 | 2.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 213 | 0.4.0 | 107, 212 |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
@@ -34,6 +35,20 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 214. Refuse a carried node whose string values would abort the engine in `JSON.stringify`, as output past the longest string, before spelling any of them.
+
+Today `adfToLosslessMarkdown` on an `unknownBlock` whose `attrs` hold two strings of 2^28 characters ends Node 26.13.1 with `FATAL ERROR: Zone Allocation failed - process out of memory`, under the gate's 8 GB limit, where goal 1 promises a result and never a throw. No `try` catches it: the second `JSON.stringify` of a 2^28-character string aborts the engine, as a three-line script shows without the library. One such string converts, and five strings of 2^27 are refused cleanly as `unsupported-node-shape`. Found by the stability review of item 107; main behaves the same.
+
+`canonicalJsonPieces` calls `JSON.stringify` on each scalar and each key, and `joinedWithin` measures a piece only after it is spelled. Measure a string first, its length a floor of its spelling's, and refuse with `tooLong` where it alone, or with what is already joined, passes `longestOutput`. Check every caller that spells canonical JSON: the markdown, HTML and wiki carries through `carriedJson`, the HTML document carry in `writeHtml`, `data-*` attributes, and the directive quoting in `quote`. A test needs two strings of 2^28 characters; it must stay within the gate's memory.
+
+Touches:
+- `src/canonical-json.ts`: `canonicalJsonPieces`, `objectMembers` (small)
+- `src/adf/carried-json.ts`: `carriedJson` (small)
+- `src/length-bound.ts`: `joinedWithin` (small)
+- `src/html/emit/adf-to-html.ts`: `writeHtml` (small)
+- `src/canonical-json.test.ts`
+- `src/markdown/emit/limits.test.ts`
 
 ### 212. Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.
 
