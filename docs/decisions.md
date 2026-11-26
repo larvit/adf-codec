@@ -427,17 +427,21 @@ its own.
 
 ## Portable markdown drops a lone surrogate, and writes one in an address as `%EF%BF%BD`
 
-2026-11-26, item 206. Goals 1 and 7.
+2026-11-26, plan item 206, its implementer, after how the flavour treats a carriage return and a
+null character. Goals 1 and 7. Valid while markdown is stored as UTF-8.
 
 UTF-8 cannot encode a lone surrogate, so markdown holding one raw reads back as U+FFFD once stored.
 `adfToLosslessMarkdown` writes none raw: a spelling that would hold one gives way to the directive
 or the carry, whose `{attrs}` escape it. `adfToPortableMarkdown` writes no directive, so it drops
-one from text, a title and an alt text, as it drops a carriage return and a null character: a lone
-surrogate is half a character and shows nothing. Lone surrogates drop first, since a character
-dropped from between two would pair them into a character the document never held. In a link's or
-an image's address it writes `%EF%BF%BD`, the bytes the WHATWG URL Standard's UTF-8 percent-encode
-gives one, so the link requests what the ADF's link requests in a browser. A code block's language
-holding one drops whole, as a language holding a control character does.
+a lone surrogate from text, a title and an alt text, as it drops a carriage return and a null
+character: a lone surrogate is half a character and shows nothing. All three drop in one pass,
+since a character dropped from between two lone surrogates would pair them into a character the
+document never held. A value holding only such characters counts as showing nothing, in every
+format, so a mention whose `text` is a lone surrogate is written by its `id`. In a link's or an
+image's address `adfToPortableMarkdown` writes `%EF%BF%BD`, the bytes the WHATWG URL Standard's
+UTF-8 percent-encode gives a lone surrogate, so the link requests what the ADF's link requests in a
+browser. A code block's language holding one drops whole, as a language holding a control character
+does.
 Rejected: U+FFFD in text, which shows a fault mark where the document showed none.
 
 ## The HTML dialect
