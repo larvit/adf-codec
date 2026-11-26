@@ -28,6 +28,34 @@ test('spells two-space indentation the way the corpus holds it', () => {
   )
 })
 
+test('indents five levels and spells a value nested deeper compact on its line', () => {
+  const value = { a: { b: { c: { d: { e: { f: { g: 1 }, h: [1, 2] }, i: [] } } } } }
+  assert.equal(
+    serializeCanonicalJson(value, 'five-level'),
+    [
+      '{',
+      '  "a": {',
+      '    "b": {',
+      '      "c": {',
+      '        "d": {',
+      '          "e": {"f":{"g":1},"h":[1,2]},',
+      '          "i": []',
+      '        }',
+      '      }',
+      '    }',
+      '  }',
+      '}',
+    ].join('\n'),
+  )
+})
+
+test('spells five-level indentation in a length linear in the compact spelling', () => {
+  const levels = 200000
+  const array = nested(levels, (inner) => [inner])
+  const added = '\n'.length * 10 + 2 * (1 + 2 + 3 + 4 + 5) + 2 * (4 + 3 + 2 + 1)
+  assert.equal(serializeCanonicalJson(array, 'five-level').length, serializeCanonicalJson(array, 'compact').length + added)
+})
+
 test('keeps empty objects and arrays on one line in both spellings', () => {
   assert.equal(serializeCanonicalJson({ a: {}, b: [] }, 'two-space'), '{\n  "a": {},\n  "b": []\n}')
   assert.equal(serializeCanonicalJson({ a: {}, b: [] }, 'compact'), '{"a":{},"b":[]}')
@@ -56,6 +84,9 @@ test('holds a text to the canonical spelling, whole', () => {
   assert.ok(!spellsCanonicalJson(value, 'compact', '{"a":[1,2]} '))
   assert.ok(!spellsCanonicalJson(value, 'compact', '{"a":[1,2]'))
   assert.ok(!spellsCanonicalJson(value, 'two-space', '{"a":[1,2]}'))
+  const deep = { a: { b: { c: { d: { e: { f: 1 } } } } } }
+  assert.ok(spellsCanonicalJson(deep, 'five-level', serializeCanonicalJson(deep, 'five-level')))
+  assert.ok(!spellsCanonicalJson(deep, 'five-level', serializeCanonicalJson(deep, 'two-space')))
   assert.ok(!spellsCanonicalJson(1e21, 'compact', '1e21'))
 })
 

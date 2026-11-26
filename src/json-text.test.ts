@@ -68,7 +68,7 @@ test('reads a value nested far past the call stack without recursing', () => {
 
 test('reads back every value the canonical serializer writes', { timeout: propertyTimeout }, () => {
   fc.assert(
-    fc.property(jsonValue, fc.constantFrom<JsonSpelling>('compact', 'two-space'), (value, spelling) => {
+    fc.property(jsonValue, fc.constantFrom<JsonSpelling>('compact', 'five-level', 'two-space'), (value, spelling) => {
       assert.deepEqual(parseJsonText(serializeCanonicalJson(value, spelling)), { value })
     }),
     propertyRuns(500),
