@@ -201,10 +201,19 @@ section, or one past 80 lines, is read in ranges.
 - `MIGRATION.md`: the top `## From` section, the release being built.
 - `README.md`: `## Goals`, `## Audience` and the sections the chunk changes or cites.
 - `docs/decisions.md`: only the entries the chunk cites, by their titles under `## Decisions` above.
-- `spec/flavour.md`, `spec/html.md`: the sections the chunk changes or cites.
+- `spec/flavour.md`, `spec/html.md`: the sections the chunk changes or cites. `spec/flavour.md`'s
+  `## Block nodes` runs 300 lines: read its `###` subsections by range.
 - A test file or `ci.sh`: its tests or legs, from
   `grep -nE '^\s*test\(|^(\w+=\S+ )*leg ' <file> | cut -c1-110`, then a ranged read of the ones the
   chunk touches.
+- A source file: its outline, from
+  `grep -nE '^(export )?(async )?(function|const|type|interface|class) ' <file> | cut -c1-110`,
+  then a ranged read of what the chunk touches.
+
+To run one test file or the typecheck the gate's way, without reading `ci.sh`, `docker-runner.sh`
+or `package.json`: `source ./docker-runner.sh`, then `in_image "$node_image" npm ci` once, then
+`in_image "$node_image" node --test <file>` or `in_image "$node_image" npx tsc --noEmit`. `./ci.sh`
+runs every leg.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
