@@ -14,7 +14,6 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 107 | 0.4.0 |  | question | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
-| 210 | 0.4.0 |  | principle | **Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 211 | 0.4.0 |  |  | **Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 196 | 0.4.0 |  | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -90,21 +89,6 @@ Touches:
 - `corpus/round-trip/opaque-carry/code-block-children.md`
 - `corpus/errors/carry-fence-type.md`
 - `corpus/errors/carry-fence-type-spellable.md`
-
-### 210. Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.
-
-Item 172 parametrized every other test file and left these two to the chunk of item 207, which
-held them then. Three tests of `src/wiki/emit/adf-to-jira-wiki.test.ts` build a deep value with
-`for (let level = 0; …) value = [value]`: give the file one nesting helper, as
-`src/markdown/emit/limits.test.ts` has in `wrapped`. One test of
-`src/wiki/parse/jira-wiki-to-adf.test.ts` runs `for (const around of ['\n', '\r\n', ' '])`: build
-one test per case at the top level. Technical principle: "No loops or branches in a test body;
-parametrize the cases".
-
-Touches:
-
-- `src/wiki/emit/adf-to-jira-wiki.test.ts`: `lines 320-570` (small)
-- `src/wiki/parse/jira-wiki-to-adf.test.ts`: `lines 350-365` (small)
 
 ### 211. Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.
 
