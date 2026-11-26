@@ -69,7 +69,7 @@ const readings: [string, string[]][] = [
 ]
 
 for (const [source, expected] of readings) {
-  test(`reads an image among links, marks and directives as its alt text, with (image) after the link that holds it: ${source}`, () => {
+  test(`reads a line of links, images, marks and directives, an image inside a link as its alt text with (image) after the link: ${JSON.stringify(source)}`, () => {
     assert.deepEqual(reading(source), expected, source)
   })
 }

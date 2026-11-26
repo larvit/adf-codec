@@ -422,7 +422,7 @@ const linkedCards: [string, AdfNode][] = [
 ]
 
 for (const [held, card] of linkedCards) {
-  test(`refuses an inline card holding ${held} that a link marks, which Atlassian's schema does not allow`, () => {
+  test(`refuses an inline card a link marks, the card holding ${held}, which Atlassian's schema does not allow`, () => {
     const refused = adfToHtml(document(paragraph(text('See '), card)))
     assert.equal(!refused.ok && refused.error.code, 'unsupported-node-shape')
     assert.deepEqual(!refused.ok && refused.error.path, ['content', 0, 'content', 1])
@@ -430,7 +430,7 @@ for (const [held, card] of linkedCards) {
   })
 }
 
-test('refuses an inline card a link marks inside a carried node and a list item too', () => {
+test('refuses an inline card a link marks inside a carried node and inside a list item', () => {
   const card: AdfNode = { attrs: { url: 'https://example.com/roadmap' }, marks: linkMarks, type: 'inlineCard' }
   const carried = adfToHtml(document({ content: [paragraph(card)], type: 'bodiedExtension' }))
   assert.deepEqual(!carried.ok && carried.error.path, ['content', 0, 'content', 0, 'content', 0])
@@ -723,7 +723,7 @@ test('refuses, at the item\'s text, an inline carry nested past 500 in a task or
 })
 
 for (const type of ['panel', 'expand', 'nestedExpand']) {
-  test(`writes panels, expands and nested expands nested 500 levels, and refuses the next level: ${type}`, () => {
+  test(`writes ${type} nodes nested 500 levels, and refuses the next level`, () => {
     assert.equal(refusal(adfToHtml(document(nested(type, largestNesting, paragraph(text('x')))))), 'written')
     const deep = adfToHtml(document(nested(type, largestNesting + 1, paragraph(text('x')))))
     assert.equal(refusal(deep).startsWith('unsupported-nesting-depth at /'), true)
@@ -737,7 +737,7 @@ const nestedTaskLists: AdfNode[] = [
 ]
 
 for (const list of nestedTaskLists) {
-  test(`writes a task or decision list nested 499 levels, its items one level below it, and refuses the next level: ${list.type}`, () => {
+  test(`writes a ${list.type} nested 499 levels, its items one level below it, and refuses the next level`, () => {
     assert.equal(refusal(adfToHtml(document(nested('panel', largestNesting - 1, list)))), 'written')
     const deep = adfToHtml(document(nested('panel', largestNesting, list)))
     assert.equal(refusal(deep).startsWith('unsupported-nesting-depth at /'), true)

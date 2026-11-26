@@ -298,7 +298,7 @@ test('writes the items of a list nested in a list in a cell a space apart, witho
 const textlessBlocks: AdfNode[] = [paragraph(), paragraph({ type: 'hardBreak' }), { type: 'rule' }, { content: [text('\n')], type: 'codeBlock' }]
 
 for (const first of textlessBlocks) {
-  test(`keeps a row on its line when the first block of a cell is ${JSON.stringify(first)}`, () => {
+  test(`keeps a row on its line when the first block of a cell holds no text: ${JSON.stringify(first)}`, () => {
     assert.equal(plain(adfToPlainText(document(table(row(cell(line('a')), cell(first, line('b'))), row(cell(first, line('c')), cell(line('d'))))))), 'a | b\nc | d')
   })
 }

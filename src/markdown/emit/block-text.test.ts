@@ -16,7 +16,7 @@ const { tree } = fc.letrec<{ tree: BlockText }>((tie) => ({
   ),
 }))
 
-function propertyReads(emptyLines: number): number {
+function readsThroughThreePrefixes(emptyLines: number): number {
   let count = 0
   let body = blockText(`a${'\n'.repeat(emptyLines)}`)
   for (let depth = 0; depth < 3; depth += 1) {
@@ -50,5 +50,5 @@ test('measures a block text as the text it writes', { timeout: propertyTimeout }
 })
 
 test('writes an empty line without reading the started prefixes inside its innermost quote', () => {
-  assert.equal(propertyReads(1000), propertyReads(1))
+  assert.equal(readsThroughThreePrefixes(1000), readsThroughThreePrefixes(1))
 })
