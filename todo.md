@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 209`
+`Next ID = 210`
 
 ## Items
 
@@ -16,6 +16,7 @@
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 207 | 0.4.0 |  |  | **Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.** | 2 | 2 | 2 | 4 | 3 | 11 by 3, 6 by 1 | 3.4 |
+| 209 | 0.4.0 |  |  | **End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.** | 2 | 2 | 2 | 4 | 2 | 11 by 2 | 2.2 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -93,6 +94,17 @@ Touches:
 - `spec/wiki.md`: `## Marks`
 - `src/wiki/emit/adf-to-jira-wiki.test.ts`
 - `src/wiki/parse/jira-wiki-to-adf.test.ts`
+
+### 209. End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.
+
+`address` in `src/wiki/parse/inline.ts` ends a bare `http(s)://` address at `)`, `'` and `!`. Probes of a Jira Cloud site on 2026-11-26, a wiki description line holding the bare address read back as ADF, show Jira links through all three: `http://x/a)b`, `http://x/a'b` and `http://x/a!b` each read as one link whose text and `href` are the whole string. Jira ends a bare address at `"`, a backtick and `>`, and not at `<`; item 207 fixed those.
+
+How Jira treats a trailing `)`, `'` or `!` is still unprobed. The test 'a bare address less the punctuation ending it' in `src/wiki/parse/jira-wiki-to-adf.test.ts` reads `(http://a.b/c).` as the link `http://a.b/c` plus `).`. Probe first: `http://x/a)`, `(http://x/a)`, `http://x/a!` and `http://x/a'`, each alone and in a sentence. Then make the reader end a bare address as Jira does, and update the ends `spec/wiki.md` §What only the reader reads lists.
+
+Touches:
+- `src/wiki/parse/inline.ts`: `address`, `bareAddress` (small)
+- `src/wiki/parse/jira-wiki-to-adf.test.ts`
+- `spec/wiki.md`: `## What only the reader reads` (small)
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 
