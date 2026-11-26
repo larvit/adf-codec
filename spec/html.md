@@ -259,6 +259,10 @@ at its edges.
 | `<script>`, `<style>`, a comment, a doctype, a processing instruction, an element with `hidden`, and `<area>`, `<base>`, `<basefont>`, `<datalist>`, `<head>`, `<link>`, `<meta>`, `<noembed>`, `<noframes>`, `<param>`, `<rp>`, `<template>`, `<title>` | nothing, with all they hold |
 | any other element | what it holds; one a browser shows as a block parts the text around it into paragraphs, or into lines of the paragraph or heading it stands in |
 
+An element read as nothing that misses its end tag ends where HTML's parser ends it: a `<head>` at
+the first element a `<head>` cannot hold, and a hidden `<p>`, `<li>`, `<tr>`, `<td>` or `<th>` at
+the block, item, row or cell that ends one a browser shows.
+
 Every other attribute is dropped, `style` included. A paragraph, heading, quote, list, table or row
 holding nothing is dropped; an item, cell or expand holding nothing holds an empty paragraph. An
 item outside a list, a row or cell outside a table, and a second `<summary>` read as what they hold.

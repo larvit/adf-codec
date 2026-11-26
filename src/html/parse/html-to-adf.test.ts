@@ -991,6 +991,11 @@ const foreign: Readonly<Record<string, readonly [string, AdfDocument]>> = {
 	'the end tag of a block around a <pre> as the end of both': ['<div><pre>a</div>b</pre><table><tr><td><pre>c</td><td>d</pre></td></tr></table>', document({ content: [text('a')], type: 'codeBlock' }, paragraph(text('b')), table([cell('tableCell', { content: [text('c')], type: 'codeBlock' }), cell('tableCell', paragraph(text('d')))]))],
 	'tags in the text of a <script> or <style> as that text, which ends at its end tag in any case': ['<p>a<script>x = "</p><p>b"</script>c<style>d</STYLE>e</p>', document(paragraph(text('ace')))],
 	'an element a browser shows nothing of and that takes no end tag as nothing, the text after it kept': ['<p>a<meta>b<link>c<base>d<area>e<param>f<basefont>g<br hidden>h</p>', document(paragraph(text('abcdefgh')))],
+	'a <head> missing its end tag as ended by the first element a <head> cannot hold': ['<head><meta charset="utf-8"><title>T</title><body><p>a</p>', document(paragraph(text('a')))],
+	'a hidden paragraph missing its end tag as ended by the next block': ['<p hidden>a<b>b<p>c</p><p hidden>d<div>e</div><p hidden>f<hr>', document(paragraph(text('c')), paragraph(text('e')), { type: 'rule' })],
+	'a hidden item missing its end tag as ended by the next item of its list, not by one of a list inside it': ['<ul><li hidden>a<ul><li>b</ul><li>c</ul>', document(list('bulletList', { content: [paragraph(text('c'))], type: 'listItem' }))],
+	'a hidden cell or row missing its end tag as ended by the next cell or row of its table': ['<table><tr><td hidden>a<td>b<tr hidden><td>c<table><tr><td>d</table><tr><td>x<th hidden>e<tr><td>f</table>', document(table([cell('tableCell', paragraph(text('b')))], [cell('tableCell', paragraph(text('x')))], [cell('tableCell', paragraph(text('f')))]))],
+	'a hidden element no start tag ends as hiding all up to its end tag': ['<div hidden><p>a<p>b<li>c</div>d', document(paragraph(text('d')))],
 	'a language only from a <code>, the first one, and only from a language- class': ['<pre><span class="language-x">a</span></pre><pre><code class="language-a"><code class="language-b">b</code></code></pre><pre><code class="highlight-source">c</code></pre>', document({ content: [text('a')], type: 'codeBlock' }, { attrs: { language: 'a' }, content: [text('b')], type: 'codeBlock' }, { content: [text('c')], type: 'codeBlock' })],
 	'an href on an element that is no <a>, and a start on a <ul>, as dropped': ['<b href="u">x</b><ul start="3"><li>a</li></ul>', document(paragraph(text('x', strong)), list('bulletList', { content: [paragraph(text('a'))], type: 'listItem' }))],
 	'an image inside an element in a link as the link text, its (image) after the link': ['<a href="u"><span><img src="i" alt="x"></span> y</a>', document(paragraph(text('x y', link('u')), text(' ('), text('image', link('i')), text(')')))],
@@ -1023,7 +1028,7 @@ for (const name of ['address', 'article', 'aside', 'body', 'caption', 'center', 
 	})
 }
 
-for (const name of ['datalist', 'head', 'noembed', 'noframes', 'rp', 'script', 'style', 'template', 'title']) {
+for (const name of ['datalist', 'noembed', 'noframes', 'rp', 'script', 'style', 'template', 'title']) {
 	test(`reads foreign HTML dropping <${name}>, which a browser shows nothing of, with all it holds`, () => {
 		assert.deepEqual(read(htmlToAdf(`<p>a<${name}>b<i>c</i></${name}>d</p>`)), document(paragraph(text('ad'))))
 	})
