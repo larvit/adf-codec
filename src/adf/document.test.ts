@@ -144,7 +144,7 @@ for (const [name, value] of unheldValues) {
   })
 }
 
-test('refuses attributes, or a mark attribute value, that are an object JSON does not hold', () => {
+test('refuses attributes that are an object JSON does not hold, and a mark attribute value that is one', () => {
   assert.equal(readable({ content: [{ attrs: new Map(), type: 'paragraph' }], type: 'doc', version: 1 }), false)
   assert.equal(readable({ content: [{ marks: [{ attrs: { href: new URL('https://x.test') }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
 })

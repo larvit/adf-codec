@@ -20,7 +20,7 @@ for (const [text, kind] of tokenKinds) {
 }
 
 for (const construct of constructs) {
-  test(`text spelling such a construct round-trips: ${construct}`, () => {
+  test(`text spelling an HTML construct round-trips: ${construct}`, () => {
     const document: AdfDocument = { content: [{ content: [{ text: `a ${construct}`, type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }
     const written = adfToLosslessMarkdown(document)
     assert.ok(written.ok)

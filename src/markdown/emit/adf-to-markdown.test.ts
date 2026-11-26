@@ -174,7 +174,7 @@ test('carries a code block holding a node no fence holds', () => {
 })
 
 for (const child of [{ attrs: {}, text: 'x', type: 'text' }, { content: [], text: 'x', type: 'text' }, { marks: [], text: 'x', type: 'text' }, { content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }]) {
-  test(`carries a code block holding ${JSON.stringify(child)}`, () => {
+  test(`carries a code block holding a text node no fence holds: ${JSON.stringify(child)}`, () => {
     assert.ok(markdown(adfToLosslessMarkdown(document({ content: [child], type: 'codeBlock' }))).startsWith('```adf:codeBlock\n'))
   })
 }

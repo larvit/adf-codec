@@ -100,7 +100,7 @@ const deepBottoms: AdfNode[] = [
 ]
 
 for (const bottom of deepBottoms) {
-  test(`refuses nesting past 500 levels above a ${bottom.type} holding a ${bottom.content?.[0]?.type}`, () => {
+  test(`refuses 500 levels of nesting around ${bottom.type} holding ${bottom.content?.[0]?.type}`, () => {
     const deep = nestedIn(largestNesting, bottom, (inner) => ({ content: [inner], type: 'layoutColumn' }))
     assert.equal(portableDocument(document(deep)).split(' ')[0], 'unsupported-nesting-depth')
   })
@@ -445,8 +445,13 @@ test('gives up every highlight run whose own delimiter cannot flank in one fallb
   assert.deepEqual(portableLineFallback(line, 'paragraph', [], 'spanned'), { ok: true, value: { kind: 'unspellable-run', runs } })
 })
 
-for (const mark of [{ attrs: { a: 1 }, type: 'em' }, { type: 'odd' }]) {
-  test(`refuses a portable line holding a text marked ${mark.type} as only the carry spells it, at the line`, () => {
+const carriedMarks: [string, AdfMark][] = [
+  ['an em mark holding an attribute', { attrs: { a: 1 }, type: 'em' }],
+  ['a mark of an unknown type', { type: 'odd' }],
+]
+
+for (const [held, mark] of carriedMarks) {
+  test(`refuses, at the line, a portable line whose text holds ${held}, which only the carry spells`, () => {
     const refused = portableLineFallback([text('x', mark)], 'paragraph', ['content', 0], 'spanned')
     assert.deepEqual(refused.ok ? refused : [refused.error.code, refused.error.path], ['unsupported-node-shape', ['content', 0]])
   })
@@ -525,8 +530,7 @@ test('writes a text node holding content the same in either order beside its nei
 test('writes a task list nested to the deepest level the reader carries, and refuses one more at the item holding it', () => {
   const task = (): AdfNode => node('taskItem', { state: 'TODO' }, text('a'))
   const nested = (levels: number): AdfNode => {
-    const list = nestedIn<AdfNode>(levels - 1, { content: [task()], type: 'taskList' }, (inner) => ({ content: [task(), inner], type: 'taskList' }))
-    return list
+    return nestedIn<AdfNode>(levels - 1, { content: [task()], type: 'taskList' }, (inner) => ({ content: [task(), inner], type: 'taskList' }))
   }
   const written = portable(nested(largestNesting))
   assert.ok(portableMarkdownToAdf(written).ok)

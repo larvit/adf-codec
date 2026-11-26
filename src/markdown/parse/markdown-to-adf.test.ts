@@ -904,7 +904,7 @@ function broken(...marks: AdfMark[]): AdfNode[] {
 }
 
 for (const read of readers) {
-  test(`gives the hard break inside a mark spelling no marks in ${read.name}`, () => {
+  test(`reads a hard break inside a mark's spelling without that mark in ${read.name}`, () => {
     assert.deepEqual(content(read('*a  \nb*\n')), broken(em))
     assert.deepEqual(content(read('**a\\\nb**\n')), broken(strong))
     assert.deepEqual(content(read('[a\\\nb](/u)\n')), broken(link('/u')))
@@ -916,7 +916,7 @@ for (const read of readers) {
   })
 }
 
-test('gives the hard break inside a mark only the lossless flavour spells no marks', () => {
+test('reads a hard break inside the spelling of a mark only the lossless flavour spells without that mark', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('~~a\\\nb~~\n')), broken(strike))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:hardBreak{}b]\n')), broken(underline))
   const localId = '01a0431d-201e-7400-a175-9c04d3628f95'

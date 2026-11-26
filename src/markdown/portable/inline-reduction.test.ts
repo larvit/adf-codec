@@ -43,7 +43,7 @@ const linkRunsWithoutCode: [string, AdfNode[]][] = [
 ]
 
 for (const [shape, line] of linkRunsWithoutCode) {
-  test(`refuses an opening-link fallback whose link run ${shape}`, () => {
+  test(`refuses an opening-link fallback whose link run holds no code span, where the run ${shape}`, () => {
     const refused = withoutFallback(line, { kind: 'opening-link' }, [])
     assert.equal(refused.ok ? 'kept' : refused.error.code, 'unsupported-node-shape')
   })
