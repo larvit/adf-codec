@@ -17,7 +17,6 @@
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 209 | 0.4.0 |  |  | **End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.** | 2 | 2 | 2 | 4 | 2 | 11 by 2 | 2.2 |
-| 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
@@ -106,49 +105,6 @@ Touches:
 - `src/wiki/parse/inline.ts`: `address`, `bareAddress` (small)
 - `src/wiki/parse/jira-wiki-to-adf.test.ts`
 - `spec/wiki.md`: `## What only the reader reads` (small)
-
-### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
-
-134 loops run several readers or cases inside one test body, for example
-`for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf])` at lines 97,
-279, 771, 917, 926, 962 and 1118 of `src/markdown/parse/markdown-to-adf.test.ts`; the most are in
-`adf-schema.test.ts` (18), `limits.test.ts` (12) and `portable-markdown-to-adf.test.ts` (10). The
-first failing reader stops the test and the failure never names the reader. Write
-``for (const read of readers) test(`… in ${read.name}`, …)`` at the top level. Technical principle:
-"No loops or branches in a test body; parametrize the cases". Found by the principles audit of the
-release review of 0.3.0, 2026-11-08.
-
-Touches:
-
-- `src/conformance/adf-schema.test.ts`
-- `src/conformance/commonmark-spec.test.ts`
-- `src/conformance/corpus.test.ts`
-- `src/conformance/adf-property.test.ts`
-- `src/conformance/flavour.test.ts`
-- `src/conformance/markdown-property.test.ts`
-- `src/html/parse/html-to-adf.test.ts`
-- `src/html/emit/adf-to-html.test.ts`
-- `src/markdown/emit/limits.test.ts`
-- `src/markdown/emit/unspellable-runs.test.ts`
-- `src/markdown/emit/inline-line.test.ts`
-- `src/markdown/emit/block-text.test.ts`
-- `src/markdown/emit/adf-to-markdown.test.ts`
-- `src/markdown/parse/markdown-to-adf.test.ts`
-- `src/markdown/parse/blocks.test.ts`
-- `src/markdown/portable/portable-markdown-to-adf.test.ts`
-- `src/markdown/portable/adf-to-portable-markdown.test.ts`
-- `src/markdown/portable/inline-reduction.test.ts`
-- `src/markdown/portable/task-ids.test.ts`
-- `src/markdown/portable/editor-normal.test.ts`
-- `src/markdown/inline-tokens.test.ts`
-- `src/markdown/commonmark/link-syntax.test.ts`
-- `src/markdown/commonmark/entity-references.test.ts`
-- `src/markdown/commonmark/case-folding.test.ts`
-- `src/adf/document.test.ts`
-- `src/plain-text/adf-to-plain-text.test.ts`
-- `src/json-text.test.ts`
-- `src/result.test.ts`
-- `src/canonical-json.test.ts`
 
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 
