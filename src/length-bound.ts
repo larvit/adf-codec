@@ -1,3 +1,4 @@
+import type { ConvertErrorPath } from './result.ts'
 import { failure, success, type Result } from './result.ts'
 
 // V8's longest string, refused on every engine so a document converts alike everywhere (docs/decisions.md §Output past V8's longest string is refused on every engine).
@@ -14,8 +15,15 @@ const pastEngineLimit = [
 	'RangeError: invalid array length',
 ]
 
+// Reading a line back takes about 70 bytes a character, so a longer line ends V8 on its heap limit past any `try` (docs/decisions.md §The writer refuses a line longer than 2^25 characters before reading it back).
+export const longestLine = 2 ** 25
+
 export function tooLong<T>(): Result<T> {
 	return failure('unsupported-node-shape', `this conversion would build text longer than ${longestOutput} characters, the longest this library writes`, [])
+}
+
+export function tooLongLine<T>(path: ConvertErrorPath): Result<T> {
+	return failure('unsupported-node-shape', `this line would be longer than ${longestLine} characters, the longest this library reads back`, path)
 }
 
 export function withinLongest<T>(length: number, value: T): Result<T> {

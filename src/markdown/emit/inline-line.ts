@@ -19,6 +19,7 @@ import { isSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
+import { longestLine, tooLongLine } from '../../length-bound.ts'
 import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive/syntax.ts'
 import { spellInlineNodeAttributes } from '../directive/inline-spelling.ts'
 import { spellTextDirective } from '../directive/text.ts'
@@ -98,10 +99,13 @@ export function tryImageLine(alt: string | undefined, url: string, flavour: Writ
 	if (destination === undefined) return undefined
 	const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
 	// Both flavours read an image's description with highlights off, so the lossless flavour's escapes read back in either.
-	if (link === undefined) return attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', 'lossless').line
-	const target = spellLinkTarget(link.destination, link.title, titleEscapes(flavour, 'paragraph'))
-	if (target === undefined) return undefined
-	return attemptLine([syntax('[!['), ...description, syntax(']('), bracketedLinkTarget(destination), syntax(`)](${target})`)], 'paragraph', 'lossless').line
+	let segments = [syntax('!['), ...description, syntax(`](${destination})`)]
+	if (link !== undefined) {
+		const target = spellLinkTarget(link.destination, link.title, titleEscapes(flavour, 'paragraph'))
+		if (target === undefined) return undefined
+		segments = [syntax('[!['), ...description, syntax(']('), bracketedLinkTarget(destination), syntax(`)](${target})`)]
+	}
+	return lineLength(segments) > longestLine ? undefined : attemptLine(segments, 'paragraph', 'lossless').line
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
@@ -189,7 +193,12 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
 	const emission = emitRun(nodes.map((node, index) => ({ carried: carries(node, carried, index), node, outer: 0 })), 0, 0, context)
 	if (!emission.ok) return emission
 	if (emission.value.carries !== undefined) return emission
-	return success({ segments: spellEdgeWhitespace(emission.value.segments, flavour) })
+	const segments = spellEdgeWhitespace(emission.value.segments, flavour)
+	return lineLength(segments) > longestLine ? tooLongLine(path) : success({ segments })
+}
+
+function lineLength(segments: readonly InlineSegment[]): number {
+	return segments.reduce((length, segment) => length + segment.text.length, 0)
 }
 
 function attemptLine(segments: InlineSegment[], container: LineContainer, flavour: WrittenFlavour): LineAttempt {

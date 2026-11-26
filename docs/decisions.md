@@ -1097,6 +1097,23 @@ runs: V8 aborts the process on the second `JSON.stringify` of a 2^28-character s
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
 
+## The writer refuses a line longer than 2^25 characters before reading it back
+
+2026-11-26, the maintainer. Goal 1. Valid while the reader takes about 70 bytes a character and V8's
+heap limit stays near 2 GB.
+
+The markdown writers refuse a line longer than 2^25 characters (`longestLine`), before reading it
+back, as `unsupported-node-shape` at the path of the node holding the line. The writer reads each
+line back through the reader, and V8 aborts the process, past any `try`, on the heap that takes: a
+line of 2^26 characters needs about 4.7 GB. The code is `unsupported-node-shape`, not
+`engine-limit`: the library refuses a stated bound that no retry passes, and the engine doesn't
+throw anything (§Which code a cause takes). A line counts the characters before escaping, and a
+block carry is no line. An image that would stand past the bound as a line is written as its
+directive.
+
+Rejected: cutting the reader's memory per character until a 2^28-character line fits V8's heap
+limit, a rewrite of the inline scanner.
+
 ## HTML writes a URL as the ADF holds it, whatever its scheme
 
 2026-10-23, the maintainer; kept over a scheme filter 2026-10-26. Goal 1. Valid until the maintainer
