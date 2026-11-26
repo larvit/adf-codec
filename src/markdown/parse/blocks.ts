@@ -274,7 +274,7 @@ function matchBlankLine(containers: BlockTree['containers'], leaf: OpenLeaf | un
   const { edges, quoteEdges } = containers
   const last = edges.length - 1
   const innermost = edges[last]?.container
-  const emptyItem = last >= from && innermost?.kind === 'item' && innermost.blocks.length === 0 && leaf === undefined
+  const emptyItem = innermost?.kind === 'item' && innermost.blocks.length === 0 && leaf === undefined
   const stop = Math.min(quoteEdges[quotesPassed] ?? edges.length, emptyItem ? last : edges.length)
   return { depth: edges[stop]?.depth ?? containers.open.length, rest: stop === from ? line : { column: line.column, spaces: 0, text: '' } }
 }

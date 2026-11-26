@@ -179,7 +179,8 @@ test("keeps as spaces the columns a tab holds past an item's indentation", () =>
 })
 
 test('keeps a paragraph indented under a list item in that item, past a blank line', () => {
-  assert.deepEqual(kinds('- a\n\n  b'), ['bulletList'])
+  assert.equal(outline(parseBlocks('- a\n\n  b', 'lossless').blocks), 'list(paragraph(a) paragraph(b))')
+  assert.equal(outline(parseBlocks('> -\n>\n> b', 'lossless').blocks), 'quote(list() paragraph(b))')
 })
 
 test('opens an HTML block on a line holding a lone tag', () => {
