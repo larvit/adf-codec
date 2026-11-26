@@ -1710,13 +1710,12 @@ says which `^` do.
 Valid while Jira reads `\\` as a line break only where no `{` or backslash follows.
 
 Probed on the live test site on 2026-11-26: `a\\\_a`, `a\\{color:red}x{color}`, `a\\{{x}}`,
-`a\\{anchor:x}`, `a\\\{b` and `a\\\\b` show `\\` as text, so each spells a break nowhere. Jira reads a
+`a\\{anchor:x}`, `a\\\{b` and `a\\\\b` show `\\` as text. Jira reads a
 break before a letter, a delimiter, `[` or `!`. A line feed after `\\` adds a second break, an empty
-`{noformat}{noformat}` after it splits the paragraph, and a space after it reads, as a break and a
+`{noformat}{noformat}` after it splits the paragraph, and a space after it reads as a break and a
 space. Jira writes a `hardBreak` as a line feed, which a list item or a table cell can't hold, since
 it ends the item or the row.
 
 The lossless writer carries a `hardBreak` right before a spelling that starts with `{` or a
-backslash, a carry included, so `jiraWikiToAdf` reads each break back. The lossy writer carries
-nothing and a space is form, so it writes `\\ ` there, which covers a text starting with a backslash
-run it writes between `{noformat}`.
+backslash, a carry included, so `jiraWikiToAdf` reads each break back. The lossy writer never
+carries, and a space after the break adds no content, so it writes `\\ ` there.
