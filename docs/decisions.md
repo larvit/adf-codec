@@ -1652,8 +1652,7 @@ up front whether HTML is foreign, so a flag or a second name makes them guess.
 
 ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string
 
-2026-11-17, the implementer of `jiraWikiToAdf`; confirmed by the maintainer 2026-11-26 except
-`-- `. Goals 1, 6 and 11.
+2026-11-17, the implementer of `jiraWikiToAdf`; confirmed by the maintainer 2026-11-26. Goals 1, 6 and 11.
 Valid while `jiraWikiToAdf` returns a `Result`.
 
 Wiki markup has no syntax error: Jira shows markup it can't read as text, and so does the reader.
