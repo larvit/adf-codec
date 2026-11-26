@@ -1720,3 +1720,9 @@ Read most (opens and searches):
 - `docs/decisions.md` 2
 - `src/canonical-json.test.ts` 2
 - `src/markdown/emit/adf-to-markdown.ts` 2
+
+## Reading cost, chunk 08c25a2c3065, finished 2026-11-26T10:04:08Z
+
+58420 new input tokens before the first commit.
+
+## Reading cost reset, 2026-11-26T10:05:04Z
