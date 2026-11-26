@@ -218,6 +218,16 @@ for (const [name, following, expected] of hardBreakBeforeBrace) {
   })
 }
 
+test('carries a hard break that holds a mark, and the text before a brace stays', () => {
+  assert.equal(wiki(paragraph(text('a'), { marks: [{ type: 'strong' }], type: 'hardBreak' }, text('_a'))), `a${inline('{"marks":[{"type":"strong"}],"type":"hardBreak"}')}\\_a`)
+  assert.equal(wiki(paragraph(text('a '), text('x', { type: 'code' }))), 'a {{x}}')
+  assert.equal(wiki(paragraph(text('a'), hardBreak, text('b{c'))), 'a\\\\b\\{c')
+})
+
+test('carries a heading holding a hard break before an escaped character', () => {
+  assert.equal(wiki({ attrs: { level: 1 }, content: [text('a'), hardBreak, text('_a')], type: 'heading' }).startsWith('{adf:display=block}'), true)
+})
+
 test('writes a hard break as two backslashes where a letter, a delimiter or a mark follows', () => {
   assert.equal(wiki(paragraph(text('a'), hardBreak, text('b', { type: 'strong' }), hardBreak, text('c'))), 'a\\\\*b*\\\\c')
 })

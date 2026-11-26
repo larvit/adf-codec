@@ -19,6 +19,8 @@ type SpelledMark = { delimiters: Delimiters; mark: AdfMark }
 type Token = { checked: boolean; kind: 'atom' | 'close' | 'open'; text: string }
 
 const hardBreakSpelling = '\\\\'
+// What `inlineCarry` writes for a hard break holding nothing.
+const carriedHardBreak = '{adf:display=inline}{"type":"hardBreak"}{adf}'
 const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], ['strike', '-'], ['strong', '*'], ['underline', '+']])
 
 // spec/wiki.md, Inline and Marks. `lossy`: spec/wiki.md, The lossy writer: a group whose delimiters don't read drops the marks they stand for.
@@ -28,8 +30,8 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, in
   let line = ''
   let before: string | undefined
   let carried = false
-  // The hard break, with its place in `line` and its index, that the line's last group wrote as `\\`.
-  let held: { at: number; index: number; node: AdfNode } | undefined
+  // Where in `line` the hard break that the last group wrote as `\\` starts.
+  let held: number | undefined
   for (const [position, { first, last }] of groups.entries()) {
     const next = groups[position + 1]
     // A group that opens with a delimiter or a carry opens with punctuation, which reads as the line's edge does.
@@ -47,13 +49,10 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, in
     }
     // Jira reads `\\` as a line break only where no `{` or `\` follows: the lossless writer carries the break then, the lossy writer follows it with a space.
     if (held !== undefined && /^[{\\]/.test(spelling)) {
-      const unread = lossy ? success('\\\\ ') : inlineCarry([held.node], [...path, 'content', held.index])
-      if (!unread.ok) return unread
-      line = line.slice(0, held.at) + unread.value
+      line = line.slice(0, held) + (lossy ? `${hardBreakSpelling} ` : carriedHardBreak)
       carried ||= !lossy
     }
-    const node = nodes[first]
-    held = node?.type === 'hardBreak' && written === hardBreakSpelling ? { at: line.length, index: first, node } : undefined
+    held = written === hardBreakSpelling ? line.length : undefined
     line += spelling
     before = lastCharacter(spelling) ?? before
   }
