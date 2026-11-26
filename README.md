@@ -1,4 +1,4 @@
-# @larvit/adf-codec — ADF to markdown, HTML and plain text, markdown to ADF
+# @larvit/adf-codec — ADF to markdown, HTML, Jira wiki markup and plain text, and back
 
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
@@ -17,9 +17,9 @@ products store as ADF.
 * `adfToPortableMarkdown` — ADF to markdown that GitHub, GitLab and Obsidian render. Keeps the content and drops colours, layout and other attributes.
 * `adfToHtml` — ADF to HTML.
 * `htmlToAdf` — HTML to ADF.
-* `jiraWikiToAdf` — Jira wiki markup to ADF, read as Jira renders it, with an `{adf}` macro read as the node it holds.
-* `adfToLosslessJiraWiki` — ADF to Jira wiki markup, with an `{adf}` macro around each node, mark or attribute wiki markup has no spelling for, so `jiraWikiToAdf` gives you the ADF you started from.
-* `adfToLossyJiraWiki` — ADF to Jira wiki markup alone: what wiki markup cannot spell keeps its text and loses its form.
+* `adfToLosslessJiraWiki` — ADF to Jira wiki markup, wrapping each node, mark or attribute wiki markup has no spelling for in Jira's own `{adf}` macro, so `jiraWikiToAdf` gives you the ADF you started from. In a document from Jira, each mention and each node holding a `localId` is wrapped too.
+* `jiraWikiToAdf` — the way back: Jira wiki markup to ADF, read as Jira Cloud renders it, with an `{adf}` macro read as the node it holds. It reads the lossy writer's output too, so saving that drops what the writer dropped.
+* `adfToLossyJiraWiki` — ADF to Jira wiki markup alone, for a person to read: what wiki markup cannot spell keeps its content and loses its form.
 * `adfToPlainText` — ADF to text for an email, a notification or a search index: blocks a blank line apart, lists as `• ` and `1.`, no markup.
 
 ## Features and perks
@@ -32,9 +32,10 @@ products store as ADF.
 * Errors are returned, never thrown.
   * Every error has a code from a closed list.
 
-Atlaskit's markdown transformer converts markdown to ADF, and its ADF to markdown throws. Its Jira
-wiki markup transformer reads back a different document and throws on a node type it doesn't know.
-[Other ADF converters](#other-adf-converters) compares this package with it and the rest.
+Atlaskit's markdown transformer converts markdown to ADF, and its ADF to markdown throws. Atlaskit's
+Jira wiki markup transformer writes wiki markup that reads back as a different document, and throws
+on a node type it doesn't know. [Other ADF converters](#other-adf-converters) compares this package
+with both and the rest.
 
 ## Install
 
@@ -264,9 +265,6 @@ if (result.ok) {
 }
 ```
 
-`jiraWikiToAdf` reads every string, and refuses only a broken `{adf}` macro and input past the
-nesting or engine limits.
-
 ### Handle a result's error
 
 Full reference: [The errors](#the-errors).
@@ -375,15 +373,15 @@ Serves [Goals](#goals) 3. The first table lists every npm package that runs in N
 or from markdown or Jira wiki markup, whatever its downloads: one that starts and converts anything is listed, and its
 row says where it fails ordinary input. A wrapper or fork of a listed package is left out. The list
 comes from npm searches on 2026-11-05 for "adf markdown", "markdown to adf", "adf to markdown",
-"atlassian document format" and "adf converter".
+"atlassian document format" and "adf converter", and on 2026-11-26 for "adf wiki", "wiki to adf",
+"adf to wiki" and "jira wiki markup adf".
 
-On 2026-11-05, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
+[`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
 ran each other package's published code at the version the table names, and this package's latest
-release, with default options. A package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
+release, with default options: on 2026-11-05, and `@atlaskit/editor-wikimarkup-transformer` on 2026-11-26 at its version as of 2026-11-05. A package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
 holding the same marks and link. `@atlaskit/editor-wikimarkup-transformer` got the same
-documents, and wiki markup holding those marks and that link, on 2026-11-26 with versions as of
-2026-11-05. The last column is the whole package as a bundler ships it: esbuild bundles it with its dependencies for Node,
+documents, and wiki markup holding those marks and that link. The last column is the whole package as a bundler ships it: esbuild bundles it with its dependencies for Node,
 minifies the bundle and gzips it at level 9. Where a row's figure leaves out a package or module its row needs, the
 cell adds it. This package's figure is the current source's.
 
@@ -391,7 +389,7 @@ cell adds it. This package's figure is the current source's.
 | --- | --- | --- | --- | --- | --- | --- |
 | `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in; Jira wiki markup: lossless, lossy | 0 | 86 kB |
 | `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 | 177 kB, or 211 kB with `@atlaskit/editor-json-transformer` |
-| `@atlaskit/editor-wikimarkup-transformer` 12.2.3 | both ways, reading through `@atlaskit/editor-json-transformer` 10.0.0 | a different document: the mention's `id` gains `accountid:` and its `text` is gone, the status comes back as bold coloured text, the marks in the other order | throws | Jira wiki markup | 4 | 188 kB, or 188.5 kB with `@atlaskit/editor-json-transformer` |
+| `@atlaskit/editor-wikimarkup-transformer` 12.2.3 | both ways, reading through `@atlaskit/editor-json-transformer` 10.0.0 | a different document: the mention's `id` gains `accountid:` and its `text` comes back empty, the status comes back as bold coloured text, the marks in the other order | throws | Jira wiki markup | 4 | 188 kB, or 188.5 kB with `@atlaskit/editor-json-transformer` |
 | `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 | 99 kB |
 | `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 | 0.9 kB, plus 7.5 kB of JavaScript it loads and a WebAssembly module of 6.9 MB |
 | `@wrtnlabs/markdown-to-adf` 1.0.2 | markdown to a list of blocks, not a document; fails ordinary input: `***bold italic***` comes out as italic text holding asterisks, and a paragraph holding a hard break stands between blocks | – | – | markdown | 2 | 21 kB |
@@ -457,14 +455,14 @@ Each call's name says which format it reads or writes:
 | Call | Reads or writes | Refuses with |
 | --- | --- | --- |
 | `adfToHtml` | writes HTML: the elements [HTML](#html) lists, and an `adf-carry` element holding everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `adfToLosslessJiraWiki` | writes Jira wiki markup, with an `{adf}` macro around each node, mark or attribute it has no spelling for ([`spec/wiki.md`](https://github.com/larvit/adf-codec/blob/main/spec/wiki.md)) | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `adfToLosslessJiraWiki` | writes Jira wiki markup, with an `{adf}` macro around each node, mark or attribute wiki markup has no spelling for ([`spec/wiki.md`](https://github.com/larvit/adf-codec/blob/main/spec/wiki.md)) | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark plus GFM's pipe tables and `~~`, with `!adf:` directives and `adf:` fences for everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `adfToLossyJiraWiki` | writes Jira wiki markup alone, with no `{adf}` macro: what it has no spelling for keeps its text and loses its form | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `adfToLossyJiraWiki` | writes Jira wiki markup alone, with no `{adf}` macro: what wiki markup has no spelling for keeps its content and loses its form | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToPlainText` | writes text with no markup: blocks a blank line apart; list items under `• ` or `1.`, a task item under `☑ ` or `☐ `, nesting indented; a link's address and title in parentheses after its text; a hard break a line feed; a mention, emoji, date and status as the text they show; a table as a line per row, cells apart by ` \| `; an image as its alt text, then its address in parentheses, the address alone with no alt text, and `[image]` with neither; a card as its address, or its name then its address in parentheses; an extension as its text; an expand's title above its body | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `jiraWikiToAdf` | reads Jira wiki markup as Jira renders it, and an `{adf}` macro as the node it holds; refuses only a broken `{adf}` macro | `engine-limit`, `not-a-string`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `jiraWikiToAdf` | reads Jira wiki markup as Jira renders it, and an `{adf}` macro as the node it holds; refuses a broken `{adf}` macro and input past the nesting or engine limits, and reads any other string | `engine-limit`, `not-a-string`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every code in [The errors](#the-errors) except `not-an-adf-document` and `unsupported-document-version` |
 | `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `engine-limit`, `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `readAdfDocument` | checks a parsed value you hold from a parser or a store, never JSON text, and returns a copy of it as an `AdfDocument`; writes nothing | `engine-limit`, `not-an-adf-document`, `unsupported-node-shape` |
@@ -800,8 +798,11 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
     link marks;
   - holds the document's own carry element beside another block.
 - **Reading, in `jiraWikiToAdf`.** Fix what the message names. The wiki markup holds an `{adf}`
-  macro that is left open, holds anything but one ADF node's JSON, or opens inside a line and
-  closes on a later one.
+  macro that:
+  - is left open;
+  - holds anything but one ADF node's JSON, or a number JSON cannot spell;
+  - opens inside a line and closes on a later one;
+  - carries a node the writers' cause below names, such as an inline card a link marks.
 - **Writing, in `adfToLosslessMarkdown`**: a node not riding the carry that carries one mark type
   twice. Keep the ADF and show the document read-only; where you built the ADF, fix
   what the message names.
@@ -836,21 +837,28 @@ Serves [Goals](#goals) 1, 4, 5 and 11.
   opaquely
   ([Unknown nodes ride the carry](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 - `htmlToAdf(adfToHtml(doc))` deep-equals `doc` on the same terms.
-- `jiraWikiToAdf(adfToLosslessJiraWiki(doc))` deep-equals `doc` on the same terms. Wiki markup has
-  no spelling for some nodes, marks and attributes, so the writer wraps each in Jira's `{adf}`
-  macro, which Jira renders ([`spec/wiki.md`](https://github.com/larvit/adf-codec/blob/main/spec/wiki.md#the-carry)).
+- `jiraWikiToAdf(adfToLosslessJiraWiki(doc))` deep-equals `doc` on the same terms. The writer's
+  `{adf}` macro is Jira's own, which Jira Cloud renders, the only Jira confirmed
+  ([`spec/wiki.md`](https://github.com/larvit/adf-codec/blob/main/spec/wiki.md#the-carry)).
   `adfToLossyJiraWiki` writes no macro: it keeps the content of what wiki markup cannot spell, and
-  drops its attributes and form.
-- Jira shows a hard break that a `{` or a character the writers escape with a backslash follows as
-  backslashes, not a line break. `jiraWikiToAdf` reads the writers' spelling as the break.
-- `jiraWikiToAdf` reads a string as Jira renders it, except in places that are each a string the
-  writers never write
-  ([`spec/wiki.md`](https://github.com/larvit/adf-codec/blob/main/spec/wiki.md#what-only-the-reader-reads)):
-  a block macro after other text on its line, and an image sharing its line, read as text; `-- ` at
-  a line's start reads as an en dash, where Jira reads a nested bullet; a bare address ends at `)`,
-  `'` and `!`, where Jira links through them; a delimiter reads by the rule the writers escape by,
-  which differs from Jira's at an edge such as `x^2^`; and a link address that Jira links and
-  `spec/wiki.md` doesn't list reads as text.
+  drops its attributes and form. Saving its output through `jiraWikiToAdf` drops them from the
+  document; use it where a person reads the markup and nothing is saved back.
+- Where a `{`, or a character the writers escape with a backslash, follows a hard break, Jira shows
+  the writers' `\\` as backslashes, not as a line break. `jiraWikiToAdf` reads that `\\` as the break.
+- `jiraWikiToAdf` reads a string as Jira Cloud renders it, except for these strings, which the writers never
+  write ([`spec/wiki.md`](https://github.com/larvit/adf-codec/blob/main/spec/wiki.md#what-only-the-reader-reads),
+  [Marks](https://github.com/larvit/adf-codec/blob/main/spec/wiki.md#marks)):
+  - a block macro after other text on its line reads as text, and an image sharing its line as text
+    around its address, read as a bare one;
+  - `!name.ext!`, an attachment by name, and `[~name]`, a mention by name, read as text, where Jira
+    shows the attachment and the mention;
+  - `??x??` reads as `em`, where Jira shows it after a dash, and a panel `bgColor` outside the five
+    the writers spell reads as `info`;
+  - `-- ` at a line's start reads as an en dash, where Jira reads a nested bullet;
+  - a bare address ends at `)`, `'` and `!`, where Jira links through them;
+  - a delimiter reads where the writers would leave it unescaped, which differs from Jira's reading
+    at an edge such as `x^2^`;
+  - a link address that Jira links and `spec/wiki.md` doesn't list reads as text.
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says. The
   bullets below name every exception.
 - CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names,
@@ -886,7 +894,7 @@ Serves [Goals](#goals) 1, 4, 5 and 11.
   leaves the outer brackets literal text. The spec requires that; the reference implementation
   nests one `<a>` in the other.
 - Not every document converts back: `adfToLosslessMarkdown` and `adfToLosslessJiraWiki` refuse a document nesting past 500
-  levels, a document meeting an `unsupported-node-shape` cause listed for it, for a writer or for
+  levels, a document meeting an `unsupported-node-shape` cause listed for that writer or for
   every call, and a conversion `engine-limit` stops. Show the refusal and keep the document read-only; saving
   markdown or wiki markup you could not produce is the loss the round-trip exists to stop.
 - Both readers narrow GFM's pipe table. A body row holding more cells than the header is an error
@@ -940,7 +948,7 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 | `Result` | type | every call's return value |
 | `SourcePosition` | type | an error's place in the markdown, HTML or wiki markup read |
 | `adfToHtml` | function | ADF to HTML |
-| `adfToLosslessJiraWiki` | function | ADF to Jira wiki markup, `{adf}` macros around what it cannot spell |
+| `adfToLosslessJiraWiki` | function | ADF to Jira wiki markup, `{adf}` macros around what wiki markup cannot spell |
 | `adfToLosslessMarkdown` | function | ADF to the lossless flavour |
 | `adfToLossyJiraWiki` | function | ADF to Jira wiki markup alone |
 | `adfToPlainText` | function | ADF to text with no markup |
