@@ -138,6 +138,20 @@ checking its position, and refusing loses a document ADF itself keeps in an `uns
 `codeBlock` holding a child no fence holds — anything but a text node carrying no marks, `attrs` or
 `content` — rides the carry whole.
 
+## The block carry indents five levels in two spaces and writes deeper values compact
+
+2026-11-26, the maintainer. Goals 5, 6 and 9. Valid while the block carry spells a node's JSON on
+several lines.
+
+The block carry's JSON indents two spaces a level for the first five levels of nesting, and spells
+a value nested deeper compact on its line. A writer panel of seven picked three or five levels over
+compact, one line a value or a top-level indent, and four of them picked five; the corpus's 18 carry
+fences are unchanged at five levels. Spaces, not tabs: a spelling of a format uses what its readers
+expect of JSON, and a tab inside a list item or a block quote meets CommonMark's tab stops. This
+doesn't set the source files' indentation, which `~/.claude/principles/technical-principles.md`
+sets to tabs. A stored carry nested deeper than five levels is respelled, which `MIGRATION.md`
+says. Plan item 107 builds it.
+
 ## The carry fence names the node type
 
 2026-10-03, the maintainer. Goals 1 and 6. Valid while a code fence's info string reads back
@@ -1640,8 +1654,8 @@ up front whether HTML is foreign, so a flag or a second name makes them guess.
 
 ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string
 
-2026-11-17, the implementer of `jiraWikiToAdf`. Goals 1, 6 and 11. Plan item 201 asks the
-maintainer to confirm the readings below that differ from Jira's.
+2026-11-17, the implementer of `jiraWikiToAdf`; confirmed by the maintainer 2026-11-26 except
+`-- `. Goals 1, 6 and 11.
 Valid while `jiraWikiToAdf` returns a `Result`.
 
 Wiki markup has no syntax error: Jira shows markup it can't read as text, and so does the reader.
@@ -1663,7 +1677,8 @@ The reader differs from Jira in five places, each a string the writers never wri
 - An image is a block, so one that shares its line is text. Jira shows it inline.
 - A delimiter reads by the rule the writer escapes by (`spec/wiki.md` §Marks), so every string the
   writer writes reads back. Jira's own rule differs at an edge such as `x^2^`.
-- `-- ` at a line's start is an en dash. Jira reads a nested bullet.
+- `-- ` at a line's start is an en dash. Jira reads a nested bullet. This works against goal 11
+  until plan item 212 reads it as Jira does.
 - An address Jira links and `spec/wiki.md` §Marks lacks reads as text. Jira links it.
 
 The reader follows Jira in two places a reader could take either way. A block macro left open
