@@ -633,6 +633,12 @@ test('refuses HTML past V8\'s longest string, at the block passing it', () => {
   assert.equal(tooLong(adfToHtml(document(code, code, nested('blockquote', largestNesting + 1, { type: 'rule' })))), true)
 })
 
+test('refuses an image whose compared JSON passes V8\'s longest string, on every engine', () => {
+  const media: AdfNode = { attrs: { type: 'external', url: 'a'.repeat(536870888 - 75) }, type: 'media' }
+  const result = adfToHtml(document({ attrs: { layout: 'center', width: 100 }, content: [media], type: 'mediaSingle' }))
+  assert.equal(!result.ok && result.error.code === 'unsupported-node-shape' && result.error.message.includes('536870888'), true)
+})
+
 test('writes HTML exactly as long as V8\'s longest string', () => {
   // Eight paragraphs, each `<p>`, its text, `</p>` and a line feed, make the bound exactly.
   const block = paragraph(text('a'.repeat(536870888 / 8 - 8)))

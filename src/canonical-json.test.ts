@@ -97,7 +97,6 @@ test('holds a text to the canonical spelling with each piece respelled', () => {
   assert.ok(!spellsCanonicalJson({ a: 'b' }, 'compact', '{"a":"b"}', upper))
 })
 
-// The second JSON.stringify of a 2^28-character string aborts Node, so no string is spelled that, with what is spelled, passes the bound.
 function lengthAndLast(value: JsonValue): { last: string | undefined; length: number } {
   let last: string | undefined
   let length = 0
@@ -108,7 +107,7 @@ function lengthAndLast(value: JsonValue): { last: string | undefined; length: nu
   return { last, length }
 }
 
-test('yields a string that alone passes the bound unspelled, with its quotes counted', () => {
+test('yields unspelled a string that passes the bound only with its quotes counted', () => {
   const { last, length } = lengthAndLast('a'.repeat(longestOutput - 1))
   assert.equal(last, '""')
   assert.ok(length > longestOutput)
@@ -121,7 +120,7 @@ test('yields the second of two strings that together pass the bound unspelled', 
   assert.ok(length > longestOutput)
 })
 
-test('yields a key that, with what is spelled, passes the bound unspelled', () => {
+test('yields a key unspelled where it and the string before it together pass the bound', () => {
   const { last, length } = lengthAndLast({ a: 'a'.repeat(2 ** 28), ['b'.repeat(2 ** 28 - 10)]: 0 })
   assert.equal(last, '""')
   assert.ok(length > longestOutput)
@@ -138,7 +137,11 @@ test('counts what is spelled before a string, so one that would pass the bound b
   assert.equal(last, '""')
 })
 
-test('holds a text to no spelling of a string that passes the bound', () => {
+test('throws V8\'s error for a string past the bound, as on every engine', () => {
+  assert.throws(() => serializeCanonicalJson('a'.repeat(longestOutput - 1), 'compact'), new RangeError('Invalid string length'))
+})
+
+test('finds that no text spells a string past the bound', () => {
   assert.ok(!spellsCanonicalJson('a'.repeat(longestOutput - 1), 'compact', ''))
 })
 
