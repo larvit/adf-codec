@@ -69,7 +69,7 @@ function schedule(pending: Pending[], open: string, members: readonly Member[], 
   const scheduled: Pending[] = []
   for (const [index, member] of members.entries()) {
     scheduled.push(`${index === 0 ? open : ','}${inner}`)
-    if (member.key !== undefined) scheduled.push({ depth: depth + 1, value: member.key }, colon)
+    if (member.key !== undefined) scheduled.push({ depth, value: member.key }, colon)
     scheduled.push({ depth: depth + 1, value: member.value })
   }
   scheduled.push(indent === '' ? close : `\n${indent.repeat(depth)}${close}`)
