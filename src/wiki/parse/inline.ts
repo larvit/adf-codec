@@ -3,7 +3,7 @@ import type { ConvertFault } from '../../result.ts'
 import { colourNames } from './colour-names.ts'
 import { identicalMarks } from '../../adf/document.ts'
 import { readAdfMacro } from './adf-macro.ts'
-import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl, storedHref, wellFormedAddress } from '../spellings.ts'
+import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl, storedHref, wellFormedFrom } from '../spellings.ts'
 
 // `end`: where the reading stopped, a cell's closing `|` or the line's end.
 export type InlineRead = { end: number; fault?: undefined; nodes: AdfNode[] } | { fault: ConvertFault }
@@ -23,7 +23,8 @@ type Role = 'close' | 'either' | 'open'
 type TextPiece = { marks: AdfMark[]; text: string }
 
 // `run`: the piece the next plain character joins.
-type Scan = { end: number; inCell: boolean; link: Link | undefined; opened: Opened[]; pieces: Piece[]; run: TextPiece | undefined; start: number; wiki: string }
+// `unlinkedBefore`: no bare address starting before it links, as one starting inside a run already read ends where that run does.
+type Scan = { end: number; inCell: boolean; link: Link | undefined; opened: Opened[]; pieces: Piece[]; run: TextPiece | undefined; start: number; unlinkedBefore: number; wiki: string }
 
 const address = /https?:\/\/[^\s"`>|[\]{}\\]*/y
 const anchorMacro = /\{anchor(?::[^{}\n]*)?\}/y
@@ -43,7 +44,7 @@ const word = /[\p{L}\p{N}]/u
 
 // spec/wiki.md, Inline and Marks: the nodes of `wiki` from `start` to `end`, or in a cell to the `|` closing it.
 export function readInline(wiki: string, start: number, end: number, inCell: boolean): InlineRead {
-  const scan: Scan = { end, inCell, link: undefined, opened: [], pieces: [], run: undefined, start, wiki }
+  const scan: Scan = { end, inCell, link: undefined, opened: [], pieces: [], run: undefined, start, unlinkedBefore: 0, wiki }
   let at = start
   while (at < end) {
     if (scan.link?.close === at) at = closeLink(scan, scan.link)
@@ -257,22 +258,26 @@ function bracketed(scan: Scan, at: number, held: string): number {
 // spec/wiki.md, What only the reader reads: a bare address, less the punctuation ending it.
 function bareAddress(scan: Scan, at: number): number {
   address.lastIndex = at
-  const found = scan.link === undefined ? address.exec(scan.wiki)?.[0] : undefined
+  const found = scan.link === undefined && at >= scan.unlinkedBefore ? address.exec(scan.wiki)?.[0] : undefined
   if (found === undefined) return plainCharacter(scan, at)
   const spelled = found.slice(0, linkedLength(found))
-  if (spelled.endsWith('://') || !wellFormedAddress(spelled)) return plainCharacter(scan, at)
+  const linkedFrom = spelled.endsWith('://') ? spelled.length : wellFormedFrom(spelled)
+  if (linkedFrom > 0) {
+    scan.unlinkedBefore = at + linkedFrom
+    return plainCharacter(scan, at)
+  }
   push(scan, { marks: [{ attrs: { href: storedHref(spelled) }, type: 'link' }], text: spelled })
   return at + spelled.length
 }
 
-// Jira leaves a trailing run of `.,;?!')` out of the link, but keeps a `?` that a `,`, `;`, `'` or `)` follows.
+// Jira leaves a trailing run of `!'),.;?` out of the link, but keeps that run up to its last `?` with a `'`, `)`, `,` or `;` after it.
 function linkedLength(found: string): number {
   let end = found.length
   let closed = false
   while (end > 0) {
     const last = found.charAt(end - 1)
-    if (!".,;?!')".includes(last) || (last === '?' && closed)) break
-    closed ||= ",;')".includes(last)
+    if (!"!'),.;?".includes(last) || (last === '?' && closed)) break
+    closed ||= "'),;".includes(last)
     end -= 1
   }
   return end
