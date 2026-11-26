@@ -26,7 +26,7 @@ const codeMacro = /\{(code|noformat)(?::([^}\n]*))?\}/y
 const codeEdge = /\r?\n|/y
 const documentCarry = /^\s*\{adf:display=block\}\s*\{"type":"doc","version":1\}\s*\{adf\}\s*$/
 const image = /^!([^\s!|]+)(?:\|([^!]*))?!$/
-const itemMarker = /^([*#]+|-) +/
+const itemMarker = /^([*#]+|--?) +/
 const lineSpace = /[^\S\n]*/y
 const lineWord = /^(?:bq|h([1-6]))\.\s*/
 const panelMacro = /\{panel(?::([^}\n]*))?\}/y
@@ -69,7 +69,7 @@ function readLine(reading: Reading, line: Line): Fault | number {
   if (worded !== null) return readWordedLine(reading, line, start + worded[0].length, worded[1])
   if (/^-{4,}$/.test(text)) return pushBlock(reading, { type: 'rule' }, next)
   const marker = itemMarker.exec(text)
-  if (marker !== null) return readItem(reading, line, marker[1]?.replace('-', '*') ?? '', start + marker[0].length)
+  if (marker !== null) return readItem(reading, line, marker[1]?.replaceAll('-', '*') ?? '', start + marker[0].length)
   if (text.startsWith('|')) {
     const row = readRow(reading, line)
     if (row !== undefined) return row
