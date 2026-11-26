@@ -15,11 +15,10 @@
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 206 | 0.4.0 |  | defect | **Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.** | 3 | 1 | 2 | 4 | 4 | 1 by 2 | 5.2 |
-| 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
-| 207 | 0.4.0 | 200 |  | **Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.** | 2 | 2 | 2 | 4 | 3 | 11 by 3, 6 by 1 | 3.4 |
+| 207 | 0.4.0 |  |  | **Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.** | 2 | 2 | 2 | 4 | 3 | 11 by 3, 6 by 1 | 3.4 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -103,18 +102,6 @@ Touches:
 - `src/markdown/portable/inline-reduction.test.ts`
 - `docs/decisions.md`
 - `AGENTS.md`: `## Decisions` (small)
-
-### 200. Carry a link whose `href` Jira shows as text, and read `[x]` and `[a|x]` with such an address as text.
-
-Item 195's probes of Jira found that it shows `[x]` and `[a|x]` as text where `x` is no address it links, such as a bare word. The lossless writer writes a `link` with such an `href` as `[a|x]`, so the link is lost when Jira renders the markup, and `jiraWikiToAdf` reads both as a `link`, unlike Jira. Probe which addresses Jira links (a scheme, `#anchor`, `mailto:`, a path), record the list in `spec/wiki.md`, carry every other `href`, and read the same strings as text.
-
-Touches:
-- `src/wiki/spellings.ts`: `spellableUrl`
-- `src/wiki/emit/inline-line.ts`: `hrefSpelling`, `linkDelimiters`
-- `src/wiki/parse/inline.ts`: `bracketed`, `closeLink`
-- `spec/wiki.md`: `## Marks`
-- `src/wiki/emit/adf-to-jira-wiki.test.ts`
-- `src/wiki/parse/jira-wiki-to-adf.test.ts`
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
