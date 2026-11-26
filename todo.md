@@ -15,7 +15,6 @@
 | 220 | 0.4.0 |  | question | **Decide whether `adfToHtml`'s HTML, changed outside a carry element or missing its final line feed, keeps its `data-*` attributes when `htmlToAdf` reads it; today it reads as other HTML and drops them without a refusal.** | 2 | 2 | 3 | 5 | 3 |  | 0.0 |
 | 218 | 0.4.0 |  | defect | **Return a result from `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` where one key of a carried node is a string of 2^28 characters.** | 2 | 1 | 2 | 3 | 2 | 1 by 3 | 15.6 |
 | 215 | 0.4.0 |  |  | **Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 9.4 |
-| 137 | 0.4.0 |  | owner | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -30,7 +29,7 @@
 | 74 | 0.5.0 |  | owner | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 3 | 2 | 4 | 7 | 4 |  | 0.0 |
 | 8 | 0.6.0 |  | owner | **Ship a CLI.** | 3 | 2 | 1 | 4 | 7 |  | 0.0 |
 | 139 | 0.7.0 |  | decision | **Ship the calls between markdown and HTML, composed through ADF and each named by its flavour.** | 2 | 1 | 2 | 3 | 4 | 3 by 3 | 1.9 |
-| 138 | 0.7.0 | 137 |  | **Read raw HTML in every markdown reader through `htmlToAdf`'s foreign-element mapping, in place of refusing it as `unmappable-html`.** | 3 | 1 | 3 | 5 | 5 | 4 by 4 | 1.5 |
+| 138 | 0.7.0 |  |  | **Read raw HTML in every markdown reader through `htmlToAdf`'s foreign-element mapping, in place of refusing it as `unmappable-html`.** | 3 | 1 | 3 | 5 | 5 | 4 by 4 | 1.5 |
 
 ## Renamed
 
@@ -95,26 +94,6 @@ Touches:
 - `src/length-bound.ts`: `longestOutput` (small)
 - `src/markdown/emit/inline-line.ts`: `emitLine` (small)
 - `src/markdown/emit/limits.test.ts`
-
-### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
-
-Reading HTML from emails, CMSs and editors is the most asked need on the Atlassian developer
-community. A developer panel picked `htmlToAdf` itself, with no option, as `docs/decisions.md`
-records. The maintainer moved it from 0.4.0 to 0.5.0 on 2026-11-25.
-
-The maintainer moved it back into 0.4.0 on 2026-11-26, since the unmerged branch `item-137` already holds most of the work: a foreign HTML reader in `src/html/parse/foreign.ts`, its tests, and the spec, README, migration and decision text, reviewed through the security, product-owner and prose passes. The item keeps that branch's work, merges `main` into it and ships it. That settles the feasibility question this item raised.
-
-Touches:
-
-- `src/html/parse/html-to-adf.ts`
-- `src/html/parse/inline.ts`
-- `src/html/parse/inline-block.ts`
-- `src/html/parse/source.ts`
-- `src/html/parse/node-element.ts`
-- `src/html/parse/carry-element.ts`
-- `src/html/parse/html-to-adf.test.ts`
-- `spec/html.md`: `## Reading`
-- `README.md`: `## HTML` (small), `## The calls` (small), `## The errors` (small)
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 

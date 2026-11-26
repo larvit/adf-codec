@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Breaking:** `htmlToAdf` reads any HTML best effort, where it refused HTML that `adfToHtml` did not write. An element with a `data-adf` attribute or an `adf-` class still reads only as `adfToHtml`'s HTML, and is refused where it is not. `MIGRATION.md` says what to change.
 - `adfToLosslessMarkdown` and `adfToHtml` write a carried node holding a key of 2^28 characters, where they ended Node with `FATAL ERROR: Zone Allocation failed`.
 - `adfToLosslessMarkdown` refuses a carried node whose JSON passes V8's longest string as `unsupported-node-shape`, where two strings of 2^28 characters in an `unknownBlock`'s `attrs` ended Node with `FATAL ERROR: Zone Allocation failed`.
 - Read `-- ` and longer dash runs in Jira wiki markup as nested bullets while a list is open, as Jira does, where the reader read them as dashes
