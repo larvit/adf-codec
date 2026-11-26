@@ -6,15 +6,16 @@
 
 `Bar = 0.1`
 
-`Next ID = 212`
+`Next ID = 214`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
-| 107 | 0.4.0 |  | question | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 211 | 0.4.0 |  |  | **Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
+| 212 | 0.4.0 |  |  | **Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.** | 2 | 2 | 2 | 4 | 3 | 11 by 3 | 2.5 |
+| 213 | 0.4.0 |  |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
+| 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -35,23 +36,44 @@
 
 ## Details
 
-### 201. Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.
+### 211. Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.
 
-Item 195 made these choices without the maintainer, and `docs/decisions.md` §The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string records them. Each is a string the writers never write. Confirm each, or say what it reads to instead:
-
-- A broken `{adf}` macro is refused as `unsupported-node-shape`, with the path `[]`, where it could read as text.
-- `{code}`, `{noformat}`, `{panel}` and `{quote}` after anything else on a line read as text, where Jira reads them inside a line.
-- An image that shares its line reads as text, where Jira shows it inline.
-- An `{adf}` macro inside a line that closes on a later line is refused.
-- A delimiter reads by the rule the writer escapes by, where Jira's own rule differs at an edge such as `x^2^`.
-- `-- ` at a line's start reads as an en dash and text, where Jira reads a nested bullet.
-- A list line of up to 500 markers reads, and the writers refuse the document past 250 levels of list as `unsupported-nesting-depth`.
+Probed on the live test site on 2026-11-26 while answering item 194's review: Jira reads `\\` as a line break only where the next character isn't `{`, and shows `a\\\_a` (what the lossless writer writes for a text, a hard break and the text `_a`) as `a`, three backslashes and `_a`, with no break. The same holds for `a\\{color:red}…`, `a\\{anchor:x}…`, `a\\{{…}}` and a text `{` written `\{`. `\\{noformat}{noformat}` before a letter does read as a break. The lossless writer writes each of these right after a hard break, so Jira shows the break as backslashes, and `jiraWikiToAdf` reads the spelling back as a break, unlike Jira (see item 201). Find a spelling of the break or of what follows it that Jira reads, record it in `spec/wiki.md` and `docs/decisions.md`, and where none exists, carry the pair. Item 194's lossy writer shares the gap for a text that starts with a backslash run it writes between `{noformat}` right after a hard break (`docs/decisions.md`'s "Not handled").
 
 Touches:
-- `src/wiki/parse/jira-wiki-to-adf.ts`: `readMacro`, `readItem`, `readLine`
-- `src/wiki/parse/inline.ts`: `delimiter`, `dash`
+- `src/wiki/emit/inline-line.ts`: `leafSpelling`, `inlineLine`
+- `spec/wiki.md`: `## Inline`
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`
+
+### 212. Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.
+
+`spec/wiki.md` §What only the reader reads reads `---` and `--` with whitespace or the line's edge on each side as `—` and `–`, so `-- ` at a line's start is no nested bullet, where Jira reads one. The maintainer confirmed on 2026-11-26 that the reader should read as Jira renders it (goal 11), so a bullet it is. Where a text starting with `-- ` is written, the writers escape the line start as they do a `- ` bullet, so every string either writes reads back. Update `docs/decisions.md` §The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string: drop the `-- ` line from its list of readings that differ from Jira's, and its `until` sentence.
+
+Touches:
+
+- `src/wiki/parse/jira-wiki-to-adf.ts`: `readItem`, `readLine`
+- `src/wiki/parse/inline.ts`: `dash` (small)
+- `src/wiki/emit/text-escaping.ts`
 - `spec/wiki.md`: `## What only the reader reads`
-- `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
+- `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string `` (small)
+
+### 213. Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.
+
+`~/.claude/principles/technical-principles.md` says to indent with hard tabs by default, and a project's own setting wins. This project's `AGENTS.md` §Code rules has said "Two-space indent" since its first commit, with no reason recorded, and the 177 `src` files, 14,500 indented lines, follow it. The maintainer found the default ignored on 2026-11-26 and asked for tabs in the source. Spellings of a format stay in spaces (§The block carry indents five levels in two spaces and writes deeper values compact): the carry's JSON, the corpus and the spec's examples don't change.
+
+Convert the leading whitespace of each line of `src`, `browser-tests`, `package-tests`, `release-tooling`, `mutation-tests`, `bundle-size`, `feature-table`, `converter-comparison`, `corpus-gathering` and the `.sh` and `.js` files at the root, one tab for each two spaces. Leave alone a line inside a template literal or a string whose indentation is the string's content, such as a test's expected markdown; a test that fails on the change shows one missed. Add an `.editorconfig` with `indent_style = tab` for those files and `indent_style = space` for `*.md`, `*.json`, `*.yml` and `corpus/**`. Replace "Two-space indent" in `AGENTS.md` §Code rules with "Tab indent". Land the conversion in one commit with no other change, so `git blame` can skip it with `.git-blame-ignore-revs`. Wait for the chunk's other items to merge first, since every open branch conflicts with it.
+
+Where an item `todo-item show` lists later in the release holds a `Touches:` line with `lines <first>-<last>`, the line numbers stay, since a tab replaces two spaces on the same line.
+
+Touches:
+
+- `.editorconfig`
+- `.git-blame-ignore-revs`
+- `AGENTS.md`: `## 4. Code rules` (small)
+- `src`
+- `ci.sh`
+- `publish.sh`
+- `docker-runner.sh`
 
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 
@@ -61,16 +83,7 @@ the inline carry's compact JSON would fit. docs/decisions.md §The code list cal
 spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
 are API). Found by the README-goals audit of item 83, 2026-10-11.
 
-Open question for the maintainer, 2026-11-17: how many levels the block carry indents before it
-spells a value compact on its line. No decision states the number. A writer panel of seven (product
-managers, engineers, support agents) saw one chart carried five ways: compact on one line; the top
-level indented; three levels indented, deeper values compact; five levels indented, deeper values
-compact; one value per line unindented. All seven ranked the three-level and five-level spellings
-first and second. Four picked five levels and three picked three, short of five of seven. All seven
-expected indentation all the way down, which goal 9 rules out. Of the corpus's 18 carry fences, five
-levels respells none and three levels respells 3; either cap needs a `MIGRATION.md` entry for stored
-carries nested deeper. Recommended: five levels. The answer lands as a `docs/decisions.md` entry, and
-the panel is not run again.
+Decided by the maintainer, 2026-11-26 (docs/decisions.md §The block carry indents five levels in two spaces and writes deeper values compact): the block carry indents two spaces a level for the first five levels and spells a value nested deeper compact on its line. Spaces, not tabs. Add a `MIGRATION.md` entry for stored carries nested deeper than five levels.
 
 Touches:
 
@@ -87,15 +100,6 @@ Touches:
 - `corpus/round-trip/opaque-carry/code-block-children.md`
 - `corpus/errors/carry-fence-type.md`
 - `corpus/errors/carry-fence-type-spellable.md`
-
-### 211. Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.
-
-Probed on the live test site on 2026-11-26 while answering item 194's review: Jira reads `\\` as a line break only where the next character isn't `{`, and shows `a\\\_a` (what the lossless writer writes for a text, a hard break and the text `_a`) as `a`, three backslashes and `_a`, with no break. The same holds for `a\\{color:red}…`, `a\\{anchor:x}…`, `a\\{{…}}` and a text `{` written `\{`. `\\{noformat}{noformat}` before a letter does read as a break. The lossless writer writes each of these right after a hard break, so Jira shows the break as backslashes, and `jiraWikiToAdf` reads the spelling back as a break, unlike Jira (see item 201). Find a spelling of the break or of what follows it that Jira reads, record it in `spec/wiki.md` and `docs/decisions.md`, and where none exists, carry the pair. Item 194's lossy writer shares the gap for a text that starts with a backslash run it writes between `{noformat}` right after a hard break (`docs/decisions.md`'s "Not handled").
-
-Touches:
-- `src/wiki/emit/inline-line.ts`: `leafSpelling`, `inlineLine`
-- `spec/wiki.md`: `## Inline`
-- `src/wiki/emit/adf-to-jira-wiki.test.ts`
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 

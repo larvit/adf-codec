@@ -19,6 +19,7 @@ In `docs/decisions.md`:
 - A block's marks are named, and `colwidth` is a comma list
 - Empty markdown is a document of no blocks
 - Unknown nodes ride the carry
+- The block carry indents five levels in two spaces and writes deeper values compact
 - The carry fence names the node type
 - A code block is a fence per text node
 - Foreign HTML reads best effort and is never refused
