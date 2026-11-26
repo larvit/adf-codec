@@ -13,11 +13,11 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
+| 107 | 0.4.0 |  | question | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 210 | 0.4.0 |  | principle | **Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 209 | 0.4.0 |  |  | **End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.** | 2 | 2 | 2 | 4 | 2 | 11 by 2 | 2.2 |
-| 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
@@ -56,6 +56,41 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
+
+### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
+
+The block carry indents two spaces a level, so about 1 MB of deeply nested arrays in a carried
+node's JSON spells past V8's longest string, which the writers refuse as `unsupported-node-shape`;
+the inline carry's compact JSON would fit. docs/decisions.md §The code list calls a refusal no
+spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
+are API). Found by the README-goals audit of item 83, 2026-10-11.
+
+Open question for the maintainer, 2026-11-17: how many levels the block carry indents before it
+spells a value compact on its line. No decision states the number. A writer panel of seven (product
+managers, engineers, support agents) saw one chart carried five ways: compact on one line; the top
+level indented; three levels indented, deeper values compact; five levels indented, deeper values
+compact; one value per line unindented. All seven ranked the three-level and five-level spellings
+first and second. Four picked five levels and three picked three, short of five of seven. All seven
+expected indentation all the way down, which goal 9 rules out. Of the corpus's 18 carry fences, five
+levels respells none and three levels respells 3; either cap needs a `MIGRATION.md` entry for stored
+carries nested deeper. Recommended: five levels. The answer lands as a `docs/decisions.md` entry, and
+the panel is not run again.
+
+Touches:
+
+- `src/canonical-json.ts`: `JsonSpelling`, `canonicalJsonPieces`, `objectMembers`, `schedule`, `spellsCanonicalJson` (small)
+- `src/markdown/opaque-carry.ts`: `carriedBlock`, `readCarriedJson`
+- `src/adf/carried-json.ts`: `carriedJson` (small)
+- `src/canonical-json.test.ts`
+- `src/markdown/parse/markdown-to-adf.test.ts`: lines 450-500
+- `src/conformance/markdown-property.test.ts`: lines 183-200
+- `spec/flavour.md`: `## The opaque carry`
+- `corpus/round-trip/opaque-carry/unknown-block.md`
+- `corpus/round-trip/opaque-carry/unknown-type-spelling.md`
+- `corpus/round-trip/opaque-carry/carry-in-wrappers.md`
+- `corpus/round-trip/opaque-carry/code-block-children.md`
+- `corpus/errors/carry-fence-type.md`
+- `corpus/errors/carry-fence-type-spellable.md`
 
 ### 210. Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.
 
@@ -105,30 +140,6 @@ Touches:
 - `src/wiki/parse/inline.ts`: `address`, `bareAddress` (small)
 - `src/wiki/parse/jira-wiki-to-adf.test.ts`
 - `spec/wiki.md`: `## What only the reader reads` (small)
-
-### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
-
-The block carry indents two spaces a level, so about 1 MB of deeply nested arrays in a carried
-node's JSON spells past V8's longest string, which the writers refuse as `unsupported-node-shape`;
-the inline carry's compact JSON would fit. docs/decisions.md §The code list calls a refusal no
-spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
-are API). Found by the README-goals audit of item 83, 2026-10-11.
-
-Touches:
-
-- `src/canonical-json.ts`: `JsonSpelling`, `canonicalJsonPieces`, `objectMembers`, `schedule`, `spellsCanonicalJson` (small)
-- `src/markdown/opaque-carry.ts`: `carriedBlock`, `readCarriedJson`
-- `src/adf/carried-json.ts`: `carriedJson` (small)
-- `src/canonical-json.test.ts`
-- `src/markdown/parse/markdown-to-adf.test.ts`: lines 450-500
-- `src/conformance/markdown-property.test.ts`: lines 183-200
-- `spec/flavour.md`: `## The opaque carry`
-- `corpus/round-trip/opaque-carry/unknown-block.md`
-- `corpus/round-trip/opaque-carry/unknown-type-spelling.md`
-- `corpus/round-trip/opaque-carry/carry-in-wrappers.md`
-- `corpus/round-trip/opaque-carry/code-block-children.md`
-- `corpus/errors/carry-fence-type.md`
-- `corpus/errors/carry-fence-type-spellable.md`
 
 ### 170. Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.
 
