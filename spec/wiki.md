@@ -143,16 +143,47 @@ The lossy writer writes no `{adf}`. It writes the plain spellings above, and for
 writer carries it keeps the content, as `docs/decisions.md` §Plain text is blocks a blank line apart
 says `adfToPlainText` does, in wiki markup:
 
-- An attribute with no spelling drops. A node whose type has none is its text, or its blocks where
-  it holds some.
-- A `panel` of another type is `{panel}`. An `expand` is its title as a `*strong*` paragraph, then
-  its body. A task item is `* `, then `☑ ` or `☐ ` and its text. A `status`, `date` and `emoji` are
-  the text they show, and a `mention` that rides is its `text`.
-- A `table` cell holding several blocks has them parted by `\\`; a `codeBlock` with a language the
-  help doesn't list is `{noformat}`, and one whose text holds `{code}` or `{noformat}` is a
-  paragraph of its lines parted by `\\`.
-- A stored `media` is its `alt`, else `[image]`.
-- A mark with no spelling drops, keeping its text.
+- An attribute with no spelling drops. An inline node whose type has none is its text, then its
+  content. A block of such a type is its text, then its blocks. A block with no text or blocks, and a
+  paragraph of whitespace alone, drop.
+- A `panel` of a type the help doesn't list is an `info` panel. A `{quote}` inside a `{quote}`, or a
+  `{panel}` inside a `{panel}`, stands as its blocks there. An `expand` is its title as a `*strong*`
+  paragraph, then its body. A `taskList` is a bullet list, and a task item is `☑ ` or `☐ `, then its
+  text.
+- A table cell holding several blocks has their lines parted by `\\`, a list's items included.
+- A `listItem` holding several blocks has its text blocks parted by `\\` on its marker's line, and
+  each list it holds nested under it. A block after such a list starts an item of its own.
+- What a list holds that is no item is an item of its own. What a table or a row holds that is no row
+  or cell follows the table, as its blocks.
+- A `codeBlock` with a language the help doesn't list is `{noformat}`, and one whose text holds `{code}`
+  or `{noformat}` is a paragraph of its lines parted by `\\`. Each carriage return in its text is a
+  line feed.
+- A stored `media`, or an external one with no address, is its `alt`, else `[image]`. Any other
+  external `media` is an image, its address's whitespace, `!` and markup characters percent-encoded;
+  where that address holds no `://`, it is the `alt` and ` (address)` as text, else the address.
+  Its `alt` is trimmed, then follows the image as a paragraph where the image spelling can't hold it.
+  A link around a `media` follows it as a paragraph holding the link. A caption is a paragraph after
+  the image. In a table cell or a list item an image is its `alt` and ` (address)`, else its address.
+- A `status`, `date` and `emoji` are the text they show. A `mention` is `[~accountid:<id>]` where its
+  `id` holds no whitespace or markup character, else its `text`. A card is its name and ` (address)`,
+  else its address. A line feed in a text is `\\`, and a carriage return drops.
+- A mark with no spelling drops, keeping its text, as does a second mark of one type on a node. A
+  `textColor` of three hex digits is written as six. A link's `href` has its whitespace and `[`, `]`,
+  `{`, `}`, `|` and `\` percent-encoded, then as Jira stores it (`storedHref`), and its `title` follows its text in parentheses, since Jira
+  drops one written in the link. A link whose address Jira doesn't link, such as `a`, is its text,
+  followed by ` (address)` unless the text is the address.
+- Whitespace at a line's edges drops. Whitespace at the edge of a text a delimiter marks stands
+  outside the delimiter. A run whose delimiters wouldn't read, such as `*` beside a letter, drops those
+  marks.
+- Text the lossless writer carries because no backslash protects it is written with the backslashes
+  that do apply, and otherwise as it stands: a backslash, `http://`, a smiley, and `h1.` or `bq.` at a
+  line's start. A backslash run Jira would read as something else is written between `{noformat}`:
+  exactly two, one before a character the writer escapes, and one that ends a text unless it ends the
+  line outside a table cell. A `|` in a table cell is written between `{noformat}`, since an escaped
+  one still ends the cell. A run of `*`, `_`, `-` or `+` marks around a `{noformat}` drops those marks.
+
+It refuses a document nested past 500 levels, each node counting one level. The lossless writer
+writes such a document.
 
 ## What only the reader reads
 

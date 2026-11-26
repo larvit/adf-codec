@@ -1,5 +1,5 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
-import { escapedText } from './text-escaping.ts'
+import { escapedText, noformat } from './text-escaping.ts'
 import { holdsOnlyAttributes, identicalMark, identicalMarks, isSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineCarry } from '../carry.ts'
 import { linkedAddress, spellableColour, spellableTitle, spellableUrl, storedHref } from '../spellings.ts'
@@ -20,29 +20,36 @@ type Token = { checked: boolean; kind: 'atom' | 'close' | 'open'; text: string }
 
 const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], ['strike', '-'], ['strong', '*'], ['underline', '+']])
 
-// spec/wiki.md, Inline and Marks.
-export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, inCell: boolean): Result<Line> {
-  const atoms = nodes.map((node, index) => atom(node, nodes, index, inCell))
+// spec/wiki.md, Inline and Marks. `lossy`: spec/wiki.md, The lossy writer: a group whose delimiters don't read drops the marks they stand for.
+export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, inCell: boolean, lossy: boolean): Result<Line> {
+  const atoms = nodes.map((node, index) => atom(node, nodes, index, inCell, lossy))
   const groups = markedGroups(atoms)
   let line = ''
+  let before: string | undefined
   let carried = false
   for (const [position, { first, last }] of groups.entries()) {
     const next = groups[position + 1]
     // A group that opens with a delimiter or a carry opens with punctuation, which reads as the line's edge does.
     const following = next === undefined ? undefined : atoms[next.first]
     const after = following?.marks.length === 0 ? following.spelled?.text : undefined
-    const written = groupSpelling(atoms.slice(first, last + 1), lastCharacter(line), after === undefined ? undefined : firstCharacter(after))
+    const afterCharacter = after === undefined ? undefined : firstCharacter(after)
+    const group = atoms.slice(first, last + 1)
+    const written = groupSpelling(group, before, afterCharacter) ?? (lossy ? groupSpelling(group.map(withoutCheckedMarks), before, afterCharacter) : undefined)
     if (written === undefined) {
       const carry = inlineCarry(nodes.slice(first, last + 1), [...path, 'content', first])
       if (!carry.ok) return carry
       line += carry.value
+      before = lastCharacter(carry.value) ?? before
       carried = true
-    } else line += written
+    } else {
+      line += written
+      before = lastCharacter(written) ?? before
+    }
   }
   return success({ carried, line })
 }
 
-function atom(node: AdfNode, nodes: readonly AdfNode[], index: number, inCell: boolean): Atom {
+function atom(node: AdfNode, nodes: readonly AdfNode[], index: number, inCell: boolean, lossy: boolean): Atom {
   const { text } = node
   if (node.type !== 'text' || text === undefined) {
     const leaf = leafSpelling(node)
@@ -55,8 +62,12 @@ function atom(node: AdfNode, nodes: readonly AdfNode[], index: number, inCell: b
   if (!isSpellableText(node) || text === '' || joinsPrevious || spelled === undefined) return { marks, spelled: undefined }
   const href = hrefSpelling(node, text, nodes, index)
   if (href !== undefined) return { marks: marks.slice(0, -1), spelled: { marks: spelled.slice(0, -1), text: href } }
-  const escaped = escapedText(text, index === 0, index === nodes.length - 1, inCell)
+  const escaped = escapedText(text, index === 0, index === nodes.length - 1, inCell, lossy)
   return { marks, spelled: escaped === undefined ? undefined : { marks: spelled, text: escaped } }
+}
+
+function withoutCheckedMarks({ marks, spelled }: Atom): Atom {
+  return { marks, spelled: spelled === undefined ? undefined : { marks: spelled.marks.filter(({ delimiters }) => !delimiters.checked), text: spelled.text } }
 }
 
 // `undefined` where a mark has no spelling, or two marks share a type.
@@ -145,6 +156,8 @@ function groupSpelling(atoms: readonly Atom[], before: string | undefined, after
     open = marks
   }
   for (const mark of open.slice().reverse()) tokens.push(delimiterToken(mark, 'close'))
+  // Jira shows a character delimiter beside a `{noformat}` in its run as text.
+  if (tokens.some(({ checked }) => checked) && tokens.some(({ text }) => text.includes(noformat))) return undefined
   return tokens.every((token, index) => delimiterReads(token, lastCharacter(tokens[index - 1]?.text ?? '') ?? before, firstCharacter(tokens[index + 1]?.text ?? '') ?? after)) ? tokens.map(({ text }) => text).join('') : undefined
 }
 

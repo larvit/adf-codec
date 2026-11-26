@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 211`
+`Next ID = 212`
 
 ## Items
 
@@ -15,8 +15,8 @@
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 107 | 0.4.0 |  | question | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 210 | 0.4.0 |  | principle | **Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
-| 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
-| 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
+| 211 | 0.4.0 |  |  | **Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
+| 196 | 0.4.0 |  | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 209 | 0.4.0 |  |  | **End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.** | 2 | 2 | 2 | 4 | 2 | 11 by 2 | 2.2 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
@@ -107,17 +107,14 @@ Touches:
 - `src/wiki/emit/adf-to-jira-wiki.test.ts`: `lines 320-570` (small)
 - `src/wiki/parse/jira-wiki-to-adf.test.ts`: `lines 350-365` (small)
 
-### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
+### 211. Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.
 
-Goal 7. The maintainer asked for it beside the lossless writer, 2026-11-15. It spells as the
-lossless writer does, except where that writer would use the `{adf}` macro.
+Probed on the live test site on 2026-11-26 while answering item 194's review: Jira reads `\\` as a line break only where the next character isn't `{`, and shows `a\\\_a` (what the lossless writer writes for a text, a hard break and the text `_a`) as `a`, three backslashes and `_a`, with no break. The same holds for `a\\{color:red}…`, `a\\{anchor:x}…`, `a\\{{…}}` and a text `{` written `\{`. `\\{noformat}{noformat}` before a letter does read as a break. The lossless writer writes each of these right after a hard break, so Jira shows the break as backslashes, and `jiraWikiToAdf` reads the spelling back as a break, unlike Jira (see item 201). Find a spelling of the break or of what follows it that Jira reads, record it in `spec/wiki.md` and `docs/decisions.md`, and where none exists, carry the pair. Item 194's lossy writer shares the gap for a text that starts with a backslash run it writes between `{noformat}` right after a hard break (`docs/decisions.md`'s "Not handled").
 
 Touches:
-
-- `src/jira-wiki/emit/adf-to-jira-wiki.ts`
-- `src/jira-wiki/emit/adf-to-jira-wiki.test.ts`
-- `src/index.ts`: lines 3-13 (small)
-- `package-tests/consumer.ts`: lines 1-17 (small)
+- `src/wiki/emit/inline-line.ts`: `leafSpelling`, `inlineLine`
+- `spec/wiki.md`: `## Inline`
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`
 
 ### 196. Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
 

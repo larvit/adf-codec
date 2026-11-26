@@ -41,6 +41,10 @@ export const panelColours: Readonly<Record<string, string>> = {
   warning: '#fffae6',
 }
 
+// spec/wiki.md, Blocks: what an image's alt and address spell. Jira reads an address holding no `://` as an attachment's name.
+export const spellableAlt = /^[^\s!|,\\[\]{}](?:[^!|,\\[\]{}\r\n]*[^\s!|,\\[\]{}])?$/
+export const spellableImageUrl = /^[^\s!|\\[\]{}]*:\/\/[^\s!|\\[\]{}]*$/
+
 // spec/wiki.md, Marks: what `{color}` and a link's href and title spell.
 export const spellableColour = /^#[0-9a-f]{6}$/i
 
