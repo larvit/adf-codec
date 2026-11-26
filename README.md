@@ -1,9 +1,9 @@
-# @larvit/adf-codec — ADF to markdown, HTML, Jira wiki markup and plain text, and back
+# @larvit/adf-codec — ADF to and from markdown, HTML and Jira wiki markup, and to plain text
 
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-ADF converter: ADF to markdown, HTML, Jira wiki markup or plain text, and markdown, HTML or Jira wiki markup to ADF. ADF is Atlassian Document Format, the rich text of Jira and Confluence.
+Atlassian Document Format (ADF) converter for Jira and Confluence rich text: ADF to markdown and markdown to ADF, ADF to HTML and HTML to ADF, ADF to Jira wiki markup and Jira wiki markup to ADF, and ADF to plain text.
 
 For application developers whose app shows, edits, exports or generates the rich text Atlassian
 products store as ADF.
