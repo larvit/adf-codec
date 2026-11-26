@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { createRequire } from 'node:module'
-import { resolve } from 'node:path'
+import { basename, dirname, resolve } from 'node:path'
 
 const entry = resolve(import.meta.dirname, 'bundle-entry.js')
 const outputFolder = resolve(import.meta.dirname, 'bundles')
-// The bundlers are installed in bundle-size's package, which this folder's resolution never reaches.
+// esbuild, Rollup and webpack are installed in bundle-size's package, which this folder's resolution never reaches.
 const bundler = createRequire(resolve(import.meta.dirname, '../bundle-size/package.json'))
 
 const bundlers = {
   async bun(outfile) {
-    const built = await Bun.build({ entrypoints: [entry], naming: outfile.slice(outputFolder.length + 1), outdir: outputFolder })
+    const built = await Bun.build({ entrypoints: [entry], naming: basename(outfile), outdir: dirname(outfile) })
     assert.ok(built.success)
     return built.logs.map((log) => log.message)
   },
@@ -26,7 +26,7 @@ const bundlers = {
   },
   async webpack(outfile) {
     const stats = await new Promise((settle, fail) => {
-      bundler('webpack')({ entry, mode: 'production', output: { filename: 'webpack.js', path: outputFolder } }, (error, built) => (error ? fail(error) : settle(built)))
+      bundler('webpack')({ entry, mode: 'production', output: { filename: basename(outfile), path: dirname(outfile) } }, (error, built) => (error ? fail(error) : settle(built)))
     })
     const { errors, warnings } = stats.toJson({ all: false, errors: true, warnings: true })
     assert.deepEqual(errors, [])
