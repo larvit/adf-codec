@@ -1559,3 +1559,30 @@ Read most (opens and searches):
 - `src/wiki/emit/inline-line.ts` 1
 - `src/wiki/spellings.ts` 1
 - `todo.md` 1
+
+## Reading cost, chunk e6d4d968cf12, finished 2026-11-26T03:16:40Z
+
+59233 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 7
+- `src/markdown/emit/limits.test.ts` 3
+- `src/wiki/parse/jira-wiki-to-adf.test.ts` 3
+
+## Reading cost, chunk 1afb53abffd6, finished 2026-11-26T03:29:42Z
+
+133529 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 32
+- `converter-comparison/compare.mjs` 5
+- `docs/decisions.md` 5
+- `spec/wiki.md` 5
+- `ci.sh` 4
+- `CHANGELOG.md` 2
+- `converter-comparison/run.sh` 2
+- `package.json` 2
+- `src/result.test.ts` 2
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 2
