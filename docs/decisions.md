@@ -1503,7 +1503,7 @@ alt text.
 ## Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer keeps only its content
 
 2026-11-15, the maintainer. Goals 1, 7 and 11. Valid while Jira's renderer reads the `{adf}` macro.
-`adfToLosslessJiraWiki` has landed; the rest lands with `todo.md` items 194 to 196.
+`adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` have landed; the README's section on them lands with `todo.md` item 196.
 
 Wiki markup has no spelling for some nodes and marks, a layout among them. The lossless wiki
 writer wraps each such node's ADF JSON in Jira's own `{adf}` macro: `{adf:display=block}` for a
@@ -1520,7 +1520,7 @@ rendered the status lozenge between its neighbouring words.
 ## Jira wiki markup's writers are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option
 
 2026-11-16, a developer panel. Goals 6, 7 and 8. Valid while a lossy writer drops form with no
-refusal. `adfToLosslessJiraWiki` has landed; the rest lands with `todo.md` items 194 to 196.
+refusal. `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` have landed; the README's section on them lands with `todo.md` item 196.
 
 Seven fresh-context readers, seated as the bot, the viewer/editor app and the LLM pipeline, were
 told the trap: an app saving through the lossy writer loses form on every save, with nothing
@@ -1531,6 +1531,36 @@ reader who hasn't seen the trap.
 The reader is `jiraWikiToAdf`. The maintainer picked it on 2026-11-17, after the readers split four
 to three between it and `jiraWikiMarkupToAdf`, short of the five of seven that settle a name
 (`AGENTS.md` §7).
+
+## The lossy wiki writer reduces the document, then writes it as the lossless writer does
+
+2026-11-17, the implementer. Goals 1 and 7. Valid while the lossless writer's spellings are
+the wiki markup the library writes.
+
+`adfToLossyJiraWiki` first reduces the document to the nodes and marks wiki markup spells, then
+writes that as the lossless writer does, so the two write one spelling wherever Jira reads it as
+the lossless writer's reader does. The reduction keeps every text's words in document order, a
+link's title and an image's caption, since goal 7 counts them as content. A block that can't stand
+where it is, such as a paragraph in a table outside its cells, stands right after the block that
+holds it. Four of its choices have a reason `spec/wiki.md` §The lossy writer doesn't give:
+
+- A `panel` of a type the help doesn't list is `info`, since its colour is form.
+- A link's `title` follows its text in parentheses, since Jira drops one written `[text|href|title]`
+  (§Jira wiki markup spellings the help leaves open), which the lossless writer's reader still reads.
+  A link whose address Jira shows as text is its text and then ` (address)`, unless the text is the
+  address, since the address is content.
+- Text no backslash protects is written as it stands, since dropping it would drop its words. A
+  backslash run Jira would read as something else is written between `{noformat}`, which shows it
+  as it stands: a run of exactly two, which Jira reads as a line break, and a run before a character
+  the writer escapes or at a text's end where markup or a hard break may follow. A run of three or
+  more before a letter stands, since Jira shows it whole. A `|` in a cell is written between
+  `{noformat}` too, since Jira ends the cell at an escaped one and shows `&#124;` as text. Jira shows
+  a mark's `*`, `_`, `-` or `+` as text where a `{noformat}` stands inside its run, so such a run
+  drops those marks. All of it was read back from the live test site on 2026-11-26. Not handled: a
+  text that starts with a backslash run that needs `{noformat}` right after a hard break, since Jira
+  reads no line break where `\\` meets a `{`.
+- An image in a table cell or a list item is its `alt` and ` (address)`, since a cell holds no image
+  block, as `adfToPlainText` shows an image.
 
 ## Jira wiki markup spellings the help leaves open are a writer panel's picks
 
