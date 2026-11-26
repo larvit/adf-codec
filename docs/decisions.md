@@ -1673,6 +1673,12 @@ so `htmlToAdf(adfToHtml(doc))` is untouched. No other attribute of the dialect c
 HTML `<p data-align="center">` is a paragraph, its alignment dropped. All that an element claiming
 the dialect holds reads as the dialect too.
 
+Once `adfToHtml`'s HTML is changed outside every element that claims the dialect, or loses its
+final line feed, it reads as foreign HTML, and each `data-*` attribute outside a claiming element
+drops without a refusal. The maintainer chose this on 2026-11-27 over letting those attributes
+claim the dialect: an email's `<p data-align="center">` would then read as the dialect, centred or
+refused, where today it is a plain paragraph.
+
 A panel of three developers, one each for the bot, the viewer/editor app and the LLM pipeline, all
 picked this over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`. None of them knows
 up front whether HTML is foreign, so a flag or a second name makes them guess.
