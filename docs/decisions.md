@@ -1574,9 +1574,7 @@ holds it. Four of its choices have a reason `spec/wiki.md` §The lossy writer do
   more before a letter stands, since Jira shows it whole. A `|` in a cell is written between
   `{noformat}` too, since Jira ends the cell at an escaped one and shows `&#124;` as text. Jira shows
   a mark's `*`, `_`, `-` or `+` as text where a `{noformat}` stands inside its run, so such a run
-  drops those marks. All of it was read back from the live test site on 2026-11-26. Not handled: a
-  text that starts with a backslash run that needs `{noformat}` right after a hard break, since Jira
-  reads no line break where `\\` meets a `{`.
+  drops those marks. All of it was read back from the live test site on 2026-11-26.
 - An image in a table cell or a list item is its `alt` and ` (address)`, since a cell holds no image
   block, as `adfToPlainText` shows an image.
 
@@ -1705,3 +1703,20 @@ written. The writer carries an `href` that holds one of those characters: its br
 back as the escaped `href`, and writing the escape instead would change the `href`. A bracket whose
 `^` makes Jira read an attachment embed reads as text, as `[^name.ext]` does; `spec/wiki.md` §Marks
 says which `^` do.
+
+## A hard break before a brace or a backslash rides the carry, and the lossy writer follows it with a space
+
+2026-11-26, the implementer of item 211. Goals 1, 7 and 11.
+Valid while Jira reads `\\` as a line break only where no `{` or backslash follows.
+
+Probed on the live test site on 2026-11-26: `a\\\_a`, `a\\{color:red}x{color}`, `a\\{{x}}`,
+`a\\{anchor:x}`, `a\\\{b` and `a\\\\b` show `\\` as text, so each spells a break nowhere. Jira reads a
+break before a letter, a delimiter, `[` or `!`. A line feed after `\\` adds a second break, an empty
+`{noformat}{noformat}` after it splits the paragraph, and a space after it reads, as a break and a
+space. Jira writes a `hardBreak` as a line feed, which a list item or a table cell can't hold, since
+it ends the item or the row.
+
+The lossless writer carries a `hardBreak` right before a spelling that starts with `{` or a
+backslash, a carry included, so `jiraWikiToAdf` reads each break back. The lossy writer carries
+nothing and a space is form, so it writes `\\ ` there, which covers a text starting with a backslash
+run it writes between `{noformat}`.

@@ -105,6 +105,7 @@ In `docs/decisions.md`:
 - `htmlToAdf` reads any HTML, with no option and no second call
 - The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string
 - A wiki link's address is one that Jira links, and any other `href` rides the carry
+- A hard break before a brace or a backslash rides the carry, and the lossy writer follows it with a space
 
 ## 1. Nothing about any consumer in the library
 

@@ -18,6 +18,7 @@ type SpelledMark = { delimiters: Delimiters; mark: AdfMark }
 
 type Token = { checked: boolean; kind: 'atom' | 'close' | 'open'; text: string }
 
+const hardBreakSpelling = '\\\\'
 const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], ['strike', '-'], ['strong', '*'], ['underline', '+']])
 
 // spec/wiki.md, Inline and Marks. `lossy`: spec/wiki.md, The lossy writer: a group whose delimiters don't read drops the marks they stand for.
@@ -27,6 +28,8 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, in
   let line = ''
   let before: string | undefined
   let carried = false
+  // The hard break, with its place in `line` and its index, that the line's last group wrote as `\\`.
+  let held: { at: number; index: number; node: AdfNode } | undefined
   for (const [position, { first, last }] of groups.entries()) {
     const next = groups[position + 1]
     // A group that opens with a delimiter or a carry opens with punctuation, which reads as the line's edge does.
@@ -35,16 +38,24 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, in
     const afterCharacter = after === undefined ? undefined : firstCharacter(after)
     const group = atoms.slice(first, last + 1)
     const written = groupSpelling(group, before, afterCharacter) ?? (lossy ? groupSpelling(group.map(withoutCheckedMarks), before, afterCharacter) : undefined)
-    if (written === undefined) {
+    let spelling = written
+    if (spelling === undefined) {
       const carry = inlineCarry(nodes.slice(first, last + 1), [...path, 'content', first])
       if (!carry.ok) return carry
-      line += carry.value
-      before = lastCharacter(carry.value) ?? before
+      spelling = carry.value
       carried = true
-    } else {
-      line += written
-      before = lastCharacter(written) ?? before
     }
+    // Jira reads `\\` as a line break only where no `{` or `\` follows: the lossless writer carries the break then, the lossy writer follows it with a space.
+    if (held !== undefined && /^[{\\]/.test(spelling)) {
+      const unread = lossy ? success('\\\\ ') : inlineCarry([held.node], [...path, 'content', held.index])
+      if (!unread.ok) return unread
+      line = line.slice(0, held.at) + unread.value
+      carried ||= !lossy
+    }
+    const node = nodes[first]
+    held = node?.type === 'hardBreak' && written === hardBreakSpelling ? { at: line.length, index: first, node } : undefined
+    line += spelling
+    before = lastCharacter(spelling) ?? before
   }
   return success({ carried, line })
 }
@@ -82,7 +93,7 @@ function spelledMarks(marks: readonly AdfMark[]): SpelledMark[] | undefined {
 }
 
 function leafSpelling(node: AdfNode): string | undefined {
-  if (node.type === 'hardBreak') return holdsOnlyAttributes(node, []) ? '\\\\' : undefined
+  if (node.type === 'hardBreak') return holdsOnlyAttributes(node, []) ? hardBreakSpelling : undefined
   if (node.type !== 'mention' || !holdsOnlyAttributes(node, ['accessLevel', 'id'])) return undefined
   const { accessLevel, id } = nodeAttrs(node)
   return accessLevel === '' && typeof id === 'string' && spellableUrl.test(id) ? `[~accountid:${id}]` : undefined

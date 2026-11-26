@@ -202,6 +202,26 @@ test('writes a hard break as two backslashes', () => {
   assert.equal(wiki(paragraph(text('a'), { type: 'hardBreak' }, text('b'))), 'a\\\\b')
 })
 
+const hardBreak = { type: 'hardBreak' }
+const breakCarry = inline('{"type":"hardBreak"}')
+const hardBreakBeforeBrace: [string, AdfNode[], string][] = [
+  ['an escaped character', [text('_a')], `${breakCarry}\\_a`],
+  ['an escaped brace', [text('{b')], `${breakCarry}\\{b`],
+  ['a colour', [text('x', { attrs: { color: '#ff0000' }, type: 'textColor' })], `${breakCarry}{color:#ff0000}x{color}`],
+  ['a code mark', [text('x', { type: 'code' })], `${breakCarry}{{x}}`],
+  ['a hard break', [hardBreak, text('b')], `${breakCarry}\\\\b`],
+  ['a carry', [{ attrs: { text: 'x' }, type: 'status' }], `${breakCarry}${inline('{"attrs":{"text":"x"},"type":"status"}')}`],
+]
+for (const [name, following, expected] of hardBreakBeforeBrace) {
+  test(`carries a hard break before ${name}, since Jira reads no break where a brace or a backslash follows`, () => {
+    assert.equal(wiki(paragraph(text('a'), hardBreak, ...following)), `a${expected}`)
+  })
+}
+
+test('writes a hard break as two backslashes where a letter, a delimiter or a mark follows', () => {
+  assert.equal(wiki(paragraph(text('a'), hardBreak, text('b', { type: 'strong' }), hardBreak, text('c'))), 'a\\\\*b*\\\\c')
+})
+
 test('writes a mention by account id, and carries one holding any other attribute', () => {
   assert.equal(wiki(paragraph({ attrs: { accessLevel: '', id: '5b10' }, type: 'mention' })), '[~accountid:5b10]')
   assert.equal(wiki(paragraph({ attrs: { accessLevel: '', id: '5b10', text: '@Ann' }, type: 'mention' })), inline('{"attrs":{"accessLevel":"","id":"5b10","text":"@Ann"},"type":"mention"}'))
@@ -492,7 +512,6 @@ test('carries a text that whitespace ends at the line end, or that holds http://
 
 test('escapes a delimiter between punctuation, and one a node edge meets inside the line', () => {
   assert.equal(line('a "-" b'), 'a "\\-" b')
-  assert.equal(wiki(paragraph({ type: 'hardBreak' }, text('_a'))), '\\\\\\_a')
 })
 
 test('leaves h1. and bq. that stand after a line start', () => {
@@ -687,7 +706,7 @@ const lossyCases: [string, AdfNode[], string][] = [
   ['writes a code block of a language the help lists, in lowercase', [code('JAVA', 'x')], '{code:java}\nx\n{code}'],
   ['writes each carriage return of a code block as a line feed', [code('java', 'a\r\nb\rc')], '{code:java}\na\nb\nc\n{code}'],
   ['writes a code block of another language or none as {noformat}', [code('cobol', 'x'), code(undefined, 'y')], '{noformat}\nx\n{noformat}\n\n{noformat}\ny\n{noformat}'],
-  ['writes the lines of a code block holding {code} as a paragraph parted by line breaks', [code('java', 'a\n{code}\n\nb')], String.raw`a\\\{code\}\\\\b`],
+  ['writes the lines of a code block holding {code} as a paragraph parted by line breaks', [code('java', 'a\n{code}\n\nb')], String.raw`a\\ \{code\}\\ \\b`],
   ['drops an empty code block', [{ type: 'codeBlock' }, paragraph(text('a'))], 'a'],
   ['writes a stored image as its alt, else [image]', [stored('A cat'), stored()], 'A cat\n\n\\[image\\]'],
   ['writes an external image of an address with no spelling by its encoded address', [externalImage('https://x.se/a b!.png')], '!https://x.se/a%20b%21.png!'],
@@ -709,7 +728,7 @@ const lossyCases: [string, AdfNode[], string][] = [
   ['keeps a link title after the link, one run of text at a time, since Jira drops one written in the link', [paragraph(text('a', { attrs: { href: 'https://x.se', title: 'a|b' }, type: 'link' }), text('b', { attrs: { href: 'https://x.se', title: 'a|b' }, type: 'link' }, bold), text(' c'))], '[ab|https://x.se] (a\\|b) c'],
   ['keeps a link title after the last text', [paragraph(text('a', { attrs: { href: 'https://x.se', title: 'a|b' }, type: 'link' }))], '[a|https://x.se] (a\\|b)'],
   ['writes a text as it stands where no backslash protects it', [paragraph(text('a\\b see http://x.se :D')), paragraph(text('h1. x'))], 'a\\b see http://x.se :D\n\nh1. x'],
-  ['writes a line feed in a text as a hard break and drops a carriage return', [paragraph(text('a\r\nb\n\nc'))], 'a\\\\b\\\\\\\\c'],
+  ['writes a line feed in a text as a hard break and drops a carriage return', [paragraph(text('a\r\nb\n\nc'))], 'a\\\\b\\\\ \\\\c'],
   ["drops the whitespace at a line's edges and parts it from a marked text", [paragraph(text(' ', bold), text(' a ', bold), text(' b'), text(' ')), paragraph(text('x', bold), text(' y'))], '*a*  b\n\n*x* y'],
   ['writes a marked text beside a letter as its text', [paragraph(text('un'), text('believ', bold), text('able'))], 'unbelievable'],
   ['writes the marks it can of a group where one cannot read', [paragraph(text('un'), text('believ', bold, { attrs: { href: 'https://x.se' }, type: 'link' }), text('able'))], 'un[believ|https://x.se]able'],
@@ -756,7 +775,7 @@ const moreLossyCases: [string, AdfNode[], string][] = [
   ["ends an item at a block after a list that doesn't show anything", [list('bulletList', item(paragraph(text('a')), list('orderedList', item(paragraph(text('b')))), { type: 'rule' }))], '* a\n*# b'],
   ["writes an item that doesn't show anything as an empty item", [list('bulletList', item({ type: 'rule' }))], '*  '],
   ['writes what a table holds that is no row after it', [{ content: [{ content: [cell('tableCell', text('c'))], type: 'tableRow' }, code('java', 'x')], type: 'table' }], '|c|\n\n{code:java}\nx\n{code}'],
-  ['parts the lines of a code block in a cell, an empty one too', [table({}, [{ content: [code('java', 'a\n\nb')], type: 'tableCell' }])], String.raw`|a\\\\b|`],
+  ['parts the lines of a code block in a cell, an empty one too', [table({}, [{ content: [code('java', 'a\n\nb')], type: 'tableCell' }])], String.raw`|a\\ \\b|`],
   ['writes no line for a blank paragraph in a cell', [table({}, [{ content: [paragraph(text('a')), paragraph(), paragraph(text('b'))], type: 'tableCell' }])], String.raw`|a\\b|`],
   ['writes an image with no alt in a cell as its address', [table({}, [{ content: [{ attrs: { type: 'external', url: 'https://x.se/i.png' }, type: 'media' }], type: 'tableCell' }])], '|https://x.se/i.png|'],
   ['writes an emoji with an id as its text', [paragraph({ attrs: { id: 'smile', shortName: ':smile:', text: '😄' }, type: 'emoji' })], '😄'],
@@ -771,6 +790,8 @@ const moreLossyCases: [string, AdfNode[], string][] = [
   ['writes a run of two backslashes between {noformat}, and a run of one or three before a letter as it stands', [paragraph(text('a\\b \\\\fileserver\\share \\\\\\c'))], String.raw`a\b {noformat}\\{noformat}fileserver\share \\\c`],
   ['writes a backslash before a character the writer escapes between {noformat}', [paragraph(text('a \\*b'))], String.raw`a {noformat}\{noformat}\*b`],
   ['writes a backslash that ends a text before a mark between {noformat}, and one that ends the line as it stands', [paragraph(text('C:\\'), text('dir', bold)), paragraph(text('a\\'))], String.raw`C:{noformat}\{noformat}*dir*` + '\n\na\\'],
+  ['writes a hard break and a space where a brace or a backslash follows', [paragraph(text('a'), hardBreak, text('_a'), hardBreak, text('x', { type: 'code' }), hardBreak, hardBreak, text('c'))], String.raw`a\\ \_a\\ {{x}}\\ \\c`],
+  ['writes a hard break and a space before a backslash run between {noformat}', [paragraph(text('a'), hardBreak, text('\\\\b'))], String.raw`a\\ {noformat}\\{noformat}b`],
   ['writes a backslash before a hard break between {noformat}', [paragraph(text('a\\'), { type: 'hardBreak' }, text('b'))], String.raw`a{noformat}\{noformat}\\b`],
   ['writes a backslash before a pipe in a table cell, and one that ends a cell, between {noformat}', [table(plainTable, [cell('tableCell', text('\\|')), cell('tableCell', text('a\\'))])], String.raw`|{noformat}\|{noformat}|a{noformat}\{noformat}|`],
   ['drops the marks around a text holding {noformat}', [paragraph(text('a\\\\b', bold))], String.raw`a{noformat}\\{noformat}b`],

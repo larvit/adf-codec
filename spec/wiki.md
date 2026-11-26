@@ -64,7 +64,7 @@ a `width`, a merged cell and a colour.
 
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
-| `hardBreak` | `\\` | the same |
+| `hardBreak` | `\\`; the carry where the next spelling starts with `{` or a backslash, since Jira reads no break there | the same |
 | `mention` holding `id` and `accessLevel` `""`, and no other attribute, the `id` not empty and holding no whitespace or markup character | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
 | `text` | its text, escaped as below | `\\` reads as a `hardBreak` before `\X` reads `X`, except that Jira keeps the backslash before `:`, `;`, `.`, `,`, a letter, a digit or another backslash; a bare `http://` or `https://` address reads as a `link` |
 | any other inline node | the carry | `{adf:display=inline}` reads its node |
@@ -181,6 +181,8 @@ says `adfToPlainText` does, in wiki markup:
   exactly two, one before a character the writer escapes, and one that ends a text unless it ends the
   line outside a table cell. A `|` in a table cell is written between `{noformat}`, since an escaped
   one still ends the cell. A run of `*`, `_`, `-` or `+` marks around a `{noformat}` drops those marks.
+- A `hardBreak` right before a `{` or a backslash is `\\ `, a break and a space, since the writer carries
+  nothing and a space is form.
 
 It refuses a document nested past 500 levels, each node counting one level. The lossless writer
 writes such a document.
