@@ -142,6 +142,18 @@ test('refuses a line of text one character past 2^25, at its paragraph', { timeo
 	assert.equal(refusedLine(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' })))), 'unsupported-node-shape ["content",0] true')
 })
 
+// Bun stops a test after 5 s by default, and this one writes and reads back a line of 2^25 characters.
+test('writes a line of text of exactly 2^25 characters', { timeout: 60000 }, () => {
+	const text = 'a'.repeat(2 ** 25)
+	assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' })))), `${text}\n`)
+})
+
+test('writes an image as a line of exactly 2^25 characters', { timeout: 60000 }, () => {
+	const url = `https://example.com/${'a'.repeat(2 ** 25 - 25)}`
+	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url }, type: 'media' }], type: 'mediaSingle' }
+	assert.equal(markdown(adfToLosslessMarkdown(document(image))), `![](${url})\n`)
+})
+
 test('refuses a line whose link href runs one character past 2^25, at its heading', { timeout: 60000 }, () => {
 	const href = `https://example.com/${'a'.repeat(2 ** 25)}`
 	const link = { attrs: { href }, type: 'link' }
