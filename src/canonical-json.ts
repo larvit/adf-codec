@@ -1,6 +1,9 @@
 import type { JsonValue } from './json-value.ts'
 
-export type JsonSpelling = 'compact' | 'two-space'
+// 'five-level' is the block carry's (docs/decisions.md §The block carry indents five levels in two spaces and writes deeper values compact): indenting every level makes the length quadratic in the nesting.
+export type JsonSpelling = 'compact' | 'five-level' | 'two-space'
+
+const indentedLevels: Record<JsonSpelling, number> = { compact: 0, 'five-level': 5, 'two-space': Infinity }
 
 type Member = { label: string; value: JsonValue }
 
@@ -10,7 +13,7 @@ export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling)
   return [...canonicalJsonPieces(value, spelling)].join('')
 }
 
-// Stops at the first piece, passed through `respell`, that does not match `text`: written again with two-space indentation, a short compact text can pass the engine's longest string.
+// Stops at the first piece, passed through `respell`, that does not match `text`: built whole, the 'two-space' spelling of a short compact text can pass the engine's longest string.
 export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string, respell = (canonical: string): string => canonical): boolean {
   let offset = 0
   for (const canonical of canonicalJsonPieces(value, spelling)) {
@@ -22,7 +25,7 @@ export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, te
 }
 
 export function* canonicalJsonPieces(value: JsonValue, spelling: JsonSpelling): Generator<string> {
-  const indent = spelling === 'compact' ? '' : '  '
+  const levels = indentedLevels[spelling]
   const pending: Pending[] = [{ depth: 0, value }]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     if (typeof next === 'string') {
@@ -30,6 +33,7 @@ export function* canonicalJsonPieces(value: JsonValue, spelling: JsonSpelling): 
       continue
     }
     const { depth, value: held } = next
+    const indent = depth < levels ? '  ' : ''
     if (Array.isArray(held)) schedule(pending, '[', held.map((item) => ({ label: '', value: item })), ']', indent, depth)
     else if (held !== null && typeof held === 'object') schedule(pending, '{', objectMembers(held, indent), '}', indent, depth)
     else yield Object.is(held, -0) ? '-0' : JSON.stringify(held)

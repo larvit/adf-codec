@@ -6,6 +6,7 @@ import type { ConvertErrorCode, ParseError, Result, SourcePosition } from '../..
 import { commonMarkToAdf, losslessMarkdownToAdf } from './markdown-to-adf.ts'
 import { largestNesting } from '../../nesting.ts'
 import { portableMarkdownToAdf } from '../portable/portable-markdown-to-adf.ts'
+import { serializeCanonicalJson } from '../../canonical-json.ts'
 
 const em: AdfMark = { type: 'em' }
 const readers = [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]
@@ -466,16 +467,26 @@ test('names the invalid JSON no opaque carry holds, and the spelling that keeps 
   refused(losslessMarkdownToAdf('!adf:carry{json=abc}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
 })
 
-test('names the canonical spelling a carried JSON reads alone', () => {
+test('names the canonical spelling of a carried JSON that is spelled another way', () => {
   const compact = ['compact, keys sorted', '\\!adf:']
-  refused(losslessMarkdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n'), 'unsupported-node-shape', 'two-space indent', '!adf:codeBlock {language="adf:blockCard"}')
+  refused(losslessMarkdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n'), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:blockCard"}')
   refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...compact)
   refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n'), 'unsupported-node-shape', ...compact)
 })
 
-test('refuses compact JSON in the carry fence without building its two-space spelling', () => {
+test('refuses compact JSON of deep nesting in the carry fence', () => {
   const json = `{"attrs":{"value":${'['.repeat(495)}${new Array(560_000).fill(0).join(',')}${']'.repeat(495)}}}`
-  refused(losslessMarkdownToAdf(`\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`), 'unsupported-node-shape', 'two-space indent', '!adf:codeBlock {language="adf:unknownBlock"}')
+  refused(losslessMarkdownToAdf(`\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:unknownBlock"}')
+})
+
+test('reads a carry fence indented five levels with deeper values compact, and one indented at every level as 0.3.1 wrote it', () => {
+  const value = { a: { b: { c: { d: { e: [1, { f: 2 }] } } } } }
+  const fence = (json: string): string => `\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`
+  const lines = ['{', '  "attrs": {', '    "a": {', '      "b": {', '        "c": {', '          "d": {"e":[1,{"f":2}]}', '        }', '      }', '    }', '  }', '}']
+  assert.deepEqual(content(losslessMarkdownToAdf(fence(lines.join('\n')))), [{ attrs: value, type: 'unknownBlock' }])
+  assert.deepEqual(content(losslessMarkdownToAdf(fence(JSON.stringify({ attrs: value }, null, 2)))), [{ attrs: value, type: 'unknownBlock' }])
+  const fourLevels = lines.join('\n').replace('{\n          "d": {"e":[1,{"f":2}]}\n        }', '{"d":{"e":[1,{"f":2}]}}')
+  refused(losslessMarkdownToAdf(fence(fourLevels)), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:unknownBlock"}')
 })
 
 test('names the node JSON an opaque carry restores alone', () => {
@@ -488,7 +499,7 @@ test('refuses a carry holding an inline card a link marks, whether it stands alo
   const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
   const json = JSON.stringify(card).replaceAll('"', '\\"')
   refused(losslessMarkdownToAdf(`!adf:carry{json="${json}"}\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
-  refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [card] }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
+  refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${serializeCanonicalJson({ content: [card] }, 'five-level')}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
 })
 
 test('refuses a carry holding a shape every writer refuses, whether it stands alone, in a block or in a fence', () => {
@@ -512,7 +523,7 @@ test('holds a carried JSON value to the nesting its position leaves', () => {
   const fence = (prefix: string, levels: number): string => `${prefix}\`\`\`adf:x\n${prefix}${nested(levels)}\n${prefix}\`\`\`\n`
   const deeper = (levels: number): string[] => [`deeper than the ${levels} levels`]
   refused(losslessMarkdownToAdf(`!adf:carry{json="${nested(largestNesting + 2)}"}\n`), 'unsupported-nesting-depth', ...deeper(largestNesting))
-  refused(losslessMarkdownToAdf(fence('', largestNesting + 1)), 'unsupported-node-shape', 'two-space indent', '!adf:codeBlock {language="adf:x"}')
+  refused(losslessMarkdownToAdf(fence('', largestNesting + 1)), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:x"}')
   refused(losslessMarkdownToAdf(fence('> ', largestNesting + 1)), 'unsupported-nesting-depth', ...deeper(largestNesting - 1))
 })
 

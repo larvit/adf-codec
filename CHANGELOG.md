@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Breaking:** `adfToLosslessMarkdown` indents the JSON in a carry fence two spaces a level for its first five levels and writes a value nested deeper compact on its line, where `0.3.1` indented every level. A carried node of deeply nested JSON, which `0.3.1` refused as `unsupported-node-shape`, now converts. `losslessMarkdownToAdf` still reads the carry `0.3.1` wrote, but `0.3.1` refuses a carry nested deeper than five levels that `0.4.0` wrote, so upgrade every reader before the writer (`MIGRATION.md`).
 - The Jira wiki writers now write a hard break before a `{` or a backslash so Jira reads it as a break: the lossless writer carries it, the lossy one follows it with a space
 - The gate bundles the installed package with Bun, esbuild, Rollup and webpack, fails on any bundler warning, such as webpack's "Critical dependency", and round-trips a document through each bundle in Node. The README's package table names the four.
 - Document the Jira wiki calls `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
