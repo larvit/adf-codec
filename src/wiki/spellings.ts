@@ -62,14 +62,21 @@ export function wellFormedAddress(address: string): boolean {
 
 // spec/wiki.md, Marks: the addresses the reader and the writer take as a link in `[<address>]` and `[<text>|<address>]`.
 export function linkedAddress(address: string): boolean {
-  if (!spellableUrl.test(address) || !wellFormedAddress(address) || /\^./.test(address)) return false
-  if (address.startsWith('/') || address.startsWith('#')) return address !== '//'
+  const pathOrAnchor = address.startsWith('/') || address.startsWith('#')
+  const attachmentEmbed = pathOrAnchor ? /\^[^:]+$/ : /\^./
+  if (!spellableUrl.test(address) || !wellFormedAddress(address) || attachmentEmbed.test(address)) return false
+  if (pathOrAnchor) return address !== '//'
   const colon = address.indexOf(':')
   if (colon === -1) return false
   const lowered = address.slice(0, colon).toLowerCase()
   const rest = address.slice(colon + 1)
   if (rest.startsWith('//')) return rest.length > 2 && schemesAfterSlashes.has(lowered)
   return schemesAfterColon.has(lowered) && rest !== '' && !rest.startsWith('#')
+}
+
+// spec/wiki.md, Marks: the `href` Jira stores for a linked address, which escapes `"`, `<`, `>`, a backtick and `^`.
+export function storedHref(address: string): string {
+  return address.replaceAll('"', '%22').replaceAll('<', '%3C').replaceAll('>', '%3E').replaceAll('`', '%60').replaceAll('^', '%5E')
 }
 
 // spec/wiki.md, What only the reader reads: each smiley Jira reads as an emoji, with the emoji's id and shortName.

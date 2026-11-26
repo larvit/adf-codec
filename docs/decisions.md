@@ -1650,5 +1650,9 @@ is on it, so an `href` that Jira shows as text rides the carry, and every string
 back.
 
 An address that Jira links and the list lacks, such as a scheme the probes missed, reads as text and
-rides the carry. That costs a carry, never content. Jira also stores a linked `href`'s `"`, `<`, `>`, `` ` ``
-and final `^` as percent escapes, which neither side models yet (item 207).
+rides the carry. That costs a carry, never content. Jira also stores a linked `href`'s `"`, `<`, `>`, `` ` `` and every `^` as percent escapes
+(2026-11-26 probes, item 207). The reader reads the `href` as Jira stores it, and the text as written.
+The writer carries an `href` holding one of those characters, since a bracket would read back as
+another `href`: converting the reader's side alone would break the round-trip, and the writer
+spelling the escape would change the `href`. A `^` that makes Jira read an attachment embed reads as
+text, as `[^name.ext]` does; `spec/wiki.md` §Marks says which `^` do.

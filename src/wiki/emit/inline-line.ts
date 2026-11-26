@@ -2,7 +2,7 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import { escapedText } from './text-escaping.ts'
 import { holdsOnlyAttributes, identicalMark, identicalMarks, isSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineCarry } from '../carry.ts'
-import { linkedAddress, spellableColour, spellableTitle, spellableUrl } from '../spellings.ts'
+import { linkedAddress, spellableColour, spellableTitle, spellableUrl, storedHref } from '../spellings.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 
 // `carried`: whether any node of the line rides the carry.
@@ -105,7 +105,7 @@ function markDelimiters(mark: AdfMark): Delimiters | undefined {
 
 function linkDelimiters(attrs: Readonly<Record<string, unknown>>): Delimiters | undefined {
   const { href, title, ...others } = attrs
-  if (Object.keys(others).length > 0 || typeof href !== 'string' || !linkedAddress(href)) return undefined
+  if (Object.keys(others).length > 0 || typeof href !== 'string' || !linkedAddress(href) || storedHref(href) !== href) return undefined
   if (title === undefined) return { checked: false, close: `|${href}]`, open: '[' }
   return typeof title === 'string' && spellableTitle.test(title) ? { checked: false, close: `|${href}|${title}]`, open: '[' } : undefined
 }
