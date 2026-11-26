@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 215 | 0.4.0 |  | defect | **Return a result, never an engine abort, from the writers where one key or one link `href` is a string of 2^28 characters.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
-| 217 | 0.4.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 2 | 7.8 |
 | 216 | 0.4.0 |  |  | **List the commit that converted the source to tabs in `.git-blame-ignore-revs`, so `git blame` skips it.** | 1 | 2 | 1 | 2 | 1 | code health by 1 | 6.2 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
@@ -49,18 +48,6 @@ Touches:
 - `src/markdown/commonmark/link-syntax.ts`: `escapeUnbalanced`, `spellTitle` (small)
 - `src/canonical-json.test.ts`
 - `src/markdown/emit/limits.test.ts`
-
-### 217. Lower the reading cost of the files a chunk reads most before its first commit.
-
-The last 5 chunks' median is 104030 new input tokens before their first commit, the 5 before them 100752 (`~/.claude/bin/reading-cost`, `docs/reading-cost.md`).
-
-Read most over the last 5 chunks (opens and searches): `src/wiki/emit/adf-to-jira-wiki.test.ts` 19, `docs/decisions.md` 15, `spec/wiki.md` 13, `README.md` 9, `src/wiki/emit/text-escaping.ts` 7, `CHANGELOG.md` 6, `src/canonical-json.ts` 6, `AGENTS.md` 4, `MIGRATION.md` 4, `src/markdown/emit/inline-line.ts` 4.
-
-Cut what a chunk reads of those files: split or index the parts it reads whole, and run `~/.claude/bin/reading-cost --reset` in the chunk that ships this. Where the change touches `src/markdown/emit/inline-line.ts`, make `settledLine`, a place the comprehension seats found hard, easier to read.
-
-Touches:
-
-- `AGENTS.md`: `## 7. The working loop` (small)
 
 ### 216. List the commit that converted the source to tabs in `.git-blame-ignore-revs`, so `git blame` skips it.
 
