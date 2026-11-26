@@ -184,10 +184,11 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 
 ## 7. The working loop
 
-A session works one chunk, starting from the first item in `todo.md` that no item still in the plan
-blocks, and stops when that chunk merges, whatever it was asked to finish: a release is a chain of
-sessions, so an instruction to work until a release is done names the chain, not the session. An
-open PR is a chunk already in flight, and finishing it is the session.
+A session works one chunk and stops when it merges, whatever it was asked to finish: a release is a
+chain of sessions, so an instruction to work until a release is done names the chain, not the
+session. The chunk starts from the first item in `todo.md` that no other item in the plan blocks.
+An open PR is a chunk already in flight, and finishing it is the session.
+
 Per chunk:
 
 1. Fresh worktree off updated `origin/main`; implement tests-first (§3).
@@ -199,10 +200,11 @@ Per chunk:
    the PR summary names each fix no round reviewed.
 3. Merge the PR (standing authorization, this repo only, granted by the maintainer), report, stop.
 
-A chunk reads these files in part. `grep -n '^#' <file>` lists the headings. This prints the first
-`## ` section whose title holds the fragment, so one call reads a section whole, and the fragment
-holds no apostrophe: `awk -v h='<fragment>' '/^## /{if(p)exit; p=index($0,h)>0} p' <file>`. A `###`
-section, or one past 80 lines, is read in ranges.
+A chunk reads these files in part. `grep -n '^#' <file>` lists the headings. One call reads the
+first `## ` section whose title holds a fragment, whole:
+`awk -v h='<fragment>' '/^## /{if(p)exit; p=index($0,h)>0} p' <file>`. The command quotes the
+fragment with single quotes, so the fragment holds no apostrophe. A `###` section, or one past 80
+lines, is read in ranges.
 
 - `CHANGELOG.md`: `## Unreleased` only, the one section a chunk edits.
 - `MIGRATION.md`: the top `## From` section, the release being built.
