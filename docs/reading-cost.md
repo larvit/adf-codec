@@ -1420,3 +1420,39 @@ Read most (opens and searches):
 - `src/json-text.test.ts` 1
 - `src/markdown/emit/inline-line.test.ts` 1
 - `src/markdown/emit/inline-nodes.test.ts` 1
+
+## Reading cost, chunk 89dda143badc, finished 2026-11-26T00:15:39Z
+
+196420 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 8
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 7
+- `spec/wiki.md` 6
+- `src/wiki/parse/jira-wiki-to-adf.test.ts` 5
+- `AGENTS.md` 4
+- `README.md` 3
+- `ci.sh` 3
+- `src/wiki/parse/inline.ts` 3
+- `src/wiki/emit/inline-line.ts` 2
+- `src/wiki/spellings.ts` 2
+
+## Reading cost, chunk e7490214faf3, finished 2026-11-26T00:40:05Z
+
+93470 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `spec/flavour.md` 12
+- `docs/decisions.md` 10
+- `src/markdown/portable/inline-reduction.ts` 10
+- `README.md` 9
+- `src/markdown/emit/inline-line.ts` 7
+- `src/markdown/portable/adf-to-portable-markdown.ts` 6
+- `src/markdown/commonmark/grammar.ts` 4
+- `src/markdown/portable/inline-reduction.test.ts` 4
+- `src/markdown/commonmark/link-syntax.ts` 3
+- `src/markdown/emit/adf-to-markdown.ts` 3
+
+## Reading cost reset, 2026-11-26T00:46:42Z
