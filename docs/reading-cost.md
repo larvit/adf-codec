@@ -1499,3 +1499,20 @@ Read most (opens and searches):
 - `src/markdown/inline-content.ts` 4
 - `src/markdown/emit/inline-line.ts` 2
 - `src/markdown/portable/task-ids.ts` 2
+
+## Reading cost, chunk ab4808e3c307, finished 2026-11-26T02:04:52Z
+
+106305 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `spec/wiki.md` 6
+- `src/wiki/parse/jira-wiki-to-adf.test.ts` 6
+- `src/wiki/emit/inline-line.ts` 4
+- `src/wiki/parse/inline.ts` 4
+- `docs/decisions.md` 2
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 2
+- `src/wiki/spellings.ts` 2
+- `CHANGELOG.md` 1
+- `README.md` 1
+- `src/wiki/spellings.test.ts` 1

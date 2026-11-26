@@ -191,8 +191,9 @@ The writers never write these, and the reader reads them as follows:
 
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
 - An address standing bare, `http://` or `https://` first, reads as its text linked to its `href` as
-  Jira stores it, less a `.`, `,`, `;` or `?` ending it. It ends at whitespace, `"`, `'`, a backtick,
-  `>`, `)`, `!`, `|`, `[`, `]`, `{`, `}` or `\`.
+  Jira stores it, less the run of `.`, `,`, `;`, `?`, `!`, `'` and `)` ending it, where a `?` stays
+  in the link if a `,`, `;`, `'` or `)` follows it. It ends at whitespace, `"`, a backtick, `>`, `|`,
+  `[`, `]`, `{`, `}` or `\`.
 - `!name.ext!`, whose address holds no `://`, reads as text: no ADF node holds an attachment by
   name. So does an image that shares its line with anything else, its address read as a bare one.
 - `{code}`, `{noformat}`, `{panel}` and `{quote}` open a block at a line's start or right after
