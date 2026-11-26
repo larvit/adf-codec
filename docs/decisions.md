@@ -150,8 +150,9 @@ fences are unchanged at five levels. Spaces, not tabs: a spelling of a format us
 expect of JSON, and a tab inside a list item or a block quote meets CommonMark's tab stops. This
 doesn't set the source files' indentation, which `~/.claude/principles/technical-principles.md`
 sets to tabs. A stored carry nested deeper than five levels is respelled, which `MIGRATION.md`
-says. `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it.
-The next write spells it in five levels.
+says. `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it:
+refusing it would leave markdown that `0.3.1` stored unreadable, which goal 1 rules out. The next
+write spells it in five levels.
 
 ## The carry fence names the node type
 
