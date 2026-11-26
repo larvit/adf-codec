@@ -1618,3 +1618,54 @@ Read most (opens and searches):
 - `src/wiki/emit/text-escaping.ts` 2
 - `CHANGELOG.md` 1
 - `src/wiki/carry.ts` 1
+
+## Reading cost, chunk 2b485837c22e, finished 2026-11-26T07:43:27Z
+
+52341 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 3
+- `AGENTS.md` 2
+- `src/markdown/commonmark/entity-references.ts` 2
+- `.gitignore` 1
+- `.oxlintrc.json` 1
+- `browser-tests/page.html` 1
+- `ci.sh` 1
+- `docker-runner.sh` 1
+- `package.json` 1
+- `todo.md` 1
+
+## Reading cost, chunk 920741b86788, finished 2026-11-26T07:59:54Z
+
+395268 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 7
+- `MIGRATION.md` 3
+- `README.md` 2
+- `corpus/round-trip/opaque-carry/carry-in-wrappers.md` 1
+- `corpus/round-trip/opaque-carry/unknown-block.md` 1
+- `spec/flavour.md` 1
+- `src/adf/carried-json.ts` 1
+- `src/canonical-json.test.ts` 1
+- `src/canonical-json.ts` 1
+- `src/conformance/markdown-property.test.ts` 1
+
+## Reading cost, chunk 656c72fb2cc3, finished 2026-11-26T08:06:59Z
+
+60111 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `spec/wiki.md` 7
+- `src/wiki/emit/text-escaping.ts` 5
+- `README.md` 4
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 4
+- `src/wiki/parse/jira-wiki-to-adf.test.ts` 4
+- `CHANGELOG.md` 3
+- `src/wiki/parse/jira-wiki-to-adf.ts` 3
+- `src/wiki/parse/inline.ts` 2
+- `MIGRATION.md` 1
+- `docs/decisions.md` 1
