@@ -1,32 +1,30 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
-import { nodeContent } from '../../adf/document.ts'
 
 const taskTypes = new Set(['blockTaskItem', 'taskItem', 'taskList'])
 
-export function mintTaskIds(document: AdfDocument, markdown: string): void {
-  const seed = hash128(markdown).join(' ')
-  let count = 0
-  for (const node of preorder(document)) {
-    if (!taskTypes.has(node.type)) continue
-    count += 1
-    node.attrs = { ...node.attrs, localId: uuidV4(hash128(`${seed} ${count}`)) }
-  }
-}
+type Level = { minted: AdfNode[]; node?: AdfNode; source: Iterator<AdfNode> }
 
-function* preorder(document: AdfDocument): Generator<AdfNode> {
-  const pending: AdfNode[] = []
-  const pushReversed = (nodes: readonly AdfNode[]): void => {
-    for (let index = nodes.length - 1; index >= 0; index -= 1) {
-      const node = nodes[index]
-      if (node !== undefined) pending.push(node)
+// A task node takes its number before the nodes it holds, so an id follows from the node's place in the document.
+export function mintTaskIds(document: AdfDocument, markdown: string): AdfDocument {
+  const seed = hash128(markdown).join(' ')
+  const root: Level = { minted: [], source: (document.content ?? []).values() }
+  const open = [root]
+  let count = 0
+  for (let level = open.at(-1); level !== undefined; level = open.at(-1)) {
+    const step = level.source.next()
+    if (step.done === true) {
+      open.pop()
+      if (level.node !== undefined) open.at(-1)?.minted.push({ ...level.node, content: level.minted })
+      continue
     }
+    const node = step.value
+    if (taskTypes.has(node.type)) count += 1
+    const minted = taskTypes.has(node.type) ? { ...node, attrs: { ...node.attrs, localId: uuidV4(hash128(`${seed} ${count}`)) } } : node
+    if (node.content !== undefined && blockNodeModel(node.type)?.contentModel === 'block') open.push({ minted: [], node: minted, source: node.content.values() })
+    else level.minted.push(minted)
   }
-  pushReversed(document.content ?? [])
-  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
-    yield node
-    if (blockNodeModel(node.type)?.contentModel === 'block') pushReversed(nodeContent(node))
-  }
+  return document.content === undefined ? document : { ...document, content: root.minted }
 }
 
 // cyrb128, public domain.

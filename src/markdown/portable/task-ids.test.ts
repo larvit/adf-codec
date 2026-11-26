@@ -20,18 +20,24 @@ function tasks(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
 }
 
-test('mints each task node a UUID v4 in document order, unique and the same every run', () => {
+test('mints each task node a UUID v4 in document order, unique and the same every run, leaving the document it was handed as it was', () => {
   const unminted = (): AdfDocument => tasks({ content: [{ attrs: { state: 'TODO' }, type: 'taskItem' }, { content: [{ attrs: { state: 'DONE' }, type: 'blockTaskItem' }], type: 'taskList' }], type: 'taskList' })
-  const minted = unminted()
-  mintTaskIds(minted, '- [ ] a\n')
-  const ids = taskIds(minted)
+  const source = unminted()
+  const ids = taskIds(mintTaskIds(source, '- [ ] a\n'))
   assert.equal(ids.length, 4)
   for (const id of ids) assert.match(String(id), uuidV4)
   assert.equal(new Set(ids).size, 4)
-  const again = unminted()
-  mintTaskIds(again, '- [ ] a\n')
-  assert.deepEqual(taskIds(again), ids)
-  const other = unminted()
-  mintTaskIds(other, '- [ ] b\n')
-  assert.equal(taskIds(other).some((id) => ids.includes(id)), false)
+  assert.deepEqual(source, unminted())
+  assert.deepEqual(taskIds(mintTaskIds(unminted(), '- [ ] a\n')), ids)
+  assert.equal(taskIds(mintTaskIds(unminted(), '- [ ] b\n')).some((id) => ids.includes(id)), false)
+})
+
+test('numbers the task nodes alone, so a block between two task lists moves no id, whatever its type', () => {
+  const list = (): AdfNode => ({ content: [{ attrs: { state: 'TODO' }, type: 'taskItem' }], type: 'taskList' })
+  const paragraph: AdfNode = { content: [{ text: 'a', type: 'text' }], type: 'paragraph' }
+  assert.deepEqual(taskIds(mintTaskIds(tasks(list(), paragraph, { content: [], type: 'unknown' }, list()), 'x')), taskIds(mintTaskIds(tasks(list(), list()), 'x')))
+})
+
+test('returns a document without content as it is', () => {
+  assert.deepEqual(mintTaskIds({ type: 'doc', version: 1 }, ''), { type: 'doc', version: 1 })
 })

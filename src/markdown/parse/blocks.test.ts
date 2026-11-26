@@ -177,3 +177,12 @@ test("keeps as spaces the columns a tab holds past an item's indentation", () =>
   assert.equal(read('- ```\n\tx\n  ```\n'), 'list(code("  x"))')
   assert.equal(read('- a\n \t- b\n'), 'list(paragraph(a) list(paragraph(b)))')
 })
+
+test('keeps a paragraph indented under a list item in that item, past a blank line', () => {
+  assert.equal(outline(parseBlocks('- a\n\n  b', 'lossless').blocks), 'list(paragraph(a) paragraph(b))')
+  assert.equal(outline(parseBlocks('> -\n>\n> b', 'lossless').blocks), 'quote(list() paragraph(b))')
+})
+
+test('opens an HTML block on a line holding a lone tag', () => {
+  assert.deepEqual(kinds('<b>\n'), ['html'])
+})

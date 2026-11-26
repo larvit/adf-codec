@@ -1,6 +1,6 @@
 import type { AdfMark } from '../../adf/document.ts'
 import type { Claims, WrittenFlavour } from '../flavour.ts'
-import type { InlineReading } from '../inline-content.ts'
+import type { InlineReading } from '../inline-pieces.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { RunFallback } from './unspellable-runs.ts'

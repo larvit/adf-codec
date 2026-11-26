@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
-| 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 207 | 0.4.0 |  |  | **Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.** | 2 | 2 | 2 | 4 | 3 | 11 by 3, 6 by 1 | 3.4 |
@@ -58,30 +57,6 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
-
-### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
-
-Technical principle "One owner per value": the `Walk` record passes through functions that mutate it
-and return `void`; `walk.leaf` alone is written in seven places, and `openedList` reads the
-`endedLists` that `closeLeaf` fills. `ContainerStack` in the same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
-functions write `pending`, `pieces`, `brackets`, `linkOpenersFrom` and `openingSpellableLink` on the `Scan`
-they are handed, most of them returning `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
-`mintTaskIds` (`portable/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
-`takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
-`writeUnpaired` and `markHighlights` (`inline-content.ts`), whose order changes the
-output.
-Once `Scan`'s pieces have owners, the bracket resolution — `linkedAlt` through `linkTo`,
-`holdsLink`, and `closeBracket` through `altText` — can leave `inline-content.ts` (about 690 lines)
-for a module of its own. That module resolves an image once, into a node holding its alt text and
-its link, so `imageAlt`, `resolvedPieces` and `directiveMarkPieces` no longer filter and regroup
-`ImageLink` pieces. Found by the architecture pass of the release review of 0.3.0, 2026-11-08.
-
-Touches:
-
-- `src/markdown/parse/blocks.ts`
-- `src/markdown/inline-content.ts`
-- `src/markdown/portable/task-ids.ts`: `mintTaskIds`
-- `src/markdown/emit/inline-line.ts`: `takeFallback`, `settledLine`, `lineSegments`
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
