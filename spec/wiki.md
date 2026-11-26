@@ -201,8 +201,9 @@ The writers never write these, and the reader reads them as follows:
   another of them, and read as text after anything else on a line. `{panel}` and `{quote}` close
   one in the same places, `{code}` and `{noformat}` wherever the closing macro stands. One left
   open holds the rest of the markup.
-- An `{adf}` macro left open, or holding anything but one ADF node's JSON, is refused as
-  `unsupported-node-shape`. So is one inside a line that closes on a later line.
+- An `{adf}` macro left open, holding anything but one ADF node's JSON, holding a number JSON
+  cannot spell, or carrying a node every writer refuses, is refused as `unsupported-node-shape`. So
+  is one inside a line that closes on a later line.
 - In a `{code}` or `{noformat}` text, a carriage return before a line feed reads as nothing, so
   markup whose lines end in both reads as markup whose lines end in a line feed.
 - `---` and `--` with whitespace or the line's edge on each side read as `—` and `–`. So `-- ` at
