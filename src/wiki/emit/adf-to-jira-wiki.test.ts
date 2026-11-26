@@ -11,9 +11,19 @@ function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
 }
 
+function wrapped<T>(levels: number, innermost: T, wrap: (inner: T) => T): T {
+  let value = innermost
+  for (let level = 0; level < levels; level += 1) value = wrap(value)
+  return value
+}
+
 function wiki(...content: AdfNode[]): string {
   const result = adfToLosslessJiraWiki(document(...content))
   return result.ok ? result.value : `${result.error.code}: ${result.error.message}`
+}
+
+function nested(levels: number): AdfAttributes[string] {
+  return wrapped<AdfAttributes[string]>(levels, 1, (inner) => [inner])
 }
 
 function refusal(result: Result<unknown>): string {
@@ -329,8 +339,7 @@ test('escapes a { inside a carried JSON string, so the closing macro is the only
 })
 
 test('refuses a carry whose JSON nests past 500 levels', () => {
-  let value: AdfAttributes[string] = 1
-  for (let level = 0; level < largestNesting - 2; level += 1) value = [value]
+  const value = nested(largestNesting - 2)
   assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph({ attrs: { a: value }, type: 'unknownInline' })))), 'written')
   assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph({ attrs: { a: [value] }, type: 'unknownInline' })))), 'unsupported-nesting-depth at /content/0/content/0')
   assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph({ attrs: { a: [value] }, type: 'unknownInline' }), paragraph({ attrs: { a: [value] }, type: 'unknownInline' })))), 'unsupported-nesting-depth at /content/0/content/0')
@@ -387,8 +396,7 @@ test('carries a text holding a pipe in a table cell, where an escaped pipe still
 })
 
 test('refuses a heading holding a carry past 500 levels', () => {
-  let value: AdfAttributes[string] = 1
-  for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
+  const value = nested(largestNesting - 1)
   assert.equal(refusal(adfToLosslessJiraWiki(document({ attrs: { level: 1 }, content: [{ attrs: { a: value }, type: 'unknownInline' }], type: 'heading' }))), 'unsupported-nesting-depth at /content/0/content/0')
 })
 
@@ -564,8 +572,7 @@ test('carries a text holding nothing', () => {
 })
 
 test('refuses a carry past 500 levels in a list by the path of the first', () => {
-  let value: AdfAttributes[string] = 1
-  for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
+  const value = nested(largestNesting - 1)
   const deep: AdfNode = { attrs: { a: value }, type: 'unknownInline' }
   assert.equal(refusal(adfToLosslessJiraWiki(document(list('bulletList', item(paragraph(deep)), item(paragraph(deep)))))), 'unsupported-nesting-depth at /content/0/content/0/content/0/content/0')
 })
@@ -627,9 +634,7 @@ test('refuses what the lossless writer refuses', () => {
 })
 
 function nestedIn(wrap: (inner: AdfNode) => AdfNode, levels: number): AdfNode {
-  let node = paragraph(text('x'))
-  for (let level = 0; level < levels; level += 1) node = wrap(node)
-  return node
+  return wrapped(levels, paragraph(text('x')), wrap)
 }
 
 const nestings: [string, (inner: AdfNode) => AdfNode, number][] = [
