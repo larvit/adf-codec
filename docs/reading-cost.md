@@ -1726,3 +1726,14 @@ Read most (opens and searches):
 58420 new input tokens before the first commit.
 
 ## Reading cost reset, 2026-11-26T10:05:04Z
+
+## Reading cost, chunk 7d10e277be32, finished 2026-11-26T10:24:33Z
+
+59581 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `AGENTS.md` 3
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 2
+- `docs/reading-cost.md` 1
+- `spec/wiki.md` 1
