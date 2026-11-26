@@ -1043,6 +1043,7 @@ const claimedRefusals: readonly (readonly [string, string])[] = [
 	['<ul><li>a</li><li><div class="adf-panel">\n<p>b<b>c</b></p>\n</div></li></ul>', 'unmappable-html at /content/0/content/1/content/0/content/0 line 2 offset 42'],
 	['<p>a</p><section data-adf="x">b</section>', 'unmappable-html at /content/1/content/0 line 1 offset 0'],
 	['<p>a <i class="x adf-y">b</i></p>', 'unmappable-html at /content/0/content/1 line 1 offset 0'],
+	['<table><td><span class="adf-nope">x</span></td></table>', 'unmappable-html at /content/0/content/0/content/0/content/0/content/0 line 1 offset 0'],
 	['<p>a</p><div class="adf-panel"', 'read'],
 	[`<p>a${carry('span', { type: 'unknownInline' }, 'x').replace('<span ', '<span hidden ')}</p>`, 'unmappable-html at /content/0/content/1 line 1 offset 0'],
 	['<p hidden><span class="adf-status">x</span></p><script><span class="adf-status">x</span></script><pre><span class="adf-status">x</span></pre>', 'read'],
