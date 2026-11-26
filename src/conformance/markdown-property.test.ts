@@ -180,8 +180,8 @@ const spellCarry = (json: string) => spellInlineLeafDirective(carryName, `{json=
 const inlineCarry = carriedNode.map((node) => spellCarry(serializeCanonicalJson(node, 'compact')))
 const hostileInlineCarry = fc.oneof(carriedNode, jsonValue).map((node) => spellCarry(JSON.stringify(node, null, 1)))
 const blockCarry = fc.oneof(
-  { arbitrary: carriedParts.map(([type, untyped]) => fencedCodeBlock(`${carryFencePrefix}${type}`, serializeCanonicalJson(untyped, 'two-space'))), weight: 3 },
-  { arbitrary: unnamedParts.map(([type, untyped]) => fencedCodeBlock(carryFencePrefix, serializeCanonicalJson({ ...untyped, type }, 'two-space'))), weight: 1 },
+  { arbitrary: carriedParts.map(([type, untyped]) => fencedCodeBlock(`${carryFencePrefix}${type}`, serializeCanonicalJson(untyped, 'five-level'))), weight: 3 },
+  { arbitrary: unnamedParts.map(([type, untyped]) => fencedCodeBlock(carryFencePrefix, serializeCanonicalJson({ ...untyped, type }, 'five-level'))), weight: 1 },
 )
 const hostileBlockCarry = fc
   .tuple(
@@ -196,7 +196,7 @@ const hostileBlockCarry = fc
   )
   .map(([[type, untyped], named, body, spelling, other]) => {
     const value = body === 'untyped' ? untyped : body === 'typed' ? { ...untyped, type } : other
-    const json = spelling === 'canonical' ? serializeCanonicalJson(value, 'two-space') : spelling === 'compact' ? JSON.stringify(value) : JSON.stringify(value, null, 1)
+    const json = spelling === 'canonical' ? serializeCanonicalJson(value, 'five-level') : spelling === 'compact' ? JSON.stringify(value) : JSON.stringify(value, null, 1)
     const info = `${carryFencePrefix}${named ?? type}`
     return info.includes('`') ? `~~~${info}\n${json}\n~~~` : fencedCodeBlock(info, json)
   })

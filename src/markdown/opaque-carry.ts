@@ -14,6 +14,8 @@ export const carryFencePrefix = 'adf:'
 
 export const carryName = 'carry'
 
+// The writer's spelling first; 0.3.1 wrote the second, indented at every level.
+const blockSpellings: readonly [JsonSpelling, ...JsonSpelling[]] = ['five-level', 'two-space']
 const carryHolder = 'the opaque carry'
 const jsonAttribute = 'json'
 
@@ -21,7 +23,7 @@ const jsonAttribute = 'json'
 export function carriedBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<{ headroom: number; text: string }> {
   const { type, ...untyped } = node
   const named = infoStringCarries(type)
-  const json = carriedJson(node, named ? untyped : node, 'two-space', path, largestNesting - depth)
+  const json = carriedJson(node, named ? untyped : node, blockSpellings[0], path, largestNesting - depth)
   if (!json.ok) return json
   return success({ headroom: json.value.headroom, text: fencedCodeBlock(`${carryFencePrefix}${named ? type : ''}`, json.value.json) })
 }
@@ -40,7 +42,7 @@ export function readCarriedBlock(type: string, body: string, depth: number): Rea
   if (type !== '' && !infoStringCarries(type)) {
     return { fault: unsupportedNodeShape(`the carry fence names a type no info string carries back: spell it ${carryFencePrefix} with the type in the JSON; ${fenceEscape(type)}`) }
   }
-  const read = readCarriedJson(body, 'two-space', largestNesting - depth, type)
+  const read = readCarriedJson(body, blockSpellings, largestNesting - depth, type)
   if (read.fault !== undefined || type !== '' || !infoStringCarries(read.value.type)) return read
   return { fault: unsupportedNodeShape(`the ${carryFencePrefix} fence holds a type its info string can carry: spell the fence ${carryFencePrefix}${read.value.type} and drop type from the JSON`) }
 }
@@ -49,11 +51,11 @@ export function readCarriedInline(span: DirectiveSpan): Read<AdfNode> | undefine
   if (span.name !== carryName) return undefined
   const spelled = readSoleStringAttribute(span, jsonAttribute)
   if (spelled.fault !== undefined) return spelled
-  return readCarriedJson(spelled.value, 'compact', largestNesting)
+  return readCarriedJson(spelled.value, ['compact'], largestNesting)
 }
 
-// `type` is the one the fence's info string names, `undefined` for the inline carry.
-function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number, type?: string): Read<AdfNode> {
+// `type` is the one the fence's info string names, `undefined` for the inline carry; `spellings` are the ones read, the canonical one first.
+function readCarriedJson(raw: string, spellings: readonly [JsonSpelling, ...JsonSpelling[]], levels: number, type?: string): Read<AdfNode> {
   const wayOut = type === undefined ? directiveEscape : fenceEscape(type)
   const parsed = carriedValue(raw, carryHolder, malformedDirective(`${carryHolder} holds invalid JSON; ${wayOut}`))
   if (parsed.fault !== undefined) return parsed
@@ -62,8 +64,8 @@ function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number, ty
   if (typed.fault !== undefined) return typed
   const nested = carriedNesting(typed.value, levels)
   if (nested.fault !== undefined) return nested
-  if (!spellsCanonicalJson(value, spelling, raw)) {
-    return { fault: unsupportedNodeShape(`${carryHolder} spells its node's JSON canonically: ${spelling === 'compact' ? 'compact' : 'two-space indent'}, keys sorted; ${wayOut}`) }
+  if (!spellings.some((spelling) => spellsCanonicalJson(value, spelling, raw))) {
+    return { fault: unsupportedNodeShape(`${carryHolder} spells its node's JSON canonically: ${spellings[0] === 'compact' ? 'compact' : 'two-space indent for five levels, compact deeper'}, keys sorted; ${wayOut}`) }
   }
   const node = carriedNode(nested.value, carryHolder)
   return node.fault === undefined ? node : { fault: { ...node.fault, message: `${node.fault.message}; ${wayOut}` } }

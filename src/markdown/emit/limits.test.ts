@@ -6,6 +6,7 @@ import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
 import { adfToLosslessMarkdown, losslessMarkdownToAdf } from '../../index.ts'
 import { largestNesting } from '../../nesting.ts'
+import { success } from '../../result.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
@@ -73,11 +74,14 @@ function nearlyHalfTheBound(): AdfNode {
   return { attrs: {}, content: [{ text: `${'a'.repeat(894_782)}\n`.repeat(300), type: 'text' }], type: 'codeBlock' }
 }
 
-// About 556 million characters of carry JSON: past V8's longest string, short of JavaScriptCore's and SpiderMonkey's.
-test('refuses a carry whose JSON would run past V8\'s longest string, on every engine', () => {
+// Indented at every level, this carry's JSON ran to about 556 million characters, past V8's longest string.
+test('writes a carry of deeply nested JSON in a length linear in the JSON, and reads it back', () => {
   const value = wrapped<JsonValue>(495, new Array<JsonValue>(560_000).fill(0), (inner) => [inner])
-  const result = adfToLosslessMarkdown(document({ attrs: { value }, type: 'unknownBlock' }))
-  assert.equal(pastTheBound(result), true)
+  const carried = document({ attrs: { value }, type: 'unknownBlock' })
+  const written = adfToLosslessMarkdown(carried)
+  assert.ok(written.ok)
+  assert.ok(written.value.length < 1.01 * JSON.stringify(value).length)
+  assert.deepEqual(losslessMarkdownToAdf(written.value), success(carried))
 })
 
 test('refuses a quote whose prefixed lines would pass V8\'s longest string', { timeout: 60000 }, () => {

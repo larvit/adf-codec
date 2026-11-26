@@ -150,7 +150,8 @@ fences are unchanged at five levels. Spaces, not tabs: a spelling of a format us
 expect of JSON, and a tab inside a list item or a block quote meets CommonMark's tab stops. This
 doesn't set the source files' indentation, which `~/.claude/principles/technical-principles.md`
 sets to tabs. A stored carry nested deeper than five levels is respelled, which `MIGRATION.md`
-says. Plan item 107 builds it.
+says: `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it, the
+way it reads the other spellings `0.4.0` replaces, and the next write spells it in five levels.
 
 ## The carry fence names the node type
 
@@ -765,9 +766,9 @@ handles one cause alike whichever node, attribute or direction raised it.
 - A document whose output would be longer than V8's longest string is `unsupported-node-shape`
   at the document's path, in every writer, and so is a directive `losslessMarkdownToAdf` reads
   whose CommonMark spelling would be: the document does not convert, and no spelling in the input
-  causes the bound (§The code list). A carried node passes it on about 1 MB of deeply nested JSON,
-  since the block carry indents two spaces a level; `todo.md` item 107 respells the carry in a
-  length linear in its JSON (2026-10-11).
+  causes the bound (§The code list). The block carry's length is linear in its JSON, so deep nesting alone
+  doesn't pass the bound (§The block carry indents five levels in two spaces and writes deeper
+  values compact).
 - A conversion the engine stops with a throw of its own, past its longest array, `Map` or `Set`
   or short of memory, is `engine-limit`, at the empty path. A retry may pass the memory case, so
   `unsupported-node-shape`, which no retry passes, cannot hold the class. JavaScriptCore throws the
@@ -1067,9 +1068,8 @@ character of it, and the portable reduction refuses on the caller's text, edge w
 since merging that text first could build past the bound. Each block, the writer's result and the
 CommonMark ask's spelling are held to the bound as they are built. V8 throws building the same
 string past the bound, SpiderMonkey past its own longest string, and `withinEngineLimits` refuses
-both throws as the same `tooLong`, so every engine stops at the same block with the same answer. The
-carry's two-space JSON, which indents every value its depth over, stops at the bound unbuilt
-(`joinedWithin`).
+both throws as the same `tooLong`, so every engine stops at the same block with the same answer. A
+carry's JSON stops at the bound unbuilt (`joinedWithin`).
 
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
