@@ -42,7 +42,7 @@ string.
 | --- | --- | --- |
 | `blockquote` holding one paragraph | `bq. `, the paragraph | the same |
 | `blockquote`, any other | `{quote}`, a line feed, its blocks, a line feed, `{quote}` | the same |
-| `bulletList`, `orderedList` of `order` 1, its items each a paragraph then lists | `* ` and `# `, one more character per level, nested lists mixed as `#* ` and `*# ` | the same, and `- ` and `-- ` items as `* ` and `** `; an `orderedList` reads `order` 1 |
+| `bulletList`, `orderedList` of `order` 1, its items each a paragraph then lists | `* ` and `# `, one more character per level, nested lists mixed as `#* ` and `*# ` | the same, and `- ` items as `* `; an `orderedList` reads `order` 1 |
 | `codeBlock` holding one text node, of `language` `""` or a name below in lowercase | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; for `""`, `{noformat}`, the text, `{noformat}` the same way | the same, reading a `{code:<language>}` name in lowercase and `{noformat}` as `language` `""`; `{code}` reads `java`; `title`, `borderStyle` and the other panel parameters drop |
 | `heading` | `h1. ` to `h6. ` by `level` | the same |
 | `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` isn't empty, holds no markup character, `!`, `,`, line feed or carriage return, and doesn't start or end with whitespace; a `url` that holds no `://`, or holds whitespace, `!` or a markup character, rides the carry | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
@@ -209,8 +209,10 @@ The writers never write these, and the reader reads them as follows:
   is one inside a line that closes on a later line.
 - In a `{code}` or `{noformat}` text, a carriage return before a line feed reads as nothing, so
   markup whose lines end in both reads as markup whose lines end in a line feed.
-- `---` and `--` with whitespace or the line's edge on each side read as `—` and `–`, except `-- `
-  at a line's start, which reads as a bullet two levels deep, as `** ` does.
+- `---` and `--` with whitespace or the line's edge on each side read as `—` and `–`, except at a
+  line's start right after a list line: `-- ` there, or a longer run of dashes, nests a bullet as
+  Jira does. A run of n dashes keeps the list's first n − 1 markers, padded with `*`, and ends in
+  `*`, so `-- ` after `# a` reads as `#* `.
 - `h1.` to `h6.` and `bq.` read with a space after the dot or none, and in lower case alone, as
   Jira reads them.
 - A smiley reads as the `emoji` Jira reads it as, wherever the next character is not a letter or a

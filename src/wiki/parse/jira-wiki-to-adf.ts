@@ -26,7 +26,7 @@ const codeMacro = /\{(code|noformat)(?::([^}\n]*))?\}/y
 const codeEdge = /\r?\n|/y
 const documentCarry = /^\s*\{adf:display=block\}\s*\{"type":"doc","version":1\}\s*\{adf\}\s*$/
 const image = /^!([^\s!|]+)(?:\|([^!]*))?!$/
-const itemMarker = /^([*#]+|--?) +/
+const itemMarker = /^([*#]+|-+) +/
 const lineSpace = /[^\S\n]*/y
 const lineWord = /^(?:bq|h([1-6]))\.\s*/
 const panelMacro = /\{panel(?::([^}\n]*))?\}/y
@@ -69,7 +69,8 @@ function readLine(reading: Reading, line: Line): Fault | number {
   if (worded !== null) return readWordedLine(reading, line, start + worded[0].length, worded[1])
   if (/^-{4,}$/.test(text)) return pushBlock(reading, { type: 'rule' }, next)
   const marker = itemMarker.exec(text)
-  if (marker !== null) return readItem(reading, line, marker[1]?.replaceAll('-', '*') ?? '', start + marker[0].length)
+  const markers = marker === null ? undefined : itemMarkers(reading.levels, marker[1] ?? '')
+  if (marker !== null && markers !== undefined) return readItem(reading, line, markers, start + marker[0].length)
   if (text.startsWith('|')) {
     const row = readRow(reading, line)
     if (row !== undefined) return row
@@ -77,6 +78,14 @@ function readLine(reading: Reading, line: Line): Fault | number {
   const [, url, held] = image.exec(text) ?? []
   if (url?.includes('://') === true) return pushBlock(reading, { attrs: { layout: 'center' }, content: [media(url, held)], type: 'mediaSingle' }, next)
   return readTextLine(reading, line)
+}
+
+// spec/wiki.md, Blocks: n dashes keep the open list's first n - 1 markers, padded with `*`, and end in a bullet, as Jira nests them; where no list is open, `--` and its longer runs are no marker.
+function itemMarkers(levels: readonly Level[], marker: string): string | undefined {
+  if (!marker.startsWith('-')) return marker
+  if (marker.length > 1 && levels.length === 0) return undefined
+  const kept = levels.slice(0, marker.length - 1).map((level) => level.marker).join('')
+  return `${kept.padEnd(marker.length - 1, '*')}*`
 }
 
 // `undefined` where no block macro stands at `start`: a line's start, or the end of the macro before it.
