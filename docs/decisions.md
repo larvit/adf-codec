@@ -1622,7 +1622,7 @@ with the path `[]`, since no node exists yet:
   `unsupported-nesting-depth` (§Nothing recurses unbounded).
 - Markup that reads past the engine's limits is `engine-limit`.
 
-The reader differs from Jira in four places, each a string the writers never write. `spec/wiki.md`
+The reader differs from Jira in five places, each a string the writers never write. `spec/wiki.md`
 §What only the reader reads states each reading:
 
 - A block macro after anything else on a line is text. Jira reads one inside a line.
@@ -1630,7 +1630,25 @@ The reader differs from Jira in four places, each a string the writers never wri
 - A delimiter reads by the rule the writer escapes by (`spec/wiki.md` §Marks), so every string the
   writer writes reads back. Jira's own rule differs at an edge such as `x^2^`.
 - `-- ` at a line's start is an en dash. Jira reads a nested bullet.
+- An address Jira links and `spec/wiki.md` §Marks lacks reads as text. Jira links it.
 
 The reader follows Jira in two places a reader could take either way. A block macro left open
 holds the rest of the markup. An image address holds `://`, since Jira reads any other as an
 attachment's name, so the writer carries an image whose `url` has none.
+
+## A wiki link's address is one that Jira links, and any other `href` rides the carry
+
+2026-11-25, the implementer of item 200. Goals 1 and 11.
+Valid while Jira links the addresses `spec/wiki.md` §Marks lists.
+
+Jira shows `[x]` and `[a|x]` as text, brackets included, where `x` is no address it links, such as a
+bare word, `x.com`, `javascript:alert(1)` or `^name.ext`. `spec/wiki.md` §Marks lists the kinds of
+address it links, from probes of a Jira Cloud site over IANA's registered schemes, sixty more, and
+every path and anchor of one or two characters from twenty-three punctuation characters. The reader
+reads a bracket by that list. The lossless writer writes a `link` as a bracket only where its `href`
+is on it, so an `href` that Jira shows as text rides the carry, and every string either writes reads
+back.
+
+An address that Jira links and the list lacks, such as a scheme the probes missed, reads as text and
+rides the carry. That costs a carry, never content. Jira also stores a linked `href`'s `"`, `<`, `>`, `` ` ``
+and final `^` as percent escapes, which neither side models yet (item 207).

@@ -48,6 +48,30 @@ export const spellableTitle = /^[^\s[\]{}|\\](?:[^[\]{}|\\\r\n]*[^\s[\]{}|\\])?$
 
 export const spellableUrl = /^[^\s[\]{}|\\]+$/
 
+// spec/wiki.md, Marks: the schemes Jira links before `:` or `://` and a rest.
+const schemesAfterColon: ReadonlySet<string> = new Set([
+  'callto', 'cvs', 'facetime', 'feed', 'git', 'irc', 'irc6', 'itms', 'magnet', 'mailto', 'mvn', 'news', 'nntp', 'notes', 'rdp', 'sip', 'sips', 'skype', 'slack', 'ssh', 'svn', 'tel', 'telnet', 'urn', 'vnc', 'whatsapp', 'xmpp',
+])
+// spec/wiki.md, Marks: those schemes, and the ones Jira links only before `://` and a rest.
+const schemesAfterSlashes: ReadonlySet<string> = new Set(['file', 'ftp', 'ftps', 'gopher', 'hipchat', 'http', 'https', 'sftp', 'smb', ...schemesAfterColon])
+
+// spec/wiki.md, Marks: Jira shows an address with a second `#`, or a `%` not followed by two hex digits, as text, bare or bracketed.
+export function wellFormedAddress(address: string): boolean {
+  return (address.match(/#/g)?.length ?? 0) <= 1 && !/%(?![0-9a-f]{2})/i.test(address)
+}
+
+// spec/wiki.md, Marks: the addresses the reader and the writer take as a link in `[<address>]` and `[<text>|<address>]`.
+export function linkedAddress(address: string): boolean {
+  if (!spellableUrl.test(address) || !wellFormedAddress(address) || /\^./.test(address)) return false
+  if (address.startsWith('/') || address.startsWith('#')) return address !== '//'
+  const colon = address.indexOf(':')
+  if (colon === -1) return false
+  const lowered = address.slice(0, colon).toLowerCase()
+  const rest = address.slice(colon + 1)
+  if (rest.startsWith('//')) return rest.length > 2 && schemesAfterSlashes.has(lowered)
+  return schemesAfterColon.has(lowered) && rest !== '' && !rest.startsWith('#')
+}
+
 // spec/wiki.md, What only the reader reads: each smiley Jira reads as an emoji, with the emoji's id and shortName.
 export const smileyEmoji: Readonly<Record<string, { id: string; shortName: string }>> = {
   '(!)': { id: 'atlassian-warning', shortName: ':warning:' },

@@ -101,10 +101,29 @@ holding a mark rides as well.
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
 | `code`, `em`, `strike`, `strong`, `underline` | `{{x}}`, `_x_`, `-x-`, `*x*`, `+x+` | the same; `??x??` reads `em` |
-| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`, and the `href` doesn't start with `~`; an `href` that is empty or holds whitespace or a markup character rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
+| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`; an `href` that is no address of those below, or holds whitespace or a markup character, rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same; `[#anchor]` reads as `href` `#anchor`; `[x]`, `[a\|x]` and `[a\|x\|t]` where `x` is no address of those below read as text, as `[^name.ext]` and `[~name]` do |
 | `subsup` | `^x^` for `sup`, `~x~` for `sub` | the same |
 | `textColor` | `{color:<hex>}x{color}` | the same; a CSS colour name reads as its hex code, so `red` as `#ff0000` |
 | any other mark | the carry of each node of the marked run | `{adf:display=inline}` reads its node |
+
+The reader reads `[x]` and `[a|x]` as a link where `x` is an address of one of these kinds, and as
+text otherwise, brackets included; the writer carries any other `href`. The kinds come from probes
+of a Jira Cloud site on 2026-11-25, over the URI schemes IANA registers, sixty more, and every path
+and anchor of one or two characters drawn from twenty-three punctuation characters. A kind holds no
+whitespace and no `[`, `]`, `{`, `}`, `|` or `\`:
+
+- `/` or `#`, then anything, except the string `//`.
+- A scheme, its case ignored, then `://` and at least one character: `file`, `ftp`, `ftps`,
+  `gopher`, `hipchat`, `http`, `https`, `sftp`, `smb` and the schemes of the next kind.
+- A scheme, its case ignored, then `:` and a rest that is neither empty nor starts with `#` or
+  `//`: `callto`, `cvs`, `facetime`, `feed`, `git`, `irc`, `irc6`, `itms`, `magnet`, `mailto`,
+  `mvn`, `news`, `nntp`, `notes`, `rdp`, `sip`, `sips`, `skype`, `slack`, `ssh`, `svn`, `tel`,
+  `telnet`, `urn`, `vnc`, `whatsapp` and `xmpp`.
+
+No address of any kind holds a second `#`, a `%` not followed by two hexadecimal digits, or a `^`
+before its last character. Jira shows a scheme outside these, such as `javascript`, `data`, `ws`
+and `ldap`, as text. It links a few addresses outside the kinds, such as a path or anchor holding
+`^:`, which the reader reads as text and the writer carries.
 
 Marks nest in the order the node's array holds them, outermost first, and a run of nodes sharing
 their outermost mark shares its delimiters. The delimiters of `code`, `em`, `strike`, `strong`,
