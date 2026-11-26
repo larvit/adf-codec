@@ -14,7 +14,7 @@ export function partsShownText(type: string): boolean {
 }
 
 export function oneLine(text: string): string {
-  return text.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')
+  return text.replace(/[\r\0\p{Cs}]/gu, '').replace(/\n/g, ' ')
 }
 
 export type ShownNote = { link: LinkAttrs | undefined; name: string }
@@ -108,9 +108,9 @@ export function shownUrl(node: AdfNode): string | undefined {
   }
 }
 
-// `undefined` where the value is no string or holds only whitespace and null characters.
+// `undefined` where the value is no string or holds only whitespace, null characters and lone surrogates.
 export function visibleText(value: unknown): string | undefined {
-  return typeof value === 'string' && /[^\s\0]/.test(value) ? value : undefined
+  return typeof value === 'string' && /[^\s\0\p{Cs}]/u.test(value) ? value : undefined
 }
 
 function cardData(card: AdfNode): Readonly<Record<string, JsonValue>> {

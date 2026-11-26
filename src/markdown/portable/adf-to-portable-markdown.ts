@@ -4,9 +4,9 @@ import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { commonMarkSpelling, largestListMarker, spellingMemo, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
-import { inlineLeaves, portableLink, reduceInline, writableHref, writableLine, type ReductionPlace } from './inline-reduction.ts'
+import { inlineLeaves, portableLink, reduceInline, writableHref, type ReductionPlace } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
-import { isBlockNodeType } from '../../adf/shown-text.ts'
+import { isBlockNodeType, oneLine } from '../../adf/shown-text.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
@@ -200,7 +200,7 @@ function reducePanel(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 
 function reduceExpand(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const held = nodeAttrs(node)['title']
-  const title = typeof held === 'string' ? withoutTrailingBlanks(writableLine(held).replace(/^[ \t]+/, '')) : ''
+  const title = typeof held === 'string' ? withoutTrailingBlanks(oneLine(held).replace(/^[ \t]+/, '')) : ''
   return contained(title === '' ? { type: node.type } : { attrs: { title }, type: node.type }, node, reduction)
 }
 
@@ -363,7 +363,7 @@ function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const url = attrs['url']
   if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
   const held = attrs['alt']
-  const alt = typeof held === 'string' ? writableLine(held).trim() : ''
+  const alt = typeof held === 'string' ? oneLine(held).trim() : ''
   const mark = nodeMarks(media).find(({ type }) => type === 'link')
   const link = mark === undefined ? undefined : portableLink(mark, 'paragraph')
   return success([centeredImage([externalMedia(alt, writableHref(url), link === undefined ? undefined : linkAttrs(nodeAttrs(link)))])])
