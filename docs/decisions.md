@@ -151,7 +151,7 @@ expect of JSON, and a tab inside a list item or a block quote meets CommonMark's
 doesn't set the source files' indentation, which `~/.claude/principles/technical-principles.md`
 sets to tabs. A stored carry nested deeper than five levels is respelled, which `MIGRATION.md`
 says. `losslessMarkdownToAdf` still reads a carry indented at every level, as `0.3.1` wrote it.
-The next write spells it in five levels. `todo.md` item 107 builds it.
+The next write spells it in five levels.
 
 ## The carry fence names the node type
 
