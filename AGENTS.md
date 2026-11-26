@@ -126,6 +126,10 @@ Node, tsc and npm never run on the host — only via the pinned images (§2). Te
 containers are torn down after a run. A test reaches only for what Node's, Deno's and Bun's `node:`
 shims all carry.
 
+One test file or the typecheck, the way the gate runs it, in one shell call:
+`source ./docker-runner.sh && in_image "$node_image" npm ci && in_image "$node_image" node --test <file>`,
+or `npm run typecheck` in place of `node --test <file>`; `npm ci` is needed only in a fresh worktree.
+
 Every leg announces its name and, where a container is in play, the image, before it runs and its
 elapsed time after, `publish.sh` alongside `ci.sh`, so a long run reads as progress rather than as
 a hang. A leg added later owes the same marker, and a function a leg reaches chains its statements
@@ -201,19 +205,13 @@ section, or one past 80 lines, is read in ranges.
 - `MIGRATION.md`: the top `## From` section, the release being built.
 - `README.md`: `## Goals`, `## Audience` and the sections the chunk changes or cites.
 - `docs/decisions.md`: only the entries the chunk cites, by their titles under `## Decisions` above.
-- `spec/flavour.md`, `spec/html.md`: the sections the chunk changes or cites. `spec/flavour.md`'s
-  `## Block nodes` runs 300 lines: read its `###` subsections by range.
+- `spec/flavour.md`, `spec/html.md`: the sections the chunk changes or cites.
 - A test file or `ci.sh`: its tests or legs, from
   `grep -nE '^\s*test\(|^(\w+=\S+ )*leg ' <file> | cut -c1-110`, then a ranged read of the ones the
   chunk touches.
 - A source file: its outline, from
-  `grep -nE '^(export )?(async )?(function|const|type|interface|class) ' <file> | cut -c1-110`,
+  `grep -nE '^(export )?(async )?(function\*?|const|type|interface|class) ' <file> | cut -c1-110`,
   then a ranged read of what the chunk touches.
-
-To run one test file or the typecheck the gate's way, without reading `ci.sh`, `docker-runner.sh`
-or `package.json`: `source ./docker-runner.sh`, then `in_image "$node_image" npm ci` once, then
-`in_image "$node_image" node --test <file>` or `in_image "$node_image" npx tsc --noEmit`. `./ci.sh`
-runs every leg.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
