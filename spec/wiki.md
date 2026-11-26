@@ -79,7 +79,8 @@ as whitespace, and a node's edge inside the line as punctuation:
 - `?` before another `?`, and `!` before anything but whitespace.
 - The `(` of a smiley listed under What only the reader reads, or the closing `)` of one that starts
   with `:` or `;`, where no letter or digit follows the smiley, or where the node's edge cuts it
-  inside the line.
+  inside the line. What the next node opens with continues no smiley starting with `:` or `;`, so
+  a `:` or `;` ending a node stays plain, as in `*Environment:* Chrome`.
 - At a line's start, `#`, `*` and `-`.
 
 Jira keeps a backslash before `:`, `;`, `.`, `,`, a letter, a digit or another backslash as text.
@@ -89,8 +90,7 @@ So a backslash protects none of these, and a text holding one, or no character a
 - `http://` or `https://`, which Jira would link;
 - the `h` of `h1.` to `h6.` or the `b` of `bq.` at a line's start, in any case;
 - a smiley that reads and that no backslash before its `(` or closing `)` stops: `:D` and `:P`
-  where no letter or digit follows, and a `:` or `;` ending a node inside the line, where the next
-  node's spelling may close a smiley.
+  where no letter or digit follows.
 
 A text that starts or ends its line with whitespace rides the carry too, and so does a text whose
 marks are those of the text before it, which the reader would join. A `hardBreak` or `mention`

@@ -5,6 +5,7 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/doc
 import type { Result } from '../../result.ts'
 import { adfToLosslessJiraWiki } from '../../index.ts'
 import { largestNesting } from '../../nesting.ts'
+import { smileys } from '../spellings.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
@@ -213,8 +214,28 @@ test('carries a text whose smiley or line-start word no backslash stops', () => 
   assert.equal(line('Bq. not a quote'), carried('Bq. not a quote'))
   assert.equal(line('a :D b'), carried('a :D b'))
   assert.equal(line('a :P'), carried('a :P'))
-  assert.equal(wiki(paragraph(text('a :'), { attrs: { accessLevel: '', id: '5b10' }, type: 'mention' })), `${inline('{"text":"a :","type":"text"}')}[~accountid:5b10]`)
   assert.equal(line('a ;'), 'a ;')
+})
+
+test('spells a text ending in `:` or `;` plainly, since no smiley continues with what the next node opens with', () => {
+  const strong: AdfMark = { type: 'strong' }
+  const em: AdfMark = { type: 'em' }
+  const mention: AdfNode = { attrs: { accessLevel: '', id: '5b10' }, type: 'mention' }
+  assert.equal(wiki(paragraph(text('Environment:', strong), text(' Chrome'))), '*Environment:* Chrome')
+  assert.equal(wiki(paragraph(text('a;', strong), text(' b'))), '*a;* b')
+  assert.equal(wiki(paragraph(text('a:', strong, em), text(' b', strong))), '*_a:_ b*')
+  assert.equal(wiki(paragraph(text('a:', strong), text('b', strong, em))), '*a:_b_*')
+  assert.equal(wiki(paragraph(text('Note:'), text('important', strong))), 'Note:*important*')
+  assert.equal(wiki(paragraph(text('Steps:'), { type: 'hardBreak' }, text('b'))), 'Steps:\\\\b')
+  assert.equal(wiki(paragraph(text('a :'), mention)), 'a :[~accountid:5b10]')
+  assert.equal(wiki(paragraph(text('a:', { attrs: { color: '#ff0000' }, type: 'textColor' }), text(' b'))), '{color:#ff0000}a:{color} b')
+  assert.equal(wiki(paragraph(text('a:', { attrs: { href: 'https://example.com' }, type: 'link' }), text(' b'))), '[a:|https://example.com] b')
+  assert.equal(wiki(paragraph(text('a (', strong), mention)), '*a \\(*[~accountid:5b10]')
+})
+
+test('a smiley starting with `:` or `;` continues with no character a node opens with', () => {
+  const opening = /^[:;][^*+\-^_~{}[\]|\\]/
+  assert.deepEqual(smileys.filter((smiley) => /^[:;]/.test(smiley) && !opening.test(smiley)), [])
 })
 
 test('leaves a character that reads as itself where it stands', () => {
