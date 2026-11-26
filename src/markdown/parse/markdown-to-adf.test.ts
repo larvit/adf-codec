@@ -467,7 +467,7 @@ test('names the invalid JSON no opaque carry holds, and the spelling that keeps 
   refused(losslessMarkdownToAdf('!adf:carry{json=abc}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
 })
 
-test('names the canonical spelling a carried JSON reads alone', () => {
+test('names the canonical spelling of a carried JSON that is spelled another way', () => {
   const compact = ['compact, keys sorted', '\\!adf:']
   refused(losslessMarkdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n'), 'unsupported-node-shape', 'two-space indent for five levels, compact deeper', '!adf:codeBlock {language="adf:blockCard"}')
   refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...compact)
