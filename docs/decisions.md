@@ -1110,7 +1110,8 @@ characters peaks at 262 MB in plain text, about 320 MB in `*` or backticks and 8
 dearest content measured. Each fits V8's heap limit, so the bound removes the abort for every
 content. Past it, `[a]` repeated ends V8 from 2^24 characters, and plain text from 2^26.
 
-The bound counts a line's characters before escaping. The code is `unsupported-node-shape`, not
+The bound counts characters before escaping, the lines of one paragraph, heading or table cell
+together, hard breaks included, since the reader reads them back as one. The code is `unsupported-node-shape`, not
 `engine-limit` (§Which code a cause takes). The library refuses at a bound it states, and no retry
 passes that bound. The engine doesn't throw anything. A block carry isn't held to the bound. In
 lossless markdown, an image whose line would pass the bound is written as its directive. Portable
