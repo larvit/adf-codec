@@ -181,7 +181,10 @@ const readableSpellings: ReadonlyMap<string, ReadableSpelling> = new Map<string,
 	['heading', { describe: () => 'one `#` per level before its text, `## Title` at level 2', spell: (node, path, _depth, writing) => tryHeading(node, path, writing.flavour) }],
 	['mediaSingle', {
 		describe: () => '`![alt](url)`, or `[![alt](url)](href)` when linked',
-		spell: (node, _path, _depth, writing) => readableText(tryImage(node, writing.flavour)),
+		spell: (node, path, _depth, writing) => {
+			const image = tryImage(node, path, writing.flavour)
+			return image.ok ? readableText(image.value) : image
+		},
 	}],
 	['orderedList', {
 		describe: (node) => {
