@@ -1737,3 +1737,20 @@ Read most (opens and searches):
 - `src/wiki/emit/adf-to-jira-wiki.test.ts` 2
 - `docs/reading-cost.md` 1
 - `spec/wiki.md` 1
+
+## Reading cost, chunk 48d5007fe66b, finished 2026-11-26T23:42:44Z
+
+173319 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/emit/limits.test.ts` 7
+- `src/markdown/commonmark/link-syntax.ts` 6
+- `src/markdown/emit/line-escaping.ts` 5
+- `src/markdown/commonmark/link-syntax.test.ts` 4
+- `src/markdown/emit/inline-line.ts` 4
+- `docs/decisions.md` 3
+- `src/canonical-json.test.ts` 3
+- `src/markdown/emit/adf-to-markdown.ts` 3
+- `README.md` 2
+- `src/length-bound.ts` 2
