@@ -1793,3 +1793,71 @@ Inherited architect, would restructure first:
 - Shape: `src/adf/document.ts:38` `readAdfDocument`: the file holds the reader, the writer prechecks, the schema refusals and text merging
 - Shape: `src/markdown/emit/adf-to-markdown.ts:57` `writeMarkdown`: the shared writer lives in a file whose name means the lossless one
 - Self-sufficiency: `src/markdown/emit/unspellable-runs.ts:49` `pairVerdicts`: hands its reason to a decision title, as the 32-pass cap at `src/markdown/emit/inline-line.ts:61` does
+
+## 2026-11-27T10:54:39Z, PR #246 at 1475160
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 7 | 5 | 6 | 5 | 5.5 |
+| Mid A | 7 | 5.5 | 6.5 | 5 | 6 |
+| Maintainability senior | 7 | 6 | 6.5 | 5.5 | 6.5 |
+| Inherited architect | 7 | 6 | 6 | 5.5 | 6 |
+| Mean | 7.00 | 5.63 | 6.25 | 5.25 | 6.00 |
+
+Junior A, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: the case table's reasons live in docs/decisions.md
+- Locality: `src/markdown/emit/inline-line.ts:123` `settledLine`: a shared fixpoint loop with fallbacks, read back across files
+- Navigation: `src/markdown/parse/inline-content.ts:11` `readInlineContent`: shares its file name with the inline reader one level up
+
+Mid A, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: a hand-derived case table whose derivation is in another document
+- Locality: `src/markdown/emit/inline-line.ts:123` `settledLine`: fallbacks, carries and read-back held together
+- Locality: `src/markdown/emit/adf-to-markdown.ts:142` `spellingMemo`: take/ask semantics shared between the reader and the writer
+
+Maintainability senior, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: can't be changed safely without decisions.md open
+- Shape: `src/markdown/emit/line-escaping.ts:99` `readBack`: a three-pass fixpoint with no stated reason for three
+- Locality: `src/markdown/emit/adf-to-markdown.ts:142` `spellingMemo`: a cache whose read deletes its entry
+
+Inherited architect, would restructure first:
+
+- Shape: `src/markdown/inline-content.ts:45` `parseInlineContent`: the inline reader sits loose among eleven concepts at the markdown root
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: sends the reader to the decision log where the reading is hardest
+- Locality: `src/markdown/emit/inline-line.ts:123` `settledLine`: a mark's fate is decided across three files
+
+## 2026-11-27T10:59:28Z, PR #246 rerun at 1475160
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 7 | 5 | 6 | 5 | 5.5 |
+| Mid A | 7 | 5.5 | 6 | 5.5 | 6 |
+| Maintainability senior | 7 | 5.5 | 6 | 5 | 6 |
+| Inherited architect | 7 | 5.5 | 6 | 5.5 | 6 |
+| Mean | 7.00 | 5.38 | 6.00 | 5.25 | 5.88 |
+
+Junior A, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: the case table's reasons live only in docs/decisions.md
+- Locality: `src/markdown/emit/adf-to-markdown.ts:142` `spellingMemo`: reference-keyed state that reading an entry uses up
+- Shape: `src/markdown/emit/inline-line.ts:123` `settledLine`: one line passes through five modules before it is written
+
+Mid A, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: each cell of the table is argued in another document
+- Locality: `src/markdown/portable/inline-reduction.ts:204` `withoutEdgeWhitespace`: must mirror `trimPass` and nothing says what happens when they disagree
+- Shape: `src/markdown/emit/inline-line.ts:123` `settledLine`: layered generic types make the unit wider than its name
+
+Maintainability senior, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: the second document is needed exactly where the code is hardest
+- Locality: `src/markdown/emit/line-escaping.ts:99` `readBack`: writer and reader changed together
+- Shape: `src/markdown/emit/adf-to-markdown.ts:23` `SpelledBlock`: four look-alike result types
+
+Inherited architect, would restructure first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: the hardest corner doesn't stand alone
+- Locality: `src/markdown/emit/line-escaping.ts:99` `readBack`: the writer and the reader consult each other
+- Shape: `src/markdown/inline-content.ts:45` `parseInlineContent`: the markdown root mixes four kinds of thing in 16 entries

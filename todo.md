@@ -76,13 +76,14 @@ Found by the technical-principles audit of item 78, 2026-10-05.
 
 ### 178. Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.
 
-The scoring run at fa8600f (PR #162) averaged 5.88 overall, under the 7.0 floor; Locality and Self-sufficiency scored lowest, at 5.38 each. Make these places, the ones every seat named, easier to read:
+The scoring runs at 1475160 (PR #246) averaged 6.00 and 5.88 overall, under the 7.0 floor; Self-sufficiency scored lowest, at 5.25 in the second run, then Locality at 5.38. Make these places, the ones the seats named most, easier to read:
 
-- `src/markdown/emit/unspellable-runs.ts:223` `pairStanding` / `pairVerdicts`: the case analysis behind the two sweeps lives only in `docs/decisions.md`. State it in the types or the code, with one vocabulary.
-- `src/markdown/emit/inline-line.ts:120` `settledLine`: fallbacks change the `carried` Set and `openingLinkAsDirective` out of sight. Make each pass's state an explicit value, with the 32-pass bound visible where it holds.
+- `src/markdown/emit/unspellable-runs.ts:223` `pairStanding` / `pairVerdicts`: all eight seats named it. The case analysis behind the two sweeps lives only in `docs/decisions.md`. State it in the types or the code as a named case table, one reason per row, with one vocabulary for the four standings and three verdicts.
+- `src/markdown/emit/inline-line.ts:123` `settledLine`: fallbacks change state out of sight, and the lossless writer and the portable reducer share it through three type parameters. Make each pass's state an explicit value, with the 32-pass bound and its give-up visible where it holds.
 - `src/markdown/emit/line-escaping.ts:99` `readBack`: say in the code why three escape passes suffice.
-- `src/markdown/inline-content.ts:255` and `:424` (`directiveMarkPieces`, `closeBracket`, `applyClosing`): one mutable `Scan` shared by nine piece kinds in a 695-line file. Split it by piece kind.
-- `src/markdown/emit/adf-to-markdown.ts:138` `spellingMemo`: keep its take, ask and depth rebasing in one type.
+- `src/markdown/emit/adf-to-markdown.ts:142` `spellingMemo`: keep its take, ask and depth rebasing in one type, apart from the four look-alike result types at `:23`.
+- `src/markdown/portable/inline-reduction.ts:204` `withoutEdgeWhitespace`: say in the code what happens where it and `trimPass` disagree.
+- `src/markdown/inline-content.ts:45` `parseInlineContent`: the inline reader sits loose at the `markdown/` root, beside a second `inline-content.ts` in `parse/`. Give it a directory and a name of its own.
 
 Keep every output byte-identical: the round-trip properties and the CommonMark suite must pass unchanged.
 
