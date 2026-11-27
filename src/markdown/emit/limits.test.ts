@@ -4,7 +4,7 @@ import test from 'node:test'
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
-import { adfToLosslessMarkdown, losslessMarkdownToAdf } from '../../index.ts'
+import { adfToLosslessMarkdown, adfToPortableMarkdown, losslessMarkdownToAdf } from '../../index.ts'
 import { largestNesting } from '../../nesting.ts'
 import { success } from '../../result.ts'
 
@@ -164,6 +164,11 @@ test('writes an image whose url runs past 2^25 characters as its directive', { t
 	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: `https://example.com/${'a'.repeat(2 ** 25)}` }, type: 'media' }], type: 'mediaSingle' }
 	const written = adfToLosslessMarkdown(document(image))
 	assert.equal(written.ok && written.value.startsWith('!adf:mediaSingle {layout=center}\n!adf:media {type=external url="https://example.com/'), true)
+})
+
+test('refuses an image line one character past 2^25 in portable markdown, at its block', { timeout: 60000 }, () => {
+	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: `https://example.com/${'a'.repeat(2 ** 25 - 24)}` }, type: 'media' }], type: 'mediaSingle' }
+	assert.equal(refusedLine(adfToPortableMarkdown(document(image))), 'unsupported-node-shape ["content",0] true')
 })
 
 test('refuses a document version the markdown cannot carry', () => {

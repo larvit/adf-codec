@@ -93,19 +93,21 @@ export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, f
 	return emitted.value.line
 }
 
-export function tryImageLine(alt: string | undefined, url: string, flavour: WrittenFlavour, link?: LinkDefinition): string | undefined {
-	if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt) || holdsLoneSurrogate(alt))) return undefined
+export function tryImageLine(alt: string | undefined, url: string, path: ConvertErrorPath, flavour: WrittenFlavour, link?: LinkDefinition): Result<string | undefined> {
+	if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt) || holdsLoneSurrogate(alt))) return success(undefined)
 	const destination = spellDestination(url)
-	if (destination === undefined) return undefined
+	if (destination === undefined) return success(undefined)
 	const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
 	// Both flavours read an image's description with highlights off, so the lossless flavour's escapes read back in either.
 	let segments = [syntax('!['), ...description, syntax(`](${destination})`)]
 	if (link !== undefined) {
 		const target = spellLinkTarget(link.destination, link.title, titleEscapes(flavour, 'paragraph'))
-		if (target === undefined) return undefined
+		if (target === undefined) return success(undefined)
 		segments = [syntax('[!['), ...description, syntax(']('), bracketedLinkTarget(destination), syntax(`)](${target})`)]
 	}
-	return lineLength(segments) > longestLine ? undefined : attemptLine(segments, 'paragraph', 'lossless').line
+	// Portable markdown holds no directive to fall back on.
+	if (lineLength(segments) > longestLine) return flavour === 'portable' ? tooLongLine(path) : success(undefined)
+	return success(attemptLine(segments, 'paragraph', 'lossless').line)
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
