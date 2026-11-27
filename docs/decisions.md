@@ -1099,20 +1099,26 @@ that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which co
 
 ## The writer refuses a line longer than 2^25 characters before reading it back
 
-2026-11-26, the maintainer. Goal 1. Valid while the reader takes about 70 bytes a character and V8's
-heap limit stays near 2 GB.
+2026-11-26, the maintainer. Goal 1. Valid while a line of 2^25 characters of plain text writes within
+V8's heap limit, about 2 GB.
 
 The markdown writers refuse a line longer than 2^25 characters (`longestLine`), before reading it
 back, as `unsupported-node-shape` at the path of the node holding the line. The writer reads each
-line back through the reader, and V8 aborts the process, past any `try`, on the heap that takes: a
-line of 2^26 characters needs about 4.7 GB. The code is `unsupported-node-shape`, not
-`engine-limit`: the library refuses a stated bound that no retry passes, and the engine doesn't
-throw anything (§Which code a cause takes). A line counts the characters before escaping, and a
-block carry is no line. An image that would stand past the bound as a line is written as its
-directive.
+line back through the reader. Plain text costs that reader about 50 bytes a character. A line of
+2^25 characters peaks near 1.6 GB and writes. A line of 2^26 characters or more runs V8 past its
+heap limit, which ends the process past any `try`. The bound removes that abort for plain text.
+
+The bound counts a line's characters before escaping. A line of `*` or backticks, each escaped,
+costs about twice as much a character. A line dense in `[` costs about five times as much: `[a]`
+repeated ends V8 from 2^24 characters, below the bound, so such a line still ends the process.
+
+The code is `unsupported-node-shape`, not `engine-limit` (§Which code a cause takes). The library
+refuses at a bound it states, and no retry passes that bound. The engine doesn't throw anything. A
+block carry isn't held to the bound. In lossless markdown, an image whose line would pass the bound
+is written as its directive. Portable markdown holds no directive, so it refuses that image.
 
 Rejected: cutting the reader's memory per character until a 2^28-character line fits V8's heap
-limit, a rewrite of the inline scanner.
+limit, since that means rewriting the inline scanner.
 
 ## HTML writes a URL as the ADF holds it, whatever its scheme
 
