@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 215 | 0.4.0 |  |  | **Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 9.4 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -35,31 +34,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 215. Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.
-
-Goal 1 promises a result, never a throw, yet `adfToLosslessMarkdown` of one paragraph whose text, or whose link `href`, is 2^26 characters ends Node 26.13.1 (node:26.13.1-alpine3.24, in an 8 GB container) with `FATAL ERROR: Ineffective mark-compacts near heap limit`, which no `try` can catch. At 2^25 characters it writes: plain text in 14 s at a peak RSS of 1.6 GB, an `href` in 7 s at 1.3 GB.
-
-The cost is per line, not per link. The writer reads each line back through the reader (`readBack` in `src/markdown/emit/line-escaping.ts`). `losslessMarkdownToAdf` of one plain line of 2^24 `a` peaks at 1.2 GB, about 70 bytes a character.
-
-The maintainer approved the candidate entry below on 2026-11-26, with the code `unsupported-node-shape` and the limit 2^25 characters, so this item's chunk writes it into `docs/decisions.md`, in §Output past V8's longest string is refused on every engine or as a new entry per the decision-log rule, and adds its title to `AGENTS.md`'s `## Decisions` list.
-
-> **The writer refuses a line longer than 2^25 characters before reading it back**
->
-> Goal 1. The markdown writers refuse a line longer than 2^25 characters, before reading it back, as `unsupported-node-shape` at the path of the node holding the line. V8 aborts the process, past any `try`, on the heap that reading back a longer line takes: at about 70 bytes a character, a line of 2^26 characters needs about 4.7 GB, past V8's heap limit of about 2 GB. The code is `unsupported-node-shape`, not `engine-limit`: the library refuses a stated bound that no retry passes, and the engine doesn't throw anything (§Which code a cause takes).
-
-The instance it yields: `adfToLosslessMarkdown` of one paragraph of 2^26 `a` returns `unsupported-node-shape` at the paragraph's path, where today it ends Node 26.13.1.
-
-Rejected: cutting the reader's memory per character until a 2^28-character line fits V8's heap limit, a rewrite of the inline scanner.
-
-Each test stays within V8's heap limit.
-
-Touches:
-
-- `AGENTS.md`: `## Decisions` (small)
-- `src/length-bound.ts`: `longestOutput` (small)
-- `src/markdown/emit/inline-line.ts`: `emitLine` (small)
-- `src/markdown/emit/limits.test.ts`
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 

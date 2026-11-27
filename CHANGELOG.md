@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The markdown writers refuse the text of a paragraph, heading or table cell longer than 2^21 characters (2097152) as `unsupported-node-shape`, where a line of 2^26 characters, or fewer of `[`, ended the process. `adfToLosslessMarkdown` writes an image past that bound as its `!adf:mediaSingle` directive.
 - **Breaking:** `htmlToAdf` reads any HTML best effort, where it refused HTML that `adfToHtml` did not write. An element with a `data-adf` attribute or an `adf-` class still reads only as `adfToHtml`'s HTML, and is refused where it is not. `MIGRATION.md` says what to change.
 - `adfToLosslessMarkdown` and `adfToHtml` write a carried node holding a key of 2^28 characters, where they ended Node with `FATAL ERROR: Zone Allocation failed`.
 - `adfToLosslessMarkdown` refuses a carried node whose JSON passes V8's longest string as `unsupported-node-shape`, where two strings of 2^28 characters in an `unknownBlock`'s `attrs` ended Node with `FATAL ERROR: Zone Allocation failed`.
