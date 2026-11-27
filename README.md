@@ -847,9 +847,9 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
 - **Reading a document, in `readAdfDocument` and the six writers**: the document holds more than
   10,000,000 JSON values, each object, array, string, number, boolean and null counting one. Keep
   the ADF and pass the document over or show it read-only; where you built the ADF, split it.
-- **Writing, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: one line of a paragraph,
-  heading or table cell, or in `adfToPortableMarkdown` of an image, would be longer than 2097152
-  characters, counted before escaping.
+- **Writing, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: the text of a paragraph,
+  heading or table cell, hard breaks included, or in `adfToPortableMarkdown` an image's line, would be
+  longer than 2097152 characters, counted before escaping.
   Keep the ADF and pass the document over or show it read-only; where you built the ADF, shorten
   what the error's `path` names.
 - **Past the engine's longest string**:

@@ -23,7 +23,7 @@ export function tooLong<T>(): Result<T> {
 }
 
 export function tooLongLine<T>(path: ConvertErrorPath): Result<T> {
-	return failure('unsupported-node-shape', `the markdown writers refuse a line longer than ${longestLine} characters before escaping, and this node's line would be longer`, path)
+	return failure('unsupported-node-shape', `the markdown writers refuse the text of a paragraph, heading or table cell longer than ${longestLine} characters, hard breaks included, counted before escaping, and this node's text would be longer`, path)
 }
 
 export function withinLongest<T>(length: number, value: T): Result<T> {
