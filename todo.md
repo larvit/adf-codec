@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 218 | 0.4.0 |  | defect | **Return a result from `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` where one key of a carried node is a string of 2^28 characters.** | 2 | 1 | 2 | 3 | 2 | 1 by 3 | 15.6 |
 | 215 | 0.4.0 |  |  | **Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 9.4 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
@@ -36,17 +35,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 218. Return a result from `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` where one key of a carried node is a string of 2^28 characters.
-
-Goal 1 and the failures-are-values rule (AGENTS.md §4) want a result, yet `adfToLosslessJiraWiki` of `{ type: 'doc', version: 1, content: [{ type: 'unknownBlock', attrs: { ['a'.repeat(2 ** 28)]: 1 } }] }` throws `RangeError: Maximum call stack size exceeded`, measured on node:26.13.1-alpine3.24. The throw comes out of `closingMacroEscaped` (`src/wiki/carry.ts:25`), from its `json.replace(/"(?:[^"\\]|\\.)*"/g, …)`, reached through `blockCarry` and `writeWiki`. `withinEngineLimits` lets it through, since it treats a stack overflow as a bug.
-
-Whether `adfToLossyJiraWiki` throws too is unmeasured. The item's first step is to measure it.
-
-Touches:
-
-- `src/wiki/carry.ts`: `closingMacroEscaped`
-- `src/wiki/emit/adf-to-jira-wiki.test.ts`
 
 ### 215. Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.
 
