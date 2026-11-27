@@ -132,7 +132,6 @@ test('escapes more characters in a line than V8\'s Set holds', { timeout: 60000 
 	assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ text: stars, type: 'text' })))), `${'\\*'.repeat(2 ** 24 + 1)}\n`)
 })
 
-// Reading a line back takes about 70 bytes a character, so a line of 2^26 characters ends the process on V8's heap limit (docs/decisions.md §The writer refuses a line longer than 2^25 characters before reading it back).
 function refusedLine(result: Result<string>): string {
 	return result.ok ? 'emitted' : `${result.error.code} ${JSON.stringify(result.error.path)} ${result.error.message.includes('33554432')}`
 }
@@ -154,14 +153,14 @@ test('writes an image as a line of exactly 2^25 characters', { timeout: 60000 },
 	assert.equal(markdown(adfToLosslessMarkdown(document(image))), `![](${url})\n`)
 })
 
-test('refuses a line whose link href runs one character past 2^25, at its heading', { timeout: 60000 }, () => {
-	const href = `https://example.com/${'a'.repeat(2 ** 25)}`
+test('refuses a link line one character past 2^25, at its heading', { timeout: 60000 }, () => {
+	const href = `https://example.com/${'a'.repeat(2 ** 25 - 24)}`
 	const link = { attrs: { href }, type: 'link' }
 	const heading = { attrs: { level: 1 }, content: [{ marks: [link], text: 'a', type: 'text' }], type: 'heading' }
 	assert.equal(refusedLine(adfToLosslessMarkdown(document(heading))), 'unsupported-node-shape ["content",0] true')
 })
 
-test('spells an image whose url runs past 2^25 characters as its directive, not a line read back', { timeout: 60000 }, () => {
+test('writes an image whose url runs past 2^25 characters as its directive', { timeout: 60000 }, () => {
 	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: `https://example.com/${'a'.repeat(2 ** 25)}` }, type: 'media' }], type: 'mediaSingle' }
 	const written = adfToLosslessMarkdown(document(image))
 	assert.equal(written.ok && written.value.startsWith('!adf:mediaSingle {layout=center}\n!adf:media {type=external url="https://example.com/'), true)
