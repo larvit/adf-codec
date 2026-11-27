@@ -75,7 +75,7 @@ In `docs/decisions.md`:
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
 - Output past V8's longest string is refused on every engine
-- The writer refuses a line longer than 2^25 characters before reading it back
+- The markdown writers refuse a line longer than 2^21 characters before reading it back
 - HTML writes a URL as the ADF holds it, whatever its scheme
 - Nothing recurses unbounded
 - JSON text is read by `parseJsonText`

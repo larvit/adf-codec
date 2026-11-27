@@ -1097,25 +1097,24 @@ runs: V8 aborts the process on the second `JSON.stringify` of a 2^28-character s
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
 
-## The writer refuses a line longer than 2^25 characters before reading it back
+## The markdown writers refuse a line longer than 2^21 characters before reading it back
 
-2026-11-26, the maintainer. Goal 1. Valid while a line of 2^25 characters of plain text writes within
+2026-11-26, the maintainer; bound lowered from 2^25 to 2^21 on 2026-11-27, after a line of `[` ended
+the process below 2^25. Goal 1. Valid while a line of 2^21 characters of any content writes within
 V8's heap limit, about 2 GB.
 
-The markdown writers refuse a line longer than 2^25 characters (`longestLine`), before reading it
+The markdown writers refuse a line longer than 2^21 characters (`longestLine`), before reading it
 back, as `unsupported-node-shape` at the path of the node holding the line. The writer reads each
-line back through the reader. Plain text costs that reader about 50 bytes a character. A line of
-2^25 characters peaks near 1.6 GB and writes. A line of 2^26 characters or more runs V8 past its
-heap limit, which ends the process past any `try`. The bound removes that abort for plain text.
+line back through the reader, and what that costs a character depends on the content. A line of 2^21
+characters peaks at 262 MB in plain text, about 320 MB in `*` or backticks and 854 MB in `[`, the
+dearest content measured. Each fits V8's heap limit, so the bound removes the abort for every
+content. Past it, `[a]` repeated ends V8 from 2^24 characters, and plain text from 2^26.
 
-The bound counts a line's characters before escaping. A line of `*` or backticks, each escaped,
-costs about twice as much a character. A line dense in `[` costs about five times as much: `[a]`
-repeated ends V8 from 2^24 characters, below the bound, so such a line still ends the process.
-
-The code is `unsupported-node-shape`, not `engine-limit` (§Which code a cause takes). The library
-refuses at a bound it states, and no retry passes that bound. The engine doesn't throw anything. A
-block carry isn't held to the bound. In lossless markdown, an image whose line would pass the bound
-is written as its directive. Portable markdown holds no directive, so it refuses that image.
+The bound counts a line's characters before escaping. The code is `unsupported-node-shape`, not
+`engine-limit` (§Which code a cause takes). The library refuses at a bound it states, and no retry
+passes that bound. The engine doesn't throw anything. A block carry isn't held to the bound. In
+lossless markdown, an image whose line would pass the bound is written as its directive. Portable
+markdown holds no directive, so it refuses that image.
 
 Rejected: cutting the reader's memory per character until a 2^28-character line fits V8's heap
 limit, since that means rewriting the inline scanner.

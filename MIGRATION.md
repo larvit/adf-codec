@@ -22,7 +22,7 @@ class that keeps its fields behind getters (Vue 2, MobX) is refused too: hand in
 `JSON.parse(JSON.stringify(document))`. A document holding more than 10,000,000 JSON values is
 `unsupported-node-shape`.
 
-`adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse a line longer than 33554432 characters as
+`adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse a line longer than 2097152 characters as
 `unsupported-node-shape`, where `0.3.1` wrote it or ended the process. `adfToLosslessMarkdown` writes an external image
 whose line would be longer as its `!adf:mediaSingle` directive, where `0.3.1` wrote `![alt](url)`.
 

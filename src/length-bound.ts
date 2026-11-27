@@ -15,8 +15,8 @@ const pastEngineLimit = [
 	'RangeError: invalid array length',
 ]
 
-// Reading back a line of plain text ends V8 past any `try` from 2^26 characters, and a line dense in `[` from fewer than 2^25, counted before escaping (docs/decisions.md §The writer refuses a line longer than 2^25 characters before reading it back).
-export const longestLine = 2 ** 25
+// Reading back a line of `[` ends V8 past any `try` from about 2^23 characters, and plain text from 2^26, counted before escaping (docs/decisions.md §The markdown writers refuse a line longer than 2^21 characters before reading it back).
+export const longestLine = 2 ** 21
 
 export function tooLong<T>(): Result<T> {
 	return failure('unsupported-node-shape', `this conversion would build text longer than ${longestOutput} characters, the longest this library writes`, [])

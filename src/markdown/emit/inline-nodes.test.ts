@@ -120,6 +120,6 @@ test('carries whitespace CommonMark strips in the reserved text directive', () =
 })
 
 test("joins a mark run's segments as a walk rather than as one call's arguments", { timeout: 60000 }, () => {
-	const run = Array.from({ length: 200000 }, (): AdfNode => ({ marks: [{ type: 'strong' }], text: 'a', type: 'text' }))
-	assert.equal(markdown(adfToLosslessMarkdown(document({ content: run, type: 'paragraph' }))), `**${Array.from({ length: 200000 }, () => 'a').join('!adf:textBreak{}')}**\n`)
+	const run = Array.from({ length: 120000 }, (): AdfNode => ({ marks: [{ type: 'strong' }], text: 'a', type: 'text' }))
+	assert.equal(markdown(adfToLosslessMarkdown(document({ content: run, type: 'paragraph' }))), `**${Array.from({ length: 120000 }, () => 'a').join('!adf:textBreak{}')}**\n`)
 })
