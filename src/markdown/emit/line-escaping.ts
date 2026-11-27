@@ -98,7 +98,7 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, cl
 
 function readBack(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): ReadBack {
 	const scan = segments.map((segment) => segment.text).join('')
-	// One byte a character, never an array element or Set entry: a line may run to hundreds of millions of characters.
+	// One byte a character, never an array element or Set entry, which cost far more.
 	const codes = new Uint8Array(scan.length)
 	let start = 0
 	for (const segment of segments) {

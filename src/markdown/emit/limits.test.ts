@@ -126,48 +126,57 @@ test('refuses text past V8\'s longest string', () => {
 	assert.equal(pastTheBound(result), true)
 })
 
-// Bun stops a test after 5 s by default, and this one writes and reads back a line of 33 million characters.
-test('escapes more characters in a line than V8\'s Set holds', { timeout: 60000 }, () => {
-	const stars = '*'.repeat(2 ** 24 + 1)
-	assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ text: stars, type: 'text' })))), `${'\\*'.repeat(2 ** 24 + 1)}\n`)
+// Bun stops a test after 5 s by default, and these three write and read back a line of 2^21 characters in up to 4 s.
+test('escapes every character of a line of 2^21 stars', { timeout: 60000 }, () => {
+	const stars = '*'.repeat(2 ** 21)
+	assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ text: stars, type: 'text' })))), `${'\\*'.repeat(2 ** 21)}\n`)
+})
+
+test('writes a line of 2^21 characters of `[a]` repeated, the content that costs the reader most', { timeout: 60000 }, () => {
+	const text = '[a]'.repeat(Math.floor(2 ** 21 / 3))
+	assert.equal(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' }))).ok, true)
+})
+
+test('refuses a line of stars one character past 2^21, and a line of brackets', () => {
+	const refused = (text: string) => refusedLine(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' }))))
+	assert.deepEqual([refused('*'.repeat(2 ** 21 + 1)), refused('['.repeat(2 ** 21 + 1))], Array(2).fill('unsupported-node-shape ["content",0] true'))
 })
 
 function refusedLine(result: Result<string>): string {
-	return result.ok ? 'emitted' : `${result.error.code} ${JSON.stringify(result.error.path)} ${result.error.message.includes('33554432')}`
+	return result.ok ? 'emitted' : `${result.error.code} ${JSON.stringify(result.error.path)} ${result.error.message.includes('2097152')}`
 }
 
-test('refuses a line of text one character past 2^25, at its paragraph', { timeout: 60000 }, () => {
-	const text = 'a'.repeat(2 ** 25 + 1)
+test('refuses a line of text one character past 2^21, at its paragraph', () => {
+	const text = 'a'.repeat(2 ** 21 + 1)
 	assert.equal(refusedLine(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' })))), 'unsupported-node-shape ["content",0] true')
 })
 
-// Bun stops a test after 5 s by default, and this one writes and reads back a line of 2^25 characters.
-test('writes a line of text of exactly 2^25 characters', { timeout: 60000 }, () => {
-	const text = 'a'.repeat(2 ** 25)
+test('writes a line of text of exactly 2^21 characters', { timeout: 60000 }, () => {
+	const text = 'a'.repeat(2 ** 21)
 	assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' })))), `${text}\n`)
 })
 
-test('writes an image as a line of exactly 2^25 characters', { timeout: 60000 }, () => {
-	const url = `https://example.com/${'a'.repeat(2 ** 25 - 25)}`
+test('writes an image as a line of exactly 2^21 characters', () => {
+	const url = `https://example.com/${'a'.repeat(2 ** 21 - 25)}`
 	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url }, type: 'media' }], type: 'mediaSingle' }
 	assert.equal(markdown(adfToLosslessMarkdown(document(image))), `![](${url})\n`)
 })
 
-test('refuses a link line one character past 2^25, at its heading', { timeout: 60000 }, () => {
-	const href = `https://example.com/${'a'.repeat(2 ** 25 - 24)}`
+test('refuses a link line one character past 2^21, at its heading', () => {
+	const href = `https://example.com/${'a'.repeat(2 ** 21 - 24)}`
 	const link = { attrs: { href }, type: 'link' }
 	const heading = { attrs: { level: 1 }, content: [{ marks: [link], text: 'a', type: 'text' }], type: 'heading' }
 	assert.equal(refusedLine(adfToLosslessMarkdown(document(heading))), 'unsupported-node-shape ["content",0] true')
 })
 
-test('writes an image whose url runs past 2^25 characters as its directive', { timeout: 60000 }, () => {
-	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: `https://example.com/${'a'.repeat(2 ** 25)}` }, type: 'media' }], type: 'mediaSingle' }
+test('writes an image whose url runs past 2^21 characters as its directive', () => {
+	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: `https://example.com/${'a'.repeat(2 ** 21)}` }, type: 'media' }], type: 'mediaSingle' }
 	const written = adfToLosslessMarkdown(document(image))
 	assert.equal(written.ok && written.value.startsWith('!adf:mediaSingle {layout=center}\n!adf:media {type=external url="https://example.com/'), true)
 })
 
-test('refuses an image line one character past 2^25 in portable markdown, at its block', { timeout: 60000 }, () => {
-	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: `https://example.com/${'a'.repeat(2 ** 25 - 24)}` }, type: 'media' }], type: 'mediaSingle' }
+test('refuses an image line one character past 2^21 in portable markdown, at its block', () => {
+	const image = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: `https://example.com/${'a'.repeat(2 ** 21 - 24)}` }, type: 'media' }], type: 'mediaSingle' }
 	assert.equal(refusedLine(adfToPortableMarkdown(document(image))), 'unsupported-node-shape ["content",0] true')
 })
 
