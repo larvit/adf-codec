@@ -15,7 +15,7 @@ const pastEngineLimit = [
 	'RangeError: invalid array length',
 ]
 
-// Reading a line back takes about 70 bytes a character, so a longer line ends V8 on its heap limit past any `try` (docs/decisions.md §The writer refuses a line longer than 2^25 characters before reading it back).
+// Reading back a line of plain text ends V8 past any `try` from 2^26 characters, and a line dense in `[` from fewer than 2^25, counted before escaping (docs/decisions.md §The writer refuses a line longer than 2^25 characters before reading it back).
 export const longestLine = 2 ** 25
 
 export function tooLong<T>(): Result<T> {
@@ -23,7 +23,7 @@ export function tooLong<T>(): Result<T> {
 }
 
 export function tooLongLine<T>(path: ConvertErrorPath): Result<T> {
-	return failure('unsupported-node-shape', `this line would be longer than ${longestLine} characters, the longest this library reads back`, path)
+	return failure('unsupported-node-shape', `the markdown writers refuse a line longer than ${longestLine} characters before escaping, and this node's line would be longer`, path)
 }
 
 export function withinLongest<T>(length: number, value: T): Result<T> {
