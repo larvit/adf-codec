@@ -22,6 +22,10 @@ class that keeps its fields behind getters (Vue 2, MobX) is refused too: hand in
 `JSON.parse(JSON.stringify(document))`. A document holding more than 10,000,000 JSON values is
 `unsupported-node-shape`.
 
+`adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse a line longer than 33554432 characters as
+`unsupported-node-shape`, where `0.3.1` wrote it or ended the process. `adfToLosslessMarkdown` writes an external image
+whose line would be longer as its `!adf:mediaSingle` directive, where `0.3.1` wrote `![alt](url)`.
+
 `adfToHtml` writes a table cell's background as `data-background-color="…"`, where `0.3.1` wrote
 `style="background-color:…"`. A page that shows the HTML loses the cell's colour unless it sets the colour from
 the attribute, as this script does for cells and for colour marks:
