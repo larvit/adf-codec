@@ -3,7 +3,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "16.0.3",
     "esbuild": "0.28.2",
-    "rollup": "4.68.8",
+    "rollup": "4.68.9",
     "webpack": "5.113.0"
   }
 }
