@@ -246,6 +246,15 @@ test('reads the carry of a document holding no content key as that document', ()
 	assert.deepEqual(jiraWikiToAdf('{adf:display=block}\n{"type":"doc","version":1}\n{adf}'), { ok: true, value: { type: 'doc', version: 1 } })
 })
 
+for (const { name, wiki } of [
+	{ name: 'text ahead of it in place of the opening', wiki: 'a document follows:{"type":"doc","version":1}{adf}' },
+	{ name: 'text after it in place of the closing', wiki: '{adf:display=block}{"type":"doc","version":1}12345' },
+]) {
+	test(`refuses a document holding no content key with ${name}`, () => {
+		assert.equal(read(wiki), 'unsupported-node-shape at line 1, offset 0')
+	})
+}
+
 const refusals: { name: string; refusal: string; wiki: string }[] = [
 	{ name: 'an {adf} macro holding invalid JSON', refusal: 'unsupported-node-shape at line 3, offset 3', wiki: 'a\n\n{adf:display=block}\nnot json\n{adf}' },
 	{ name: 'an inline {adf} macro holding invalid JSON', refusal: 'unsupported-node-shape at line 2, offset 2', wiki: 'a\nb {adf:display=inline}{bad{adf}' },

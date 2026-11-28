@@ -63,7 +63,7 @@ function shapedDocument(value: unknown): Result<AdfDocument> {
 }
 
 // How every writer opens: the plain copy, then the checks, and `write` takes what passed both. `content` is `undefined` where the document holds no `content` key.
-export function writeAdf(document: unknown, write: (document: AdfDocument, content: readonly AdfNode[] | undefined) => Result<string>): Result<string> {
+export function writeAdf<T>(document: unknown, write: (document: AdfDocument, content: readonly AdfNode[] | undefined) => Result<T>): Result<T> {
 	return withinEngineLimits(() => {
 		const read = readAdfDocument(document)
 		if (!read.ok) return read
@@ -261,9 +261,7 @@ function marksKey(marks: readonly AdfMark[]): string {
 
 function nestingFault(nodes: readonly AdfNode[]): ConvertFault | undefined {
 	const pending: AdfNode[] = [...nodes]
-	while (pending.length > 0) {
-		const node = pending.pop()
-		if (node === undefined) continue
+	for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
 		const fault = attributesFault(nodeAttrs(node), node.type) ?? marksFault(nodeMarks(node))
 		if (fault !== undefined) return fault
 		for (const child of nodeContent(node)) pending.push(child)

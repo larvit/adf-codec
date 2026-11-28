@@ -10,7 +10,7 @@ import { isBlockNodeType, oneLine } from '../../adf/shown-text.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
-import { nodeAttrs, nodeContent, nodeMarks, writableContent, writeAdf } from '../../adf/document.ts'
+import { nodeAttrs, nodeContent, nodeMarks, writeAdf } from '../../adf/document.ts'
 import { portableWriting } from './block-spelling.ts'
 import { splitTaskList, taskListItems } from './task-list.ts'
 import { taskMarker } from './conventions.ts'
@@ -57,12 +57,12 @@ export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
 	})
 }
 
+// The reduction alone, which the tests read.
 export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
-	// Measured on the caller's text, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
-	const checked = writableContent(document)
-	return checked.ok ? portableForm(document) : checked
+	return writeAdf(document, portableForm)
 }
 
+// `writeAdf` measured the caller's text first, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
 function portableForm(document: AdfDocument): Result<AdfDocument> {
 	// Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
 	const { normal, sources } = editorNormalForm(document)

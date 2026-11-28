@@ -6,16 +6,17 @@ import { identicalMark, identicalMarks, mergeAdjacentText, nodeAttrs, nodeConten
 import { imageText, shownCard, taskMarker } from '../../plain-text/shown-node.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { largestNesting } from '../../nesting.ts'
-import { layoutOf } from '../../plain-text/adf-to-plain-text.ts'
+import { layoutOf } from '../../plain-text/layout.ts'
 import { listTypes, macroOf, plainTable } from './spelled-blocks.ts'
 import { oneLine, shownText, visibleText } from '../../adf/shown-text.ts'
 
 // `depth`: the nesting level, as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
 type Place = { depth: number; index: number; node: AdfNode; parent: Place | undefined }
 
-// `blocks`: the reduced form of each block reduced so far; `waited`: the blocks the reduction being made read before they were reduced.
-type Reduction = { blocks: Map<AdfNode, AdfNode[]>; waited: AdfNode[] }
+// The reduced form of each block reduced so far.
+type Reduction = Map<AdfNode, AdfNode[]>
 
+const cellTypes = ['tableCell', 'tableHeader']
 const checkedMarkTypes = ['code', 'em', 'strike', 'strong', 'subsup', 'underline']
 const hardBreak: AdfNode = { type: 'hardBreak' }
 const taskTypes = ['blockTaskItem', 'taskItem']
@@ -48,28 +49,40 @@ function pathTo(place: Place): ConvertErrorPath {
 	return path.reverse()
 }
 
-// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded): a block is reduced once every block its reduction reads is, so a reduction that waited for one is made again after it.
+// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded): every block is gathered before the blocks it holds, then reduced after them, so each reduction reads reduced blocks alone.
 function reducedBlocks(content: readonly AdfNode[]): AdfNode[] {
-	const reduction: Reduction = { blocks: new Map(), waited: [] }
-	const pending: AdfNode[] = []
-	for (;;) {
-		const node = pending.at(-1)
-		const reduced = node === undefined ? blocks(content, reduction) : block(node, reduction)
-		if (reduction.waited.length > 0) {
-			append(pending, reduction.waited)
-			reduction.waited = []
-		} else if (node === undefined) return reduced
-		else {
-			reduction.blocks.set(node, reduced)
-			pending.pop()
-		}
+	const gathered: AdfNode[] = []
+	const pending: AdfNode[] = notLoose(content)
+	for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+		gathered.push(node)
+		append(pending, heldBlocks(node))
 	}
+	const reduction: Reduction = new Map()
+	for (const node of gathered.reverse()) reduction.set(node, block(node, reduction))
+	return blocks(content, reduction)
 }
 
+// The blocks whose reduced form the reduction of `node` reads: none where it reads its content as a line.
+function heldBlocks(node: AdfNode): AdfNode[] {
+	const content = nodeContent(node)
+	if (blockNodeModel(node.type)?.contentModel === 'inline') return []
+	if (node.type === 'table') return content.flatMap((row) => (row.type === 'tableRow' ? nodeContent(row).flatMap((cell) => (cellTypes.includes(cell.type) ? notLoose(nodeContent(cell)) : [cell])) : [row]))
+	if (node.type !== 'taskList' && !listTypes.includes(node.type)) return notLoose(content)
+	return content.flatMap((child) => (child.type === 'taskItem' ? [] : notLoose(child.type === 'blockTaskItem' ? nodeContent(child) : [child])))
+}
+
+// `heldBlocks` names every block a reduction reads, so each is in `reduction` by then.
 function reducedBlock(node: AdfNode, reduction: Reduction): AdfNode[] {
-	const reduced = reduction.blocks.get(node)
-	if (reduced === undefined) reduction.waited.push(node)
-	return reduced ?? []
+	return reduction.get(node) ?? []
+}
+
+// A loose node is text or an inline node, which stands in a line.
+function isLoose(node: AdfNode): boolean {
+	return node.type === 'text' || inlineNodeModel(node.type) !== undefined
+}
+
+function notLoose(nodes: readonly AdfNode[]): AdfNode[] {
+	return nodes.filter((node) => !isLoose(node))
 }
 
 // A `{quote}` or a `{panel}` can't hold its own kind, so one inside another of its kind stands as its blocks.
@@ -95,7 +108,7 @@ function blocks(nodes: readonly AdfNode[], reduction: Reduction): AdfNode[] {
 		loose = []
 	}
 	for (const node of nodes) {
-		if (node.type === 'text' || inlineNodeModel(node.type) !== undefined) loose.push(node)
+		if (isLoose(node)) loose.push(node)
 		else {
 			closeLoose()
 			append(reduced, reducedBlock(node, reduction))
@@ -271,7 +284,7 @@ function table(rows: readonly AdfNode[], reduction: Reduction): AdfNode[] {
 function tableRow(row: AdfNode, after: AdfNode[], reduction: Reduction): AdfNode[] {
 	const cells: AdfNode[] = []
 	for (const cell of nodeContent(row)) {
-		if (cell.type === 'tableCell' || cell.type === 'tableHeader') cells.push({ content: [paragraph(joinedLines(blocks(nodeContent(cell), reduction).flatMap(lines)))], type: cell.type })
+		if (cellTypes.includes(cell.type)) cells.push({ content: [paragraph(joinedLines(blocks(nodeContent(cell), reduction).flatMap(lines)))], type: cell.type })
 		else append(after, reducedBlock(cell, reduction))
 	}
 	return cells.length === 0 ? [] : [{ content: cells, type: 'tableRow' }]
@@ -314,12 +327,12 @@ function inlineNodes(nodes: readonly AdfNode[]): AdfNode[] {
 	for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
 		const whole = wholeInline(node)
 		append(shown, whole ?? textNodes(shownCard(node) ?? node.text ?? '', cleanMarks(nodeMarks(node))))
-		if (whole === undefined) append(pending, [...nodeContent(node)].reverse())
+		append(pending, [...nodeContent(node)].reverse())
 	}
 	return shown
 }
 
-// What a hard break, a mention and an inline image show, whatever they hold; `undefined` for any other node.
+// What a hard break, a mention and an inline image show, none of which holds content; `undefined` for any other node.
 function wholeInline(node: AdfNode): AdfNode[] | undefined {
 	if (node.type === 'hardBreak') return [hardBreak]
 	const { alt, id } = nodeAttrs(node)

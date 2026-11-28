@@ -1,16 +1,17 @@
 import type { AdfDocument, AdfNode } from '../adf/document.ts'
-import { blockNodeModel } from '../adf/block-nodes.ts'
+import type { Layout } from './layout.ts'
+import { bulletLists, cellTypes, layoutOf } from './layout.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
 import { imageText, linkSuffix, shownCard, taskMarker } from './shown-node.ts'
-import { inlineNodeModel } from '../adf/inline-nodes.ts'
-import { linkAttrs, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { largestNesting } from '../nesting.ts'
+import { linkAttrs, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { longestOutput, tooLong } from '../length-bound.ts'
 import { nodeAttrs, nodeContent, nodeMarks, writeAdf } from '../adf/document.ts'
 import { shownLink, shownText, shownUrl, visibleText } from '../adf/shown-text.ts'
 
-// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell to restore after a table cell, with the `gap` and `literal` to restore too where the cell wrote no text; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
+// `parent`: the node holding this one.
 type Place = { index: number; parent: Place | undefined }
+// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell to restore after a table cell, with the `gap` and `literal` to restore too where the cell wrote no text; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `place`: where the node stands, from which a refusal's path is built.
 type Step =
 	| { kind: 'gap'; lines: number }
 	| { kind: 'leave'; indent: string; lead: string | undefined; length: number }
@@ -24,15 +25,9 @@ type Writing = { cell: Cell | undefined; gap: number; indent: string; lead: stri
 // A table cell being written: its text goes on the row's line, without the row's margin; `start` is the `length` where the cell began, and `owed` the line feeds owed there, the only ones its first text may write.
 type Cell = { owed: number; start: number }
 
-// `lines`: the line feeds between a node's children; `level`: how much deeper they nest; `cells`: they are bar-separated cells on one line.
-type Layout = { cells?: true; level: number; lines: number }
-
-const bulletLists = ['bulletList', 'decisionList', 'taskList']
 const cardTypes = ['blockCard', 'embedCard', 'inlineCard']
-const cellTypes = ['tableCell', 'tableHeader']
 const expandTypes = ['expand', 'nestedExpand']
 const imageTypes = ['media', 'mediaInline']
-const itemTypes = ['blockTaskItem', 'listItem']
 const markedItems = ['blockTaskItem', 'decisionItem', 'listItem', 'taskItem']
 const shownTextTypes = ['date', 'emoji', 'extension', 'inlineExtension', 'mention', 'status']
 
@@ -151,18 +146,6 @@ function linkOf(node: AdfNode): LinkAttrs | undefined {
 
 function sameLink(left: LinkAttrs, right: LinkAttrs): boolean {
 	return left.href === right.href && left.title === right.title
-}
-
-// Children stand on one line where they are inline, a line feed apart in a list, an item and a table, a blank line apart between other blocks. A list's items nest one level below it, an item's blocks at its own.
-export function layoutOf(node: AdfNode): Layout {
-	if (bulletLists.includes(node.type) || node.type === 'orderedList') return { level: 1, lines: 1 }
-	if (itemTypes.includes(node.type)) return { level: 0, lines: 1 }
-	if (node.type === 'table') return { level: 1, lines: 1 }
-	if (node.type === 'tableRow') return { cells: true, level: 1, lines: 0 }
-	if (cellTypes.includes(node.type)) return { level: 0, lines: 2 }
-	const model = blockNodeModel(node.type)
-	if (model !== undefined) return model.contentModel === 'block' ? { level: 1, lines: 2 } : { level: 0, lines: 0 }
-	return nodeContent(node).every((child) => child.type === 'text' || inlineNodeModel(child.type) !== undefined) ? { level: 0, lines: 0 } : { level: 1, lines: 2 }
 }
 
 // A child of a list that is no item, such as a task list nested in one, gets blank margin so it stands under the item before it.

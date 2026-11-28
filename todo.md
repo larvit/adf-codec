@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 225`
+`Next ID = 226`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 225 | 0.4.0 |  | defect | **Return a result from `serializeCanonicalJson` past the output bound, so no library code throws on purpose.** | 3 | 1 | 2 | 4 | 5 | code health by 4 | 6.2 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -34,6 +35,26 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 225. Return a result from `serializeCanonicalJson` past the output bound, so no library code throws on purpose.
+
+Today §Output past V8's longest string is refused on every engine records that `serializeCanonicalJson` (`src/canonical-json.ts`) throws V8's `Invalid string length` when `joinedWithin` stops at the bound, for `withinEngineLimits` to catch as `tooLong`. The release review's principles pass rated that a 🔴 against AGENTS.md §4 ("failures are values … nothing throws") and technical-principles.md "Handle errors explicitly, as values": every caller silently relies on a `withinEngineLimits` frame above it, and the comparisons that call it can throw from what reads as an equality check. The public calls never throw today.
+
+The maintainer allowed the decision to change, 2026-11-28, taking this design: `serializeCanonicalJson` returns `Result<string>` from `joinedWithin`; the writing callers pass it on as `tooLong`; the comparison callers take a `sameCanonicalJson(a, b)` that compares `canonicalJsonPieces` streams piece by piece and never builds the string; `withinEngineLimits` then catches only real engine throws. The decision entry's sentence on the throw changes to say so.
+
+Touches:
+- `src/canonical-json.ts`: `serializeCanonicalJson`
+- `src/length-bound.ts`: `withinEngineLimits` (small)
+- `src/adf/document.ts`: `marksKey` (small)
+- `src/adf/plain-image.ts`
+- `src/markdown/directive/block.ts`: `readMarkValues` (small)
+- `src/markdown/directive/syntax.ts`: `spellJsonAttribute` (small), `spellAttributeValue` (small)
+- `src/html/parse/foreign.ts`: `sameMarks` (small)
+- `src/html/parse/html-to-adf.ts`
+- `src/html/cell-element.ts`
+- `src/html/data-attributes.ts`
+- `src/html/emit/adf-to-html.ts`: `adfToHtml` (small)
+- `docs/decisions.md`: `## Output past V8's longest string is refused on every engine` (small)
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 

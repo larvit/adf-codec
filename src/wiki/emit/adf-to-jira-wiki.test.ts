@@ -867,6 +867,10 @@ test('the lossy writer writes a block holding 200,000 blocks', () => {
 	assert.equal(result.ok ? result.value.length : result.error.code, wide * 3 - 2)
 })
 
+test('the lossy writer parts the lines of a code block in a table cell by hard breaks, an empty line included', () => {
+	assert.equal(lossy(table({}, [{ content: [paragraph(text('a')), code('java', 'b\n\nc')], type: 'tableCell' }])), '|a\\\\b\\\\ \\\\c|')
+})
+
 test('the lossy writer writes a code block of 200,000 lines in a list item', () => {
 	const result = adfToLossyJiraWiki(document(list('bulletList', item(paragraph(text('a')), code('java', `${'b\n'.repeat(wide - 1)}b`)))))
 	assert.equal(result.ok ? result.value.split('\\\\').length : result.error.code, wide + 1)
