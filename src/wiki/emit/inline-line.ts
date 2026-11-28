@@ -1,7 +1,7 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import { escapedText, noformat } from './text-escaping.ts'
 import { holdsOnlyAttributes, identicalMark, identicalMarks, isSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
-import { inlineCarry } from '../carry.ts'
+import { inlineCarry, inlineMacro } from '../carry.ts'
 import { linkedAddress, spellableColour, spellableTitle, spellableUrl, storedHref } from '../spellings.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 
@@ -20,7 +20,7 @@ type Token = { checked: boolean; kind: 'atom' | 'close' | 'open'; text: string }
 
 const hardBreakSpelling = '\\\\'
 // What `inlineCarry` writes for a hard break holding nothing.
-const carriedHardBreak = '{adf:display=inline}{"type":"hardBreak"}{adf}'
+const carriedHardBreak = inlineMacro('{"type":"hardBreak"}')
 const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], ['strike', '-'], ['strong', '*'], ['underline', '+']])
 
 // spec/wiki.md, Inline and Marks. `lossy`: spec/wiki.md, The lossy writer: a group whose delimiters don't read drops the marks they stand for.

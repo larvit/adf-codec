@@ -1,11 +1,12 @@
 import type { AdfDocument, AdfNode } from '../adf/document.ts'
 import { blockNodeModel } from '../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
+import { imageText, linkSuffix, shownCard, taskMarker } from './shown-node.ts'
 import { inlineNodeModel } from '../adf/inline-nodes.ts'
 import { linkAttrs, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { largestNesting } from '../nesting.ts'
-import { longestOutput, tooLong, withinEngineLimits } from '../length-bound.ts'
-import { nodeAttrs, nodeContent, nodeMarks, readAdfDocument, writableContent } from '../adf/document.ts'
+import { longestOutput, tooLong } from '../length-bound.ts'
+import { nodeAttrs, nodeContent, nodeMarks, writeAdf } from '../adf/document.ts'
 import { shownLink, shownText, shownUrl, visibleText } from '../adf/shown-text.ts'
 
 // `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell to restore after a table cell, with the `gap` and `literal` to restore too where the cell wrote no text; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
@@ -36,12 +37,7 @@ const markedItems = ['blockTaskItem', 'decisionItem', 'listItem', 'taskItem']
 const shownTextTypes = ['date', 'emoji', 'extension', 'inlineExtension', 'mention', 'status']
 
 export function adfToPlainText(document: AdfDocument): Result<string> {
-	return withinEngineLimits(() => {
-		const read = readAdfDocument(document)
-		if (!read.ok) return read
-		const content = writableContent(read.value)
-		return content.ok ? writeText(content.value ?? []) : content
-	})
+	return writeAdf(document, (_read, content) => writeText(content ?? []))
 }
 
 // A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded). Text is written the moment it is met.
@@ -87,8 +83,8 @@ function openNode(writing: Writing, step: Extract<Step, { kind: 'node' }>, pendi
 	}
 	if (node.type === 'hardBreak') writing.gap += 1
 	else if (shownTextTypes.includes(node.type)) emit(writing, shownText(node) ?? '')
-	else if (cardTypes.includes(node.type)) emit(writing, cardText(node))
-	else if (imageTypes.includes(node.type)) emit(writing, imageText(node))
+	else if (cardTypes.includes(node.type)) emit(writing, shownCard(node) ?? '')
+	else if (imageTypes.includes(node.type)) emit(writing, imageText(visibleText(nodeAttrs(node)['alt']), shownUrl(node), shownLink(node)))
 	else {
 		const title = expandTypes.includes(node.type) ? shownText(node) : undefined
 		emit(writing, `${node.text ?? title ?? ''}${suffix ?? ''}`)
@@ -148,24 +144,6 @@ function childSteps(nodes: readonly AdfNode[], layout: Layout, depth: number, pa
 	return steps
 }
 
-// A card shows its address, or its name and then its address.
-function cardText(card: AdfNode): string {
-	const text = shownText(card) ?? ''
-	const url = shownUrl(card)
-	return url === undefined || url === text ? text : `${text} (${url})`
-}
-
-// An image shows its alt text, else its address, else `[image]`; then the target of the link around it, then its own address, unless that is the link's target or the image showed it already.
-function imageText(media: AdfNode): string {
-	const alt = visibleText(nodeAttrs(media)['alt'])
-	const link = shownLink(media)
-	const url = shownUrl(media)
-	const shown = alt ?? url ?? '[image]'
-	const target = link === undefined ? undefined : linkSuffix(link, shown)
-	const own = alt !== undefined && url !== undefined && url !== link?.href ? ` (${url})` : ''
-	return `${shown}${target ?? ''}${own}`
-}
-
 function linkOf(node: AdfNode): LinkAttrs | undefined {
 	const mark = nodeMarks(node).find((held) => held.type === 'link')
 	return node.type === 'text' && mark !== undefined ? linkAttrs(nodeAttrs(mark)) : undefined
@@ -175,13 +153,8 @@ function sameLink(left: LinkAttrs, right: LinkAttrs): boolean {
 	return left.href === right.href && left.title === right.title
 }
 
-function linkSuffix(link: LinkAttrs, text: string): string | undefined {
-	if (link.title === undefined) return text === link.href ? undefined : ` (${link.href})`
-	return ` (${link.href}, "${link.title}")`
-}
-
 // Children stand on one line where they are inline, a line feed apart in a list, an item and a table, a blank line apart between other blocks. A list's items nest one level below it, an item's blocks at its own.
-function layoutOf(node: AdfNode): Layout {
+export function layoutOf(node: AdfNode): Layout {
 	if (bulletLists.includes(node.type) || node.type === 'orderedList') return { level: 1, lines: 1 }
 	if (itemTypes.includes(node.type)) return { level: 0, lines: 1 }
 	if (node.type === 'table') return { level: 1, lines: 1 }
@@ -205,8 +178,7 @@ function markerFor(node: AdfNode): (index: number, child: AdfNode) => string | u
 }
 
 function bulletOf(item: AdfNode): string {
-	if (item.type !== 'blockTaskItem' && item.type !== 'taskItem') return '• '
-	return nodeAttrs(item)['state'] === 'DONE' ? '☑ ' : '☐ '
+	return item.type === 'blockTaskItem' || item.type === 'taskItem' ? taskMarker(item) : '• '
 }
 
 function pathTo(place: Place | undefined): ConvertErrorPath {

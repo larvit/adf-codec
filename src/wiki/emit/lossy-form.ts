@@ -3,31 +3,73 @@ import { blockNodeModel, isHeadingLevel } from '../../adf/block-nodes.ts'
 import { codeLanguages, linkedAddress, panelColours, spellableAlt, spellableImageUrl, spellableUrl, storedHref } from '../spellings.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { identicalMark, identicalMarks, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { imageText, shownCard, taskMarker } from '../../plain-text/shown-node.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { largestNesting } from '../../nesting.ts'
-import { oneLine, shownText, shownUrl, visibleText } from '../../adf/shown-text.ts'
+import { layoutOf } from '../../plain-text/adf-to-plain-text.ts'
 import { listTypes, macroOf, plainTable } from './spelled-blocks.ts'
+import { oneLine, shownText, visibleText } from '../../adf/shown-text.ts'
+
+// `depth`: the nesting level, as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
+type Place = { depth: number; index: number; node: AdfNode; parent: Place | undefined }
+
+// `blocks`: the reduced form of each block reduced so far; `waited`: the blocks the reduction being made read before they were reduced.
+type Reduction = { blocks: Map<AdfNode, AdfNode[]>; waited: AdfNode[] }
 
 const checkedMarkTypes = ['code', 'em', 'strike', 'strong', 'subsup', 'underline']
 const hardBreak: AdfNode = { type: 'hardBreak' }
 const taskTypes = ['blockTaskItem', 'taskItem']
 
-// spec/wiki.md, The lossy writer: the document's blocks as the nodes the lossless writer spells, each keeping the content of what it replaces. It recurses a few frames per level, so it refuses a document past 500 levels first (docs/decisions.md §Nothing recurses unbounded).
+// spec/wiki.md, The lossy writer: the document's blocks as the nodes the lossless writer spells, each keeping the content of what it replaces. A document past 500 levels, counted as `adfToPlainText` counts them, is refused first.
 export function lossyForm(content: readonly AdfNode[]): Result<AdfNode[]> {
 	const deep = nodeTooDeep(content)
-	if (deep !== undefined) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the lossy wiki writer writes`, deep)
-	return success(unnested(withoutBlank(blocks(content)), 0))
+	if (deep !== undefined) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the lossy wiki writer writes`, pathTo(deep))
+	return success(unnested(withoutBlank(reducedBlocks(content)), 0))
 }
 
-// The path of the first node nested past `largestNesting` levels, every node counting one.
-function nodeTooDeep(content: readonly AdfNode[]): ConvertErrorPath | undefined {
-	const pending: { depth: number; node: AdfNode; path: ConvertErrorPath }[] = content.map((node, index) => ({ depth: 1, node, path: ['content', index] })).reverse()
-	for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
-		if (step.depth > largestNesting) return step.path
-		const { depth, node, path } = step
-		for (const [index, child] of nodeContent(node).entries()) pending.push({ depth: depth + 1, node: child, path: [...path, 'content', index] })
+// The first node in document order nested past `largestNesting` levels.
+function nodeTooDeep(content: readonly AdfNode[]): Place | undefined {
+	const pending: Place[] = places(content, 0, undefined)
+	for (let place = pending.pop(); place !== undefined; place = pending.pop()) {
+		if (place.depth > largestNesting) return place
+		append(pending, places(nodeContent(place.node), place.depth + layoutOf(place.node).level, place))
 	}
 	return undefined
+}
+
+// The places of `nodes`, last first, so a stack pops them in document order.
+function places(nodes: readonly AdfNode[], depth: number, parent: Place | undefined): Place[] {
+	return nodes.map((node, index) => ({ depth, index, node, parent })).reverse()
+}
+
+function pathTo(place: Place): ConvertErrorPath {
+	const path: (number | string)[] = []
+	for (let held: Place | undefined = place; held !== undefined; held = held.parent) path.push(held.index, 'content')
+	return path.reverse()
+}
+
+// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded): a block is reduced once every block its reduction reads is, so a reduction that waited for one is made again after it.
+function reducedBlocks(content: readonly AdfNode[]): AdfNode[] {
+	const reduction: Reduction = { blocks: new Map(), waited: [] }
+	const pending: AdfNode[] = []
+	for (;;) {
+		const node = pending.at(-1)
+		const reduced = node === undefined ? blocks(content, reduction) : block(node, reduction)
+		if (reduction.waited.length > 0) {
+			append(pending, reduction.waited)
+			reduction.waited = []
+		} else if (node === undefined) return reduced
+		else {
+			reduction.blocks.set(node, reduced)
+			pending.pop()
+		}
+	}
+}
+
+function reducedBlock(node: AdfNode, reduction: Reduction): AdfNode[] {
+	const reduced = reduction.blocks.get(node)
+	if (reduced === undefined) reduction.waited.push(node)
+	return reduced ?? []
 }
 
 // A `{quote}` or a `{panel}` can't hold its own kind, so one inside another of its kind stands as its blocks.
@@ -45,7 +87,7 @@ function unnested(nodes: readonly AdfNode[], held: number): AdfNode[] {
 	return kept
 }
 
-function blocks(nodes: readonly AdfNode[]): AdfNode[] {
+function blocks(nodes: readonly AdfNode[], reduction: Reduction): AdfNode[] {
 	const reduced: AdfNode[] = []
 	let loose: AdfNode[] = []
 	const closeLoose = (): void => {
@@ -56,49 +98,49 @@ function blocks(nodes: readonly AdfNode[]): AdfNode[] {
 		if (node.type === 'text' || inlineNodeModel(node.type) !== undefined) loose.push(node)
 		else {
 			closeLoose()
-			append(reduced, block(node))
+			append(reduced, reducedBlock(node, reduction))
 		}
 	}
 	closeLoose()
 	return reduced
 }
 
-function block(node: AdfNode): AdfNode[] {
+function block(node: AdfNode, reduction: Reduction): AdfNode[] {
 	const content = nodeContent(node)
 	switch (node.type) {
 		case 'blockquote':
-			return container('blockquote', withoutBlank(blocks(content)))
+			return container('blockquote', withoutBlank(blocks(content, reduction)))
 		case 'bulletList':
 		case 'orderedList':
 		case 'taskList':
-			return list(node.type === 'orderedList' ? 'orderedList' : 'bulletList', content)
+			return list(node.type === 'orderedList' ? 'orderedList' : 'bulletList', content, reduction)
 		case 'codeBlock':
 			return codeBlock(node)
 		case 'expand':
 		case 'nestedExpand':
-			return [...titleParagraph(shownText(node)), ...blocks(content)]
+			return [...titleParagraph(shownText(node)), ...blocks(content, reduction)]
 		case 'heading':
 			return heading(node)
 		case 'media':
 			return imageBlock(node)
 		case 'panel':
-			return panel(node)
+			return panel(node, reduction)
 		case 'rule':
 			return [{ type: 'rule' }]
 		case 'table':
-			return table(content)
+			return table(content, reduction)
 		default:
-			return otherBlock(node)
+			return otherBlock(node, reduction)
 	}
 }
 
 // A block of a type with no spelling is its text, then its blocks.
-function otherBlock(node: AdfNode): AdfNode[] {
+function otherBlock(node: AdfNode, reduction: Reduction): AdfNode[] {
 	const content = nodeContent(node)
 	if (blockNodeModel(node.type)?.contentModel === 'inline') return [paragraph(inlines(content))]
 	const shown = shownCard(node) ?? node.text
 	const own = shown === undefined ? [] : [paragraph(inlines(textNodes(shown, [])))]
-	return [...own, ...blocks(content)]
+	return [...own, ...blocks(content, reduction)]
 }
 
 // A loop, since `push(...items)` throws past the engine's argument limit (docs/decisions.md §Nothing spreads an unbounded array).
@@ -130,10 +172,10 @@ function heading(node: AdfNode): AdfNode[] {
 	return content.length === 0 ? [] : [{ attrs: { level }, content, type: 'heading' }]
 }
 
-function panel(node: AdfNode): AdfNode[] {
+function panel(node: AdfNode, reduction: Reduction): AdfNode[] {
 	const { panelType } = nodeAttrs(node)
 	const known = typeof panelType === 'string' && Object.hasOwn(panelColours, panelType)
-	const content = withoutBlank(blocks(nodeContent(node)))
+	const content = withoutBlank(blocks(nodeContent(node), reduction))
 	return content.length === 0 ? [] : [{ attrs: { panelType: known ? panelType : 'info' }, content, type: 'panel' }]
 }
 
@@ -157,7 +199,7 @@ function imageBlock(media: AdfNode): AdfNode[] {
 	const encoded = address === undefined ? '' : urlEncoded(address).replaceAll('!', '%21')
 	const written = external && spellableImageUrl.test(encoded)
 	const image: AdfNode[] = written ? [{ attrs: { layout: 'center' }, content: [{ attrs: spellable ? { alt: spelledAlt, type, url: encoded } : { type, url: encoded }, type: 'media' }], type: 'mediaSingle' }] : []
-	const altText = written ? (spellable ? undefined : shownAlt) : imageText(shownAlt, external ? address : undefined)
+	const altText = written ? (spellable ? undefined : shownAlt) : imageText(shownAlt, external ? address : undefined, undefined)
 	const altParagraph = altText === undefined ? [] : [paragraph(inlines(textNodes(altText, [])))]
 	const link = nodeMarks(media).find(({ type: markType }) => markType === 'link')
 	const linked = link === undefined ? undefined : cleanMark(link)
@@ -169,23 +211,23 @@ function urlEncoded(url: string): string {
 }
 
 // A list a child holds after an item joins that item's parts, so each item is reduced once.
-function list(type: string, children: readonly AdfNode[]): AdfNode[] {
+function list(type: string, children: readonly AdfNode[], reduction: Reduction): AdfNode[] {
 	const itemParts: AdfNode[][] = []
 	for (const child of children) {
 		const last = itemParts.at(-1)
-		if (last !== undefined && (listTypes.includes(child.type) || child.type === 'taskList')) append(last, block(child))
-		else itemParts.push(itemBlocks(child))
+		if (last !== undefined && (listTypes.includes(child.type) || child.type === 'taskList')) append(last, reducedBlock(child, reduction))
+		else itemParts.push(itemBlocks(child, reduction))
 	}
 	const items = itemParts.flatMap(listItems)
 	return items.length === 0 ? [] : [type === 'orderedList' ? { attrs: { order: 1 }, content: items, type } : { content: items, type }]
 }
 
 // A task item keeps its state as a marker leading its text.
-function itemBlocks(item: AdfNode): AdfNode[] {
-	if (!taskTypes.includes(item.type)) return blocks([item])
+function itemBlocks(item: AdfNode, reduction: Reduction): AdfNode[] {
+	if (!taskTypes.includes(item.type)) return blocks([item], reduction)
 	const content = nodeContent(item)
-	const inner = item.type === 'taskItem' ? [paragraph(inlines(content))] : blocks(content)
-	const marker = textNode(nodeAttrs(item)['state'] === 'DONE' ? '☑ ' : '☐ ', [])
+	const inner = item.type === 'taskItem' ? [paragraph(inlines(content))] : blocks(content, reduction)
+	const marker = textNode(taskMarker(item), [])
 	const [first, ...rest] = inner
 	return first?.type === 'paragraph' ? [paragraph(inlines([marker, ...nodeContent(first)])), ...rest] : [paragraph([marker]), ...inner]
 }
@@ -216,49 +258,43 @@ function listItems(parts: readonly AdfNode[]): AdfNode[] {
 }
 
 // A table holds rows of cells; what else it holds stands after it, as its blocks.
-function table(rows: readonly AdfNode[]): AdfNode[] {
+function table(rows: readonly AdfNode[], reduction: Reduction): AdfNode[] {
 	const spelled: AdfNode[] = []
 	const after: AdfNode[] = []
 	for (const row of rows) {
-		if (row.type === 'tableRow') append(spelled, tableRow(row, after))
-		else append(after, block(row))
+		if (row.type === 'tableRow') append(spelled, tableRow(row, after, reduction))
+		else append(after, reducedBlock(row, reduction))
 	}
 	return [...(spelled.length === 0 ? [] : [{ attrs: plainTable, content: spelled, type: 'table' }]), ...after]
 }
 
-function tableRow(row: AdfNode, after: AdfNode[]): AdfNode[] {
+function tableRow(row: AdfNode, after: AdfNode[], reduction: Reduction): AdfNode[] {
 	const cells: AdfNode[] = []
 	for (const cell of nodeContent(row)) {
-		if (cell.type === 'tableCell' || cell.type === 'tableHeader') cells.push({ content: [paragraph(joinedLines(blocks(nodeContent(cell)).flatMap(lines)))], type: cell.type })
-		else append(after, block(cell))
+		if (cell.type === 'tableCell' || cell.type === 'tableHeader') cells.push({ content: [paragraph(joinedLines(blocks(nodeContent(cell), reduction).flatMap(lines)))], type: cell.type })
+		else append(after, reducedBlock(cell, reduction))
 	}
 	return cells.length === 0 ? [] : [{ content: cells, type: 'tableRow' }]
 }
 
 // The inline content of each line a reduced block shows, as it would stand in a table cell or a list item.
-function lines(node: AdfNode): AdfNode[][] {
-	const content = nodeContent(node)
-	switch (node.type) {
-		case 'codeBlock':
-			return content.flatMap((child) => (child.text ?? '').split('\n').map((line) => (line === '' ? [] : [textNode(line, [])])))
-		case 'heading':
-		case 'paragraph':
-			return content.length === 0 ? [] : [[...content]]
-		case 'media':
-			return [[imageLine(node)]]
-		default:
-			return content.flatMap(lines)
+function lines(block: AdfNode): AdfNode[][] {
+	const shown: AdfNode[][] = []
+	const pending: AdfNode[] = [block]
+	for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+		const content = nodeContent(node)
+		if (node.type === 'codeBlock') append(shown, content.flatMap((child) => (child.text ?? '').split('\n').map((line) => (line === '' ? [] : [textNode(line, [])]))))
+		else if (node.type === 'media') shown.push([imageLine(node)])
+		else if (node.type !== 'heading' && node.type !== 'paragraph') append(pending, [...content].reverse())
+		else if (content.length > 0) shown.push([...content])
 	}
+	return shown
 }
 
 // The alt and the address of a reduced image, which a cell or a list item holds as text.
 function imageLine(media: AdfNode): AdfNode {
 	const { alt, url } = nodeAttrs(media)
-	return textNode(imageText(visibleText(alt), visibleText(url)), [])
-}
-
-function imageText(alt: string | undefined, address: string | undefined): string {
-	return alt !== undefined && address !== undefined ? `${alt} (${address})` : alt ?? address ?? '[image]'
+	return textNode(imageText(visibleText(alt), visibleText(url), undefined), [])
 }
 
 function joinedLines(parts: readonly (readonly AdfNode[])[]): AdfNode[] {
@@ -267,24 +303,28 @@ function joinedLines(parts: readonly (readonly AdfNode[])[]): AdfNode[] {
 
 // The inline nodes of a line: text, hard breaks and mentions, each with the marks wiki markup spells.
 function inlines(nodes: readonly AdfNode[]): AdfNode[] {
-	const spelled = mergedText(nodes.flatMap(inlineNodes)).flatMap(partedEdges)
+	const spelled = mergedText(inlineNodes(nodes)).flatMap(partedEdges)
 	return trimmed(mergedText(withLinkTitles(mergedText(spelled))))
 }
 
-function inlineNodes(node: AdfNode): AdfNode[] {
-	const marks = cleanMarks(nodeMarks(node))
+// Every node the line holds at any depth, in document order: its own text, then what it holds.
+function inlineNodes(nodes: readonly AdfNode[]): AdfNode[] {
+	const shown: AdfNode[] = []
+	const pending: AdfNode[] = [...nodes].reverse()
+	for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+		const whole = wholeInline(node)
+		append(shown, whole ?? textNodes(shownCard(node) ?? node.text ?? '', cleanMarks(nodeMarks(node))))
+		if (whole === undefined) append(pending, [...nodeContent(node)].reverse())
+	}
+	return shown
+}
+
+// What a hard break, a mention and an inline image show, whatever they hold; `undefined` for any other node.
+function wholeInline(node: AdfNode): AdfNode[] | undefined {
 	if (node.type === 'hardBreak') return [hardBreak]
 	const { alt, id } = nodeAttrs(node)
 	if (node.type === 'mention' && typeof id === 'string' && spellableUrl.test(id)) return [{ attrs: { accessLevel: '', id }, type: 'mention' }]
-	if (node.type === 'mediaInline') return textNodes(visibleText(alt) ?? '[image]', marks)
-	return [...textNodes(shownCard(node) ?? node.text ?? '', marks), ...nodeContent(node).flatMap(inlineNodes)]
-}
-
-// A card shows its name and then its address, as `adfToPlainText` does, since the address is content.
-function shownCard(node: AdfNode): string | undefined {
-	const text = shownText(node)
-	const url = shownUrl(node)
-	return text === undefined || url === undefined || url === text ? text : `${text} (${url})`
+	return node.type === 'mediaInline' ? textNodes(imageText(visibleText(alt), undefined, undefined), cleanMarks(nodeMarks(node))) : undefined
 }
 
 function textNode(text: string, marks: readonly AdfMark[]): AdfNode {

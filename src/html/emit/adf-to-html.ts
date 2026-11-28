@@ -11,11 +11,11 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { firstParagraphForm } from '../first-paragraph.ts'
 import { imageElement } from '../image-element.ts'
 import { inlineHtml, writableText } from './inline.ts'
-import { isUnmarkedSpellableText, nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
+import { isUnmarkedSpellableText, nodeAttrs, nodeContent, writeAdf } from '../../adf/document.ts'
 import { itemOpener } from '../task-element.ts'
 import { languageClass } from '../language-class.ts'
 import { largestNesting } from '../../nesting.ts'
-import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
+import { longestOutput, tooLong } from '../../length-bound.ts'
 import { mediaImage } from '../media-element.ts'
 import { plainImage } from '../../adf/plain-image.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
@@ -28,18 +28,13 @@ type Row = { depth: number; kind: 'row'; path: ConvertErrorPath; pieces: Pending
 type Pending = Block | Item | Row | string
 
 export function adfToHtml(document: AdfDocument): Result<string> {
-	return withinEngineLimits(() => {
-		const read = readAdfDocument(document)
-		return read.ok ? writeHtml(read.value) : read
-	})
+	return writeAdf(document, writeHtml)
 }
 
 // A stack rather than recursion, since each level would cost several frames: a block returns its pieces in document order, and only this loop pushes them.
-function writeHtml(document: AdfDocument): Result<string> {
-	const content = writableContent(document)
-	if (!content.ok) return content
-	if (content.value === undefined) return success(`${carryElement('div', serializeCanonicalJson(document, 'compact'), carryContent(document, 'div'))}\n`)
-	const pending: Pending[] = content.value.length === 0 ? [] : [...blockPieces(content.value, [], 0), '\n'].reverse()
+function writeHtml(document: AdfDocument, content: readonly AdfNode[] | undefined): Result<string> {
+	if (content === undefined) return success(`${carryElement('div', serializeCanonicalJson(document, 'compact'), carryContent(document, 'div'))}\n`)
+	const pending: Pending[] = content.length === 0 ? [] : [...blockPieces(content, [], 0), '\n'].reverse()
 	let html = ''
 	for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
 		if (typeof next === 'string') {

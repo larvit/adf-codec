@@ -1,10 +1,10 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { ConvertFault, ParseError, Result } from '../../result.ts'
+import { carriesBareDocument, readAdfMacro } from '../carry.ts'
 import { largestNesting } from '../../nesting.ts'
 import { notAString } from '../../not-a-string.ts'
 import { panelColours } from '../spellings.ts'
 import { positioned, success } from '../../result.ts'
-import { readAdfMacro } from './adf-macro.ts'
 import { readInline } from './inline.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
 
@@ -24,7 +24,6 @@ type Reading = { containers: Container[]; levels: Level[]; paragraph: AdfNode[] 
 
 const codeMacro = /\{(code|noformat)(?::([^}\n]*))?\}/y
 const codeEdge = /\r?\n|/y
-const documentCarry = /^\s*\{adf:display=block\}\s*\{"type":"doc","version":1\}\s*\{adf\}\s*$/
 const image = /^!([^\s!|]+)(?:\|([^!]*))?!$/
 const itemMarker = /^([*#]+|-+) +/
 const lineSpace = /[^\S\n]*/y
@@ -39,7 +38,7 @@ export function jiraWikiToAdf(wiki: string): Result<AdfDocument, ParseError> {
 
 function readWiki(wiki: string): Result<AdfDocument> {
 	if (typeof wiki !== 'string') return notAString(wiki, 'Jira wiki markup')
-	if (documentCarry.test(wiki)) return success({ type: 'doc', version: 1 })
+	if (carriesBareDocument(wiki)) return success({ type: 'doc', version: 1 })
 	const root: Container = { content: [], kind: 'document' }
 	const reading: Reading = { containers: [root], levels: [], paragraph: undefined, rows: undefined, wiki }
 	let at = 0

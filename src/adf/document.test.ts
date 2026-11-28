@@ -6,7 +6,7 @@ import type { AdfDocument, AdfNode } from './document.ts'
 import type { ConvertErrorCode, Result } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
 import { adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown } from '../index.ts'
-import { readAdfDocument, writableContent } from './document.ts'
+import { readAdfDocument, writableContent, writeAdf } from './document.ts'
 import { largestNesting } from '../nesting.ts'
 
 function refused(result: Result<unknown>, errorCode: ConvertErrorCode, ...facts: string[]): void {
@@ -400,3 +400,14 @@ for (const write of writers) {
 		})
 	}
 }
+
+test('writeAdf hands the write the plain copy and its content, and refuses before the write what the copy or the checks refuse', () => {
+	const written = (document: unknown): string => {
+		const result = writeAdf(document, (read, content) => ({ ok: true, value: `${JSON.stringify(read)} ${JSON.stringify(content)}` }))
+		return result.ok ? result.value : `${result.error.code} at /${result.error.path.join('/')}`
+	}
+	assert.equal(written({ content: [{ type: 'rule' }], type: 'doc', version: 1 }), '{"content":[{"type":"rule"}],"type":"doc","version":1} [{"type":"rule"}]')
+	assert.equal(written({ type: 'doc', version: 1 }), '{"type":"doc","version":1} undefined')
+	assert.equal(written({ type: 'page', version: 1 }), 'not-an-adf-document at /')
+	assert.equal(written({ content: [], type: 'doc', version: 2 }), 'unsupported-document-version at /')
+})

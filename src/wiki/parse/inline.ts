@@ -2,8 +2,8 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ConvertFault } from '../../result.ts'
 import { colourNames } from './colour-names.ts'
 import { identicalMarks } from '../../adf/document.ts'
-import { readAdfMacro } from './adf-macro.ts'
 import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl, storedHref, wellFormedFrom } from '../spellings.ts'
+import { readAdfMacro } from '../carry.ts'
 
 // `end`: where the reading stopped, a cell's closing `|` or the line's end.
 export type InlineRead = { end: number; fault?: undefined; nodes: AdfNode[] } | { fault: ConvertFault }

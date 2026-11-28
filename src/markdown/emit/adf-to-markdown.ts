@@ -10,12 +10,12 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { flavourClaims } from '../flavour.ts'
 import { holdsLoneSurrogate, holdsNullCharacter, markerInterruptsParagraph } from '../commonmark/grammar.ts'
-import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
+import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent, writeAdf } from '../../adf/document.ts'
 import { idKey, readTrailingMarker, spellIdAttributes, spellIdMarker } from '../directive/id-marker.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { markerOpener, spellDirectiveCloser, spellDirectiveOpener } from '../directive/syntax.ts'
-import { withinEngineLimits, withinLongest } from '../../length-bound.ts'
+import { withinLongest } from '../../length-bound.ts'
 import { spellBlockDirectiveOpener } from '../directive/block-spelling.ts'
 import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
@@ -47,17 +47,17 @@ export const largestListMarker = 999999999
 const orderedDelimiters: Delimiters = ['.', ')']
 
 export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
-	return withinEngineLimits(() => {
-		const read = readAdfDocument(document)
-		return read.ok ? writeMarkdown(read.value, { flavour: 'lossless' }) : read
-	})
+	return writeAdf(document, (_read, content) => writeContent(content, { flavour: 'lossless' }))
 }
 
 export function writeMarkdown(document: AdfDocument, writtenAs: WrittenAs): Result<string> {
 	const content = writableContent(document)
-	if (!content.ok) return content
-	if (content.value === undefined) return success(`${documentSpelling}\n`)
-	const walk = walkBlocks(content.value, [], 0, { ...writtenAs, memo: undefined })
+	return content.ok ? writeContent(content.value, writtenAs) : content
+}
+
+function writeContent(content: readonly AdfNode[] | undefined, writtenAs: WrittenAs): Result<string> {
+	if (content === undefined) return success(`${documentSpelling}\n`)
+	const walk = walkBlocks(content, [], 0, { ...writtenAs, memo: undefined })
 	return walk.ok ? writtenDocument(joinBlocks(walk.value.blocks, 'document')) : walk
 }
 
