@@ -57,12 +57,11 @@ export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
 	})
 }
 
-// The reduction alone, which the tests read.
 export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
 	return writeAdf(document, portableForm)
 }
 
-// `writeAdf` measured the caller's text first, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
+// Reached only through `writeAdf`, which bounds the caller's text, edge whitespace and all, before `toEditorNormal`'s merge could build a string past the bound.
 function portableForm(document: AdfDocument): Result<AdfDocument> {
 	// Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
 	const { normal, sources } = editorNormalForm(document)

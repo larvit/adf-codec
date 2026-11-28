@@ -62,7 +62,7 @@ function shapedDocument(value: unknown): Result<AdfDocument> {
 	return unreadable === undefined ? notADocument('an ADF document holds ADF nodes: one is not') : faulted(unreadable.fault, unreadable.path)
 }
 
-// How every writer opens: the plain copy, then the checks, and `write` takes what passed both. `content` is `undefined` where the document holds no `content` key.
+// How every writer opens: the plain copy, then the checks, and `write` takes what passed both, `content` as `writableContent` returns it.
 export function writeAdf<T>(document: unknown, write: (document: AdfDocument, content: readonly AdfNode[] | undefined) => Result<T>): Result<T> {
 	return withinEngineLimits(() => {
 		const read = readAdfDocument(document)

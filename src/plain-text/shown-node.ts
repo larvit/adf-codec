@@ -16,7 +16,7 @@ export function linkSuffix(link: LinkAttrs, text: string): string | undefined {
 	return ` (${link.href}, "${link.title}")`
 }
 
-// A card shows its address, or its name and then its address; `undefined` for a node showing no text.
+// A card shows its `url`; one without shows its name, then any address its data holds; `undefined` for a node showing no text.
 export function shownCard(node: AdfNode): string | undefined {
 	const text = shownText(node)
 	const url = shownUrl(node)

@@ -10,7 +10,7 @@ import { largestNesting } from '../../nesting.ts'
 import { listTypes, macroOf, plainTable } from './spelled-blocks.ts'
 import { oneLine, shownText, visibleText } from '../../adf/shown-text.ts'
 
-// `depth`: the nesting level, as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
+// `depth`: the levels above the node, each adding `layoutOf`'s `level`; `parent`: the place of the node holding this one, from which a refusal's path is built.
 type Place = { depth: number; index: number; node: AdfNode; parent: Place | undefined }
 
 // The reduced form of each block reduced so far.
@@ -20,7 +20,7 @@ const checkedMarkTypes = ['code', 'em', 'strike', 'strong', 'subsup', 'underline
 const hardBreak: AdfNode = { type: 'hardBreak' }
 const taskTypes = ['blockTaskItem', 'taskItem']
 
-// spec/wiki.md, The lossy writer: the document's blocks as the nodes the lossless writer spells, each keeping the content of what it replaces. A document past 500 levels, counted as `adfToPlainText` counts them, is refused first.
+// spec/wiki.md, The lossy writer: the document's blocks as the nodes the lossless writer spells, each keeping the content of what it replaces.
 export function lossyForm(content: readonly AdfNode[]): Result<AdfNode[]> {
 	const deep = nodeTooDeep(content)
 	if (deep !== undefined) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the lossy wiki writer writes`, pathTo(deep))
@@ -48,7 +48,7 @@ function pathTo(place: Place): ConvertErrorPath {
 	return path.reverse()
 }
 
-// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded): every block is gathered before the blocks it holds, then reduced after them, so each reduction reads reduced blocks alone.
+// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded): every block is gathered before the blocks it holds, then reduced after them, so a block's reduction reads only blocks already reduced.
 function reducedBlocks(content: readonly AdfNode[]): AdfNode[] {
 	const gathered: AdfNode[] = []
 	const pending: AdfNode[] = notLoose(content)
@@ -61,7 +61,7 @@ function reducedBlocks(content: readonly AdfNode[]): AdfNode[] {
 	return blocks(content, reduction)
 }
 
-// The blocks whose reduced form the reduction of `node` reads: none where it reads its content as a line.
+// The blocks whose reduced form the reduction of `node` reads: none where that reduction reads `node`'s content as one line.
 function heldBlocks(node: AdfNode): AdfNode[] {
 	const content = nodeContent(node)
 	if (blockNodeModel(node.type)?.contentModel === 'inline') return []
@@ -75,7 +75,7 @@ function reducedBlock(node: AdfNode, reduction: Reduction): AdfNode[] {
 	return reduction.get(node) ?? []
 }
 
-// A loose node is text or an inline node, which stands in a line.
+// Text or an inline node: it stands in a line.
 function isLoose(node: AdfNode): boolean {
 	return node.type === 'text' || inlineNodeModel(node.type) !== undefined
 }
@@ -319,7 +319,7 @@ function inlines(nodes: readonly AdfNode[]): AdfNode[] {
 	return trimmed(mergedText(withLinkTitles(mergedText(spelled))))
 }
 
-// Every node the line holds at any depth, in document order: its own text, then what it holds.
+// The text nodes, hard breaks and mentions spelling `nodes` and all they hold, in document order: each node's own text, then its content.
 function inlineNodes(nodes: readonly AdfNode[]): AdfNode[] {
 	const shown: AdfNode[] = []
 	const pending: AdfNode[] = [...nodes].reverse()
@@ -331,7 +331,7 @@ function inlineNodes(nodes: readonly AdfNode[]): AdfNode[] {
 	return shown
 }
 
-// What a hard break, a mention and an inline image show, none of which holds content; `undefined` for any other node.
+// What a hard break, a mention whose `id` wiki markup spells, and an inline image show, none of which holds content; `undefined` for any other node.
 function wholeInline(node: AdfNode): AdfNode[] | undefined {
 	if (node.type === 'hardBreak') return [hardBreak]
 	const { alt, id } = nodeAttrs(node)

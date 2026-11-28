@@ -1167,7 +1167,7 @@ string is refused on every engine. The code, 2026-11-09, applying §Which code a
 name by a developer panel, 2026-11-09. Goals 1 and 9. Valid while a persona can hand in a value with
 accessors or a Proxy.
 
-`readAdfDocument` and every writer, through `writeAdf`, copy the input once, before any check,
+Every writer opens with `writeAdf`, whose `readAdfDocument` copies the input once, before any check,
 reading property descriptors so no getter runs: an accessor property, or a Proxy trap that throws,
 is `not-an-adf-document`. The copy keeps own enumerable string keys, as `JSON.stringify` does, so an
 inherited or non-enumerable key drops, and reads an array by index, so no iterator runs. Every
@@ -1399,8 +1399,8 @@ model — and no delimiter, element name or escape reaches it. A helper that can
 is two constructs, the ADF question there and the spelling in each format, the seam
 `markAttributes` and `markSpellings` already draw; one that cannot be split is a gap to ask.
 `markdown/` and `html/` are peers: neither imports the other, and no third directory sits between
-them. `wiki/` may read `plain-text/`: its lossy writer shows a card, an image and a task marker,
-and counts levels, as `adfToPlainText` does. A primitive knowing neither ADF nor a format stays at
+them. `wiki/` may read `plain-text/`: the lossy wiki writer spells a card, an image and a task marker
+as plain text does, and counts levels as `adfToPlainText` does. A primitive knowing neither ADF nor a format stays at
 `src/` root. A construct rises to `adf/` on its second consumer, not in anticipation of one. A
 directory follows a split `spec/flavour.md` draws, and a placement nothing here settles goes beside
 its only reader, or in what both read where there are two.

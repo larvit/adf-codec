@@ -38,23 +38,27 @@
 
 ### 225. Return a result from `serializeCanonicalJson` past the output bound, so no library code throws on purpose.
 
-Today §Output past V8's longest string is refused on every engine records that `serializeCanonicalJson` (`src/canonical-json.ts`) throws V8's `Invalid string length` when `joinedWithin` stops at the bound, for `withinEngineLimits` to catch as `tooLong`. The release review's principles pass rated that a 🔴 against AGENTS.md §4 ("failures are values … nothing throws") and technical-principles.md "Handle errors explicitly, as values": every caller silently relies on a `withinEngineLimits` frame above it, and the comparisons that call it can throw from what reads as an equality check. The public calls never throw today.
+`serializeCanonicalJson` (`src/canonical-json.ts`) throws V8's `Invalid string length` when `joinedWithin` stops at the bound, and `withinEngineLimits` catches the throw as `tooLong`. §Output past V8's longest string is refused on every engine records this. The release review's principles pass rated that a 🔴 against AGENTS.md §4 ("failures are values … nothing throws") and technical-principles.md "Handle errors explicitly, as values": every caller that can reach the bound relies on a `withinEngineLimits` frame above it, and the comparisons that call it can throw from what reads as an equality check. The public calls never throw today.
 
-The maintainer allowed the decision to change, 2026-11-28, taking this design: `serializeCanonicalJson` returns `Result<string>` from `joinedWithin`; the writing callers pass it on as `tooLong`; the comparison callers take a `sameCanonicalJson(a, b)` that compares `canonicalJsonPieces` streams piece by piece and never builds the string; `withinEngineLimits` then catches only real engine throws. The decision entry's sentence on the throw changes to say so.
+The maintainer allowed the decision to change, 2026-11-28, taking this design:
+- `serializeCanonicalJson` returns `Result<string>` from `joinedWithin`.
+- The writing callers pass that result on as `tooLong`.
+- The comparison callers take a `sameCanonicalJson(a, b)` that compares `canonicalJsonPieces` streams piece by piece and never builds the string.
+- `withinEngineLimits` then catches only real engine throws, and the decision entry's sentence on the throw says so.
 
 Touches:
-- `src/canonical-json.ts`: `serializeCanonicalJson`
-- `src/length-bound.ts`: `withinEngineLimits` (small)
+- `docs/decisions.md`: `## Output past V8's longest string is refused on every engine` (small)
 - `src/adf/document.ts`: `marksKey` (small)
 - `src/adf/plain-image.ts`
-- `src/markdown/directive/block.ts`: `readMarkValues` (small)
-- `src/markdown/directive/syntax.ts`: `spellJsonAttribute` (small), `spellAttributeValue` (small)
-- `src/html/parse/foreign.ts`: `sameMarks` (small)
-- `src/html/parse/html-to-adf.ts`
+- `src/canonical-json.ts`: `serializeCanonicalJson`
 - `src/html/cell-element.ts`
 - `src/html/data-attributes.ts`
 - `src/html/emit/adf-to-html.ts`: `adfToHtml` (small)
-- `docs/decisions.md`: `## Output past V8's longest string is refused on every engine` (small)
+- `src/html/parse/foreign.ts`: `sameMarks` (small)
+- `src/html/parse/html-to-adf.ts`
+- `src/length-bound.ts`: `withinEngineLimits` (small)
+- `src/markdown/directive/block.ts`: `readMarkValues` (small)
+- `src/markdown/directive/syntax.ts`: `spellJsonAttribute` (small), `spellAttributeValue` (small)
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 

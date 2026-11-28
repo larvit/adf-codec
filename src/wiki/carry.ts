@@ -33,7 +33,7 @@ export function inlineCarry(nodes: readonly AdfNode[], path: ConvertErrorPath): 
 	return success(macros)
 }
 
-// What `inlineCarry` writes for a node of this JSON, which holds no `{` in a string.
+// What `inlineCarry` writes for a node's JSON; `json` must hold no `{` in a string, or the macro closes early.
 export function inlineMacro(json: string): string {
 	return `${opening(inlineDisplay)}${json}${closer}`
 }
@@ -42,7 +42,7 @@ function opening(display: string): string {
 	return `{adf:${display}}`
 }
 
-// What `blockCarry` writes for a document holding no `content` key, with any whitespace around its parts.
+// Whether `wiki` is what `blockCarry` writes for a document holding no `content` key, with any whitespace around its parts.
 export function carriesBareDocument(wiki: string): boolean {
 	const macro = wiki.trim()
 	const opened = opening(blockDisplay)
