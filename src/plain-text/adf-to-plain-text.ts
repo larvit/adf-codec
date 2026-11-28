@@ -11,7 +11,7 @@ import { shownLink, shownText, shownUrl, visibleText } from '../adf/shown-text.t
 
 // `parent`: the place of the node holding this one.
 type Place = { index: number; parent: Place | undefined }
-// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell to restore after a table cell, with the `gap` and `literal` to restore too where the cell wrote no text; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `place`: where the node stands, from which a refusal's path is built.
+// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell to restore after a table cell, with the `gap` and `literal` to restore too where the cell wrote no text; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the sum of `layoutOf`'s `level` over the nodes holding this one; `place`: where the node stands, from which a refusal's path is built.
 type Step =
 	| { kind: 'gap'; lines: number }
 	| { kind: 'leave'; indent: string; lead: string | undefined; length: number }

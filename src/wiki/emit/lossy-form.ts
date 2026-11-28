@@ -10,7 +10,7 @@ import { largestNesting } from '../../nesting.ts'
 import { listTypes, macroOf, plainTable } from './spelled-blocks.ts'
 import { oneLine, shownText, visibleText } from '../../adf/shown-text.ts'
 
-// `depth`: the levels above the node, each adding `layoutOf`'s `level`; `parent`: the place of the node holding this one, from which a refusal's path is built.
+// `depth`: the sum of `layoutOf`'s `level` over the nodes holding this one; `parent`: the place of the node holding this one, from which a refusal's path is built.
 type Place = { depth: number; index: number; node: AdfNode; parent: Place | undefined }
 
 // The reduced form of each block reduced so far.
