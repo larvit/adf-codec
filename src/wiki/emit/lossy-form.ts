@@ -1,12 +1,12 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import { blockNodeModel, isHeadingLevel } from '../../adf/block-nodes.ts'
+import { cellTypes, layoutOf } from '../../plain-text/layout.ts'
 import { codeLanguages, linkedAddress, panelColours, spellableAlt, spellableImageUrl, spellableUrl, storedHref } from '../spellings.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { identicalMark, identicalMarks, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { imageText, shownCard, taskMarker } from '../../plain-text/shown-node.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { largestNesting } from '../../nesting.ts'
-import { layoutOf } from '../../plain-text/layout.ts'
 import { listTypes, macroOf, plainTable } from './spelled-blocks.ts'
 import { oneLine, shownText, visibleText } from '../../adf/shown-text.ts'
 
@@ -16,7 +16,6 @@ type Place = { depth: number; index: number; node: AdfNode; parent: Place | unde
 // The reduced form of each block reduced so far.
 type Reduction = Map<AdfNode, AdfNode[]>
 
-const cellTypes = ['tableCell', 'tableHeader']
 const checkedMarkTypes = ['code', 'em', 'strike', 'strong', 'subsup', 'underline']
 const hardBreak: AdfNode = { type: 'hardBreak' }
 const taskTypes = ['blockTaskItem', 'taskItem']

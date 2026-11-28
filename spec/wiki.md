@@ -184,8 +184,7 @@ says `adfToPlainText` does, in wiki markup:
 - A `hardBreak` right before a `{` or a backslash is `\\ `, a break and a space. The writer never carries,
   and the space adds no content.
 
-It refuses a document nested past 500 levels, each node counting one level. The lossless writer
-writes such a document.
+It refuses a document nested past 500 levels, counted as `adfToPlainText` counts them.
 
 ## What only the reader reads
 
