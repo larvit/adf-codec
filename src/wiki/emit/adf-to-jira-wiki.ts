@@ -1,9 +1,9 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Result } from '../../result.ts'
 import { blockCarry } from '../carry.ts'
-import { joinedWithin, withinEngineLimits } from '../../length-bound.ts'
+import { joinedWithin } from '../../length-bound.ts'
 import { lossyForm } from './lossy-form.ts'
-import { nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
+import { nodeAttrs, nodeContent, writeAdf } from '../../adf/document.ts'
 import { panelColours } from '../spellings.ts'
 import { spelledBlocks, type Spelling } from './spelled-blocks.ts'
 
@@ -13,23 +13,13 @@ type Pending = string | { node: AdfNode; prefix: string }
 const listMarkers: ReadonlyMap<string, string> = new Map([['bulletList', '*'], ['orderedList', '#']])
 
 export function adfToLosslessJiraWiki(document: AdfDocument): Result<string> {
-	return withinEngineLimits(() => {
-		const read = readAdfDocument(document)
-		if (!read.ok) return read
-		const content = writableContent(read.value)
-		if (!content.ok) return content
-		return content.value === undefined ? blockCarry(read.value, []) : writeWiki(content.value, false)
-	})
+	return writeAdf(document, (read, content) => (content === undefined ? blockCarry(read, []) : writeWiki(content, false)))
 }
 
 // spec/wiki.md, The lossy writer.
 export function adfToLossyJiraWiki(document: AdfDocument): Result<string> {
-	return withinEngineLimits(() => {
-		const read = readAdfDocument(document)
-		if (!read.ok) return read
-		const content = writableContent(read.value)
-		if (!content.ok) return content
-		const reduced = lossyForm(content.value ?? [])
+	return writeAdf(document, (_read, content) => {
+		const reduced = lossyForm(content ?? [])
 		return reduced.ok ? writeWiki(reduced.value, true) : reduced
 	})
 }

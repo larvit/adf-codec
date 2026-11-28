@@ -685,20 +685,25 @@ function nestedIn(wrap: (inner: AdfNode) => AdfNode, levels: number): AdfNode {
 	return wrapped(levels, paragraph(text('x')), wrap)
 }
 
-const nestings: [string, (inner: AdfNode) => AdfNode, number][] = [
-	['blockquote', (inner) => quote(inner), 1],
-	['panel', (inner) => panel('info', inner), 1],
-	['expand', (inner) => ({ content: [inner], type: 'expand' }), 1],
-	['unknown block', (inner) => ({ content: [inner], type: 'unknownBlock' }), 1],
-	['bullet list', (inner) => list('bulletList', item(paragraph(text('x')), inner)), 2],
+const nestings: [string, (inner: AdfNode) => AdfNode][] = [
+	['blockquote', (inner) => quote(inner)],
+	['panel', (inner) => panel('info', inner)],
+	['expand', (inner) => ({ content: [inner], type: 'expand' })],
+	['unknown block', (inner) => ({ content: [inner], type: 'unknownBlock' })],
+	['bullet list', (inner) => list('bulletList', item(paragraph(text('x')), inner))],
 ]
-for (const [name, wrap, perWrap] of nestings) {
+for (const [name, wrap] of nestings) {
 	test(`the lossy writer writes ${name}s nested to 500 levels and refuses 501`, () => {
-		const levels = (largestNesting - 2) / perWrap
-		assert.equal(refusal(adfToLossyJiraWiki(document(nestedIn(wrap, levels)))), 'written')
-		assert.equal(refusal(adfToLossyJiraWiki(document(nestedIn(wrap, levels + 1)))).split(' at ')[0], 'unsupported-nesting-depth')
+		assert.equal(refusal(adfToLossyJiraWiki(document(nestedIn(wrap, 500)))), 'written')
+		assert.equal(refusal(adfToLossyJiraWiki(document(nestedIn(wrap, 501)))).split(' at ')[0], 'unsupported-nesting-depth')
 	})
 }
+
+test('the lossy writer writes the text of inline nodes nested past any stack', () => {
+	const deep = wrapped(20000, text('x'), (inner) => ({ content: [inner], type: 'paragraph' }))
+	const result = adfToLossyJiraWiki(document(deep))
+	assert.equal(result.ok ? result.value : result.error.code, 'x')
+})
 
 const lossyCases: [string, AdfNode[], string][] = [
 	['keeps the blocks of a node of an unknown type', [{ content: [paragraph(text('inner'))], type: 'unknownBlock' }], 'inner'],
@@ -782,12 +787,12 @@ for (const [name, mark, spelled] of checkedMarks) {
 }
 
 test('the lossy writer refuses a document nested past the limit by its message and the path of the first node past it', () => {
-	const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting - 1)))
-	assert.equal(result.ok ? 'written' : `${result.error.message} at /${result.error.path.join('/')}`, `the document nests deeper than the ${largestNesting} levels the lossy wiki writer writes at /${Array(largestNesting + 1).fill('content/0').join('/')}`)
+	const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting + 1)))
+	assert.equal(result.ok ? 'written' : `${result.error.message} at /${result.error.path.join('/')}`, `the document nests deeper than the ${largestNesting} levels the lossy wiki writer writes at /${Array(largestNesting + 2).fill('content/0').join('/')}`)
 })
 
 test('the lossy writer names the first of two nodes nested past the limit', () => {
-	const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting - 1), nestedIn((inner) => quote(inner), largestNesting - 1)))
+	const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting + 1), nestedIn((inner) => quote(inner), largestNesting + 1)))
 	assert.equal(result.ok ? 'written' : result.error.path.slice(0, 2).join('/'), 'content/0')
 })
 
@@ -860,6 +865,10 @@ const wide = 200_000
 test('the lossy writer writes a block holding 200,000 blocks', () => {
 	const result = adfToLossyJiraWiki(document({ content: Array.from({ length: wide }, () => paragraph(text('a'))), type: 'expand' }))
 	assert.equal(result.ok ? result.value.length : result.error.code, wide * 3 - 2)
+})
+
+test('the lossy writer parts the lines of a code block in a table cell by hard breaks, an empty line included', () => {
+	assert.equal(lossy(table({}, [{ content: [paragraph(text('a')), code('java', 'b\n\nc')], type: 'tableCell' }])), '|a\\\\b\\\\ \\\\c|')
 })
 
 test('the lossy writer writes a code block of 200,000 lines in a list item', () => {

@@ -10,12 +10,11 @@ import { isBlockNodeType, oneLine } from '../../adf/shown-text.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
-import { nodeAttrs, nodeContent, nodeMarks, readAdfDocument, writableContent } from '../../adf/document.ts'
+import { nodeAttrs, nodeContent, nodeMarks, writeAdf } from '../../adf/document.ts'
 import { portableWriting } from './block-spelling.ts'
 import { splitTaskList, taskListItems } from './task-list.ts'
 import { taskMarker } from './conventions.ts'
 import { editorNormalForm, sourceIndex, toEditorNormal } from './editor-normal.ts'
-import { withinEngineLimits } from '../../length-bound.ts'
 
 type Reduction = ReductionPlace & { memo: SpellingMemo }
 
@@ -52,17 +51,18 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
 }
 
 export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
-	return withinEngineLimits(() => {
-		const read = readAdfDocument(document)
-		const reduced = read.ok ? reduceToPortable(read.value) : read
+	return writeAdf(document, (read) => {
+		const reduced = portableForm(read)
 		return reduced.ok ? writeMarkdown(reduced.value, portableWriting) : reduced
 	})
 }
 
 export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
-	// Measured on the caller's text, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
-	const checked = writableContent(document)
-	if (!checked.ok) return checked
+	return writeAdf(document, portableForm)
+}
+
+// Reached only through `writeAdf`, which bounds the caller's text, edge whitespace and all, before `toEditorNormal`'s merge could build a string past the bound.
+function portableForm(document: AdfDocument): Result<AdfDocument> {
 	// Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
 	const { normal, sources } = editorNormalForm(document)
 	const blocks = reduceBlocks(nodeContent(normal), { depth: 0, memo: spellingMemo(), path: [], sources })
