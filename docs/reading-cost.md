@@ -1754,3 +1754,47 @@ Read most (opens and searches):
 - `src/markdown/emit/adf-to-markdown.ts` 3
 - `README.md` 2
 - `src/length-bound.ts` 2
+
+## Reading cost, chunk 1e411775fb08, finished 2026-11-27T00:12:58Z
+
+52107 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 4
+- `docs/decisions.md` 2
+- `src/wiki/carry.ts` 2
+- `CHANGELOG.md` 1
+- `ci.sh` 1
+- `src/markdown/emit/limits.test.ts` 1
+
+## Reading cost, chunk d7b1d2840370, finished 2026-11-27T10:06:13Z
+
+152970 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 8
+- `spec/html.md` 3
+- `docs/score-anchors.md` 2
+- `src/html/parse/html-to-adf.ts` 2
+- `CHANGELOG.md` 1
+- `README.md` 1
+- `todo.md` 1
+
+## Reading cost, chunk f8d80fec0ec7, finished 2026-11-28T13:36:41Z
+
+90364 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/emit/inline-line.ts` 10
+- `src/markdown/emit/limits.test.ts` 5
+- `src/length-bound.ts` 2
+- `CHANGELOG.md` 1
+- `docker-runner.sh` 1
+- `docs/decisions.md` 1
+- `src/adf/plain-image.ts` 1
+- `src/markdown/emit/adf-to-markdown.ts` 1
+- `src/markdown/emit/image.ts` 1
+- `src/markdown/emit/line-escaping.ts` 1
